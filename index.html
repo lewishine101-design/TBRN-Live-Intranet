@@ -2661,7 +2661,7 @@ function renderDirectory(x){const rows=tableRows(x.html);let entries=[],regions=
  }
  regions=[...new Set(entries.map(e=>e.region).filter(Boolean))].sort();
  $('canvas').innerHTML=`<div class="directory-shell"><div class="directory-tools"><input id="entrySearch" placeholder="Search by name, postcode, region or coverage..."><select id="regionFilter"><option value="">All regions / work types</option>${regions.map(r=>`<option>${esc(r)}</option>`).join('')}</select><div class="directory-count" id="entryCount"></div></div><div class="entry-grid" id="entryGrid"></div></div>`;
- const draw=()=>{const q=$('entrySearch').value.toLowerCase(),reg=$('regionFilter').value;const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));$('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?'surveyor':'entry'}${shown.length===1?'':'s'}`;$('entryGrid').innerHTML=shown.map(e=>{const initials=e.name.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="entry-card"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${e.hold?'hold':''}">${e.hold?'Check status':'Available'}</span></div>${e.badges.length?`<div class="entry-badges">${e.badges.map(b=>flagChip(b[0],b[1])).join('')}</div>`:''}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}</div></article>`}).join('')||'<div class="directory-empty">No matching entries found.</div>'};
+ const draw=()=>{const q=$('entrySearch').value.toLowerCase(),reg=$('regionFilter').value;const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));$('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?(shown.length===1?'surveyor':'surveyors'):(shown.length===1?'entry':'entries')}`;$('entryGrid').innerHTML=shown.map(e=>{const initials=e.name.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="entry-card"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${e.hold?'hold':''}">${e.hold?'Check status':'Available'}</span></div>${e.badges.length?`<div class="entry-badges">${e.badges.map(b=>flagChip(b[0],b[1])).join('')}</div>`:''}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}</div></article>`}).join('')||'<div class="directory-empty">No matching entries found.</div>'};
  $('entrySearch').addEventListener('input',draw);$('regionFilter').addEventListener('change',draw);draw();
 }
 
@@ -2846,7 +2846,7 @@ function saveEntryFromForm(x){
 }
 function removeEntry(x,id){if(!adminMode)return;if(!confirm('Remove this entry from the live directory?'))return;saveEntries(x,getEntries(x).filter(e=>e.id!==id));renderDirectory(x)}
 renderDirectory=function(x){let entries=getEntries(x);const regions=[...new Set(entries.map(e=>e.region).filter(Boolean))].sort();$('canvas').innerHTML=`<div class="directory-shell"><div class="directory-tools"><input id="entrySearch" placeholder="Search by name, postcode, region or coverage..."><select id="regionFilter"><option value="">All regions / work types</option>${regions.map(r=>`<option>${esc(r)}</option>`).join('')}</select><div class="directory-count" id="entryCount"></div>${adminMode?`<button class="admin-add" id="addEntryBtn">+ Add ${x.title==='3. Surveyors'?'surveyor':x.title==='2. General'?'contractor':'specialist'}</button>`:''}</div><div class="entry-grid" id="entryGrid"></div></div>`;
- const draw=()=>{entries=getEntries(x);const q=$('entrySearch').value.toLowerCase(),reg=$('regionFilter').value;const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));$('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?'surveyor':'entry'}${shown.length===1?'':'s'}`;$('entryGrid').innerHTML=shown.map(e=>{const initials=(e.name||'TB').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="entry-card"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${e.hold?'hold':''}">${e.hold?'Check status':'Available'}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><button onclick="openEntryEditor(DATA.find(d=>d.title===${JSON.stringify(x.title)}),'${e.id}')">Edit</button><button class="danger" onclick="removeEntry(DATA.find(d=>d.title===${JSON.stringify(x.title)}),'${e.id}')">Remove</button></div>`:''}</div></article>`}).join('')||'<div class="directory-empty">No matching entries found.</div>'};
+ const draw=()=>{entries=getEntries(x);const q=$('entrySearch').value.toLowerCase(),reg=$('regionFilter').value;const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));$('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?(shown.length===1?'surveyor':'surveyors'):(shown.length===1?'entry':'entries')}`;$('entryGrid').innerHTML=shown.map(e=>{const initials=(e.name||'TB').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="entry-card"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${e.hold?'hold':''}">${e.hold?'Check status':'Available'}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><button onclick="openEntryEditor(DATA.find(d=>d.title===${JSON.stringify(x.title)}),'${e.id}')">Edit</button><button class="danger" onclick="removeEntry(DATA.find(d=>d.title===${JSON.stringify(x.title)}),'${e.id}')">Remove</button></div>`:''}</div></article>`}).join('')||'<div class="directory-empty">No matching entries found.</div>'};
  $('entrySearch').addEventListener('input',draw);$('regionFilter').addEventListener('change',draw);if($('addEntryBtn'))$('addEntryBtn').onclick=()=>openEntryEditor(x);draw();
 }
 const adminNav=document.createElement('button');adminNav.dataset.cat='Admin';adminNav.innerHTML='<span class="ico">⚙</span><span>Admin</span><span class="badge">PIN</span>';adminNav.onclick=showAdmin;nav.appendChild(adminNav);
@@ -3055,6 +3055,11 @@ function closeSide(){$('sidebar').classList.remove('open');$('overlay').classLis
  const previousOpenManagedV10=window.openManagedDirectory;
  window.openManagedDirectory=function(title){
   const x=DATA.find(d=>d.title===title);
+  if(x){
+   window.__tbrnCurrentPageTitle=x.title;
+   window.__tbrnCurrentCategory=x.category;
+   if(typeof window.tbrnRecordId==='function')window.__tbrnCurrentPageId=window.tbrnRecordId(x);
+  }
   if(x&&['2. General','Emergency & Specialist','3. Surveyors'].includes(title)){
    window.__activeManagedDirectoryTitle=title;currentCategory=x.category;hideAll();$('documentView').classList.remove('hidden');$('docTitle').textContent=x.title;$('docMeta').textContent=`${x.category} · Live editable directory`;$('docIcon').textContent=ICONS[x.category]||'•';window.renderDirectory(x);setNav('Admin');window.scrollTo(0,0);return;
   }
@@ -3803,7 +3808,7 @@ renderResponsibilities=function(){
       entries=getEntries(x);
       const q=$('entrySearch').value.toLowerCase(),reg=$('regionFilter').value;
       const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));
-      $('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?'surveyor':'entry'}${shown.length===1?'':'s'}`;
+      $('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?(shown.length===1?'surveyor':'surveyors'):(shown.length===1?'entry':'entries')}`;
       $('entryGrid').innerHTML=shown.map(e=>{
         const status=opStatus(e);
         const initials=(e.name||'TB').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
@@ -7300,6 +7305,7 @@ function renderEntryBadgeRows(badges){
 <script id="tbrn-firestore-no-reload-sync">
 (function(){
   'use strict';
+  window.TBRN_GLOBAL_STATE_SYNC=true;
 
   const firebaseConfig={
     apiKey:'AIzaSyCQJiugjtDKf2HnQbx2sy29EdI4jGXVDeI',
@@ -7526,6 +7532,7 @@ function renderEntryBadgeRows(badges){
 <script id="tbrn-contractor-firestore-save-fix">
 (function(){
   'use strict';
+  if(window.TBRN_GLOBAL_STATE_SYNC)return;
 
   const CONTRACTOR_PREFIXES=[
     'tbrn-directory-',
@@ -7742,10 +7749,13 @@ function renderEntryBadgeRows(badges){
       if(record)heading.textContent=pageName(record);
     });
 
-    const currentCategory=window.__tbrnCurrentCategory||(typeof currentCategory!=='undefined'?currentCategory:null);
+    let activeCategory=window.__tbrnCurrentCategory||null;
+    if(!activeCategory){
+      try{activeCategory=currentCategory}catch(error){}
+    }
     const categoryTitle=document.getElementById('catTitle');
-    if(categoryTitle&&currentCategory&&!document.getElementById('categoryView')?.classList.contains('hidden')){
-      categoryTitle.textContent=sectionName(currentCategory);
+    if(categoryTitle&&activeCategory&&!document.getElementById('categoryView')?.classList.contains('hidden')){
+      categoryTitle.textContent=sectionName(activeCategory);
     }
 
     const docTitle=document.getElementById('docTitle');
@@ -7797,6 +7807,7 @@ function renderEntryBadgeRows(badges){
   }
 
   function queueSave(key,value){
+    if(window.TBRN_GLOBAL_STATE_SYNC)return;
     if(!WATCHED_KEYS.has(String(key)))return;
     queue.set(String(key),value===null?null:String(value));
     clearTimeout(timer);
@@ -7832,20 +7843,22 @@ function renderEntryBadgeRows(badges){
     }
   }
 
-  Storage.prototype.setItem=function(key,value){
-    nativeSet.call(this,key,value);
-    if(this===localStorage&&WATCHED_KEYS.has(String(key))){
-      queueSave(key,value);
-      repeatApply();
-    }
-  };
-  Storage.prototype.removeItem=function(key){
-    nativeRemove.call(this,key);
-    if(this===localStorage&&WATCHED_KEYS.has(String(key))){
-      queueSave(key,null);
-      repeatApply();
-    }
-  };
+  if(!window.TBRN_GLOBAL_STATE_SYNC){
+    Storage.prototype.setItem=function(key,value){
+      nativeSet.call(this,key,value);
+      if(this===localStorage&&WATCHED_KEYS.has(String(key))){
+        queueSave(key,value);
+        repeatApply();
+      }
+    };
+    Storage.prototype.removeItem=function(key){
+      nativeRemove.call(this,key);
+      if(this===localStorage&&WATCHED_KEYS.has(String(key))){
+        queueSave(key,null);
+        repeatApply();
+      }
+    };
+  }
 
   window.addEventListener('tbrn:cloud-data-updated',repeatApply);
   window.addEventListener('storage',event=>{
@@ -7868,6 +7881,56 @@ function renderEntryBadgeRows(badges){
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
+})();
+</script>
+
+<script id="tbrn-resource-count-reconciliation">
+(function(){
+  'use strict';
+
+  function setText(id,value){
+    const element=document.getElementById(id);
+    if(element)element.textContent=String(value);
+  }
+
+  function resourceCount(category){
+    return DATA.filter(record=>record.category===category).length;
+  }
+
+  function reconcileResourceCounts(){
+    const categories=[...new Set(DATA.map(record=>record.category))];
+
+    setText('catCount',categories.length);
+    setText('docCount',DATA.length);
+    setText('contractCount',resourceCount('Contractor Network'));
+    setText('processCount',resourceCount('Processes')+resourceCount('Knowledge Base'));
+    setText('staffCount',resourceCount('Surveyors')+resourceCount('Contacts'));
+    setText('financeCount',resourceCount('Pricing & Finance'));
+
+    document.querySelectorAll('#nav button[data-cat]').forEach(button=>{
+      const badge=button.querySelector('.badge');
+      if(!badge)return;
+      badge.textContent=button.dataset.cat==='Home'?'1':String(resourceCount(button.dataset.cat));
+    });
+
+    document.querySelectorAll('.catcard').forEach(card=>{
+      const heading=card.querySelector('h4');
+      const category=card.dataset.renameCategory||card.dataset.category||
+        heading?.dataset.originalName||heading?.textContent.trim();
+      const pill=card.querySelector('.smallpill');
+      if(!category||!pill)return;
+      const count=resourceCount(category);
+      pill.textContent=`${count} resource${count===1?'':'s'}`;
+    });
+  }
+
+  window.tbrnReconcileResourceCounts=reconcileResourceCounts;
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',reconcileResourceCounts,{once:true});
+  }else{
+    reconcileResourceCounts();
+  }
+  setTimeout(reconcileResourceCounts,250);
 })();
 </script>
 
