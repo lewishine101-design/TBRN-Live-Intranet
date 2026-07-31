@@ -1,0 +1,82 @@
+name: Apply admin stability repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-admin-stability-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Stop repeated admin rerenders
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          def replace_once(old, new, label):
+              global html
+              if new in html:
+                  return
+              if old not in html:
+                  raise SystemExit(f'{label} anchor not found')
+              html = html.replace(old, new, 1)
+
+          old_helper = '''  function applyAllNames(){
+            const names=readNames();'''
+          new_helper = '''  function setText(element,value){
+            const next=String(value??'');
+            if(element&&element.textContent!==next)element.textContent=next;
+          }
+
+          function applyAllNames(){
+            const names=readNames();'''
+          replace_once(old_helper, new_helper, 'stable text helper')
+
+          replacements = [
+              ('''      if(label)label.textContent=sectionName(button.dataset.cat);''', '''      setText(label,sectionName(button.dataset.cat));''', 'navigation label'),
+              ('''      heading.textContent=sectionName(original);''', '''      setText(heading,sectionName(original));''', 'section card heading'),
+              ('''      if(record)heading.textContent=pageName(record);''', '''      if(record)setText(heading,pageName(record));''', 'page card heading'),
+              ('''      categoryTitle.textContent=sectionName(activeCategory);''', '''      setText(categoryTitle,sectionName(activeCategory));''', 'category heading'),
+              ('''      if(record)docTitle.textContent=pageName(record);''', '''      if(record)setText(docTitle,pageName(record));''', 'document heading'),
+              ('''      el.textContent=sectionName(el.dataset.tbrnSectionKey);''', '''      setText(el,sectionName(el.dataset.tbrnSectionKey));''', 'bespoke heading'),
+          ]
+          for old, new, label in replacements:
+              replace_once(old, new, label)
+
+          old_inline = '''    titleEl.textContent=
+              (typeof tbrnPageDisplayName==='function'?tbrnPageDisplayName(record):record.title);
+
+            if(saved.subtitle!==undefined)metaEl.textContent=saved.subtitle;'''
+          new_inline = '''    const nextTitle=
+              (typeof tbrnPageDisplayName==='function'?tbrnPageDisplayName(record):record.title);
+            if(titleEl.textContent!==nextTitle)titleEl.textContent=nextTitle;
+
+            if(saved.subtitle!==undefined&&metaEl.textContent!==saved.subtitle)metaEl.textContent=saved.subtitle;'''
+          replace_once(old_inline, new_inline, 'inline heading stability')
+
+          path.write_text(html, encoding='utf-8')
+          PY
+      - name: Validate repaired file
+        run: |
+          grep -q 'function setText(element,value)' index.html
+          grep -q 'if(titleEl.textContent!==nextTitle)' index.html
+          git diff --check
+      - name: Commit repair and remove temporary workflow
+        run: |
+          rm .github/workflows/apply-admin-stability-fix.yml
+          git config user.name 'TBRN Live Repair'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html .github/workflows/apply-admin-stability-fix.yml
+          git commit -m 'Stop admin mode render flicker'
+          git push origin main
