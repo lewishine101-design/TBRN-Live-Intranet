@@ -15,71 +15,9 @@ jobs:
           ref: main
           fetch-depth: 0
       - name: Patch unchanged snapshot handling
-        shell: python
         run: |
-          from pathlib import Path
-          p=Path("index.html")
-          s=p.read_text(encoding="utf-8")
-          old="""  Storage.prototype.setItem=function(key,value){
-    nativeSetItem.call(this,key,value);
-    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
-  };
-  Storage.prototype.removeItem=function(key){
-    nativeRemoveItem.call(this,key);
-    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
-  };"""
-          new="""  Storage.prototype.setItem=function(key,value){
-    const previous=this===localStorage?this.getItem(String(key)):null;
-    nativeSetItem.call(this,key,value);
-    if(this===localStorage&&previous!==String(value)&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
-  };
-  Storage.prototype.removeItem=function(key){
-    const existed=this===localStorage&&this.getItem(String(key))!==null;
-    nativeRemoveItem.call(this,key);
-    if(this===localStorage&&existed&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
-  };"""
-          if old not in s:
-              raise SystemExit("storage write anchor not found")
-          s=s.replace(old,new,1)
-          old="""    const view=captureView();
-    applyingRemote=true;
-    try{
-      const remoteKeys=new Set(Object.keys(values).filter(isSharedKey));
-      // Do not remove unknown/local keys. Apply only explicitly shared remote values.
-      remoteKeys.forEach(key=>{
-        const value=values[key];
-        if(value===null||typeof value==='undefined')nativeRemoveItem.call(localStorage,key);
-        else if(localStorage.getItem(key)!==String(value))nativeSetItem.call(localStorage,key,String(value));
-      });
-      // Keep in-memory PIN variables aligned without touching browser session state.
-      if(Object.prototype.hasOwnProperty.call(values,'tbrnAdminPin')&&typeof ADMIN_PIN!=='undefined')ADMIN_PIN=values.tbrnAdminPin||'2788';
-    }finally{applyingRemote=false}
-    refreshCurrentView(view);"""
-          new="""    let changed=false;
-    applyingRemote=true;
-    try{
-      const remoteKeys=new Set(Object.keys(values).filter(isSharedKey));
-      // Do not remove unknown/local keys. Apply only explicitly shared remote values.
-      remoteKeys.forEach(key=>{
-        const value=values[key];
-        if(value===null||typeof value==='undefined'){
-          if(localStorage.getItem(key)!==null){
-            nativeRemoveItem.call(localStorage,key);
-            changed=true;
-          }
-        }else if(localStorage.getItem(key)!==String(value)){
-          nativeSetItem.call(localStorage,key,String(value));
-          changed=true;
-        }
-      });
-      // Keep in-memory PIN variables aligned without touching browser session state.
-      if(Object.prototype.hasOwnProperty.call(values,'tbrnAdminPin')&&typeof ADMIN_PIN!=='undefined')ADMIN_PIN=values.tbrnAdminPin||'2788';
-    }finally{applyingRemote=false}
-    if(changed)refreshCurrentView(captureView());"""
-          if old not in s:
-              raise SystemExit("remote snapshot anchor not found")
-          s=s.replace(old,new,1)
-          p.write_text(s,encoding="utf-8")
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgiaW5kZXguaHRtbCIpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKb2xkPSIiIiAgU3RvcmFnZS5wcm90b3R5cGUuc2V0SXRlbT1mdW5jdGlvbihrZXksdmFsdWUpewogICAgbmF0aXZlU2V0SXRlbS5jYWxsKHRoaXMsa2V5LHZhbHVlKTsKICAgIGlmKHRoaXM9PT1sb2NhbFN0b3JhZ2UmJmlzU2hhcmVkS2V5KFN0cmluZyhrZXkpKSYmIWFwcGx5aW5nUmVtb3RlKXNjaGVkdWxlU2F2ZSgpOwogIH07CiAgU3RvcmFnZS5wcm90b3R5cGUucmVtb3ZlSXRlbT1mdW5jdGlvbihrZXkpewogICAgbmF0aXZlUmVtb3ZlSXRlbS5jYWxsKHRoaXMsa2V5KTsKICAgIGlmKHRoaXM9PT1sb2NhbFN0b3JhZ2UmJmlzU2hhcmVkS2V5KFN0cmluZyhrZXkpKSYmIWFwcGx5aW5nUmVtb3RlKXNjaGVkdWxlU2F2ZSgpOwogIH07IiIiCm5ldz0iIiIgIFN0b3JhZ2UucHJvdG90eXBlLnNldEl0ZW09ZnVuY3Rpb24oa2V5LHZhbHVlKXsKICAgIGNvbnN0IHByZXZpb3VzPXRoaXM9PT1sb2NhbFN0b3JhZ2U/dGhpcy5nZXRJdGVtKFN0cmluZyhrZXkpKTpudWxsOwogICAgbmF0aXZlU2V0SXRlbS5jYWxsKHRoaXMsa2V5LHZhbHVlKTsKICAgIGlmKHRoaXM9PT1sb2NhbFN0b3JhZ2UmJnByZXZpb3VzIT09U3RyaW5nKHZhbHVlKSYmaXNTaGFyZWRLZXkoU3RyaW5nKGtleSkpJiYhYXBwbHlpbmdSZW1vdGUpc2NoZWR1bGVTYXZlKCk7CiAgfTsKICBTdG9yYWdlLnByb3RvdHlwZS5yZW1vdmVJdGVtPWZ1bmN0aW9uKGtleSl7CiAgICBjb25zdCBleGlzdGVkPXRoaXM9PT1sb2NhbFN0b3JhZ2UmJnRoaXMuZ2V0SXRlbShTdHJpbmcoa2V5KSkhPT1udWxsOwogICAgbmF0aXZlUmVtb3ZlSXRlbS5jYWxsKHRoaXMsa2V5KTsKICAgIGlmKHRoaXM9PT1sb2NhbFN0b3JhZ2UmJmV4aXN0ZWQmJmlzU2hhcmVkS2V5KFN0cmluZyhrZXkpKSYmIWFwcGx5aW5nUmVtb3RlKXNjaGVkdWxlU2F2ZSgpOwogIH07IiIiCmlmIG9sZCBub3QgaW4gczogcmFpc2UgU3lzdGVtRXhpdCgic3RvcmFnZSB3cml0ZSBhbmNob3Igbm90IGZvdW5kIikKcz1zLnJlcGxhY2Uob2xkLG5ldywxKQpvbGQ9IiIiICAgIGNvbnN0IHZpZXc9Y2FwdHVyZVZpZXcoKTsKICAgIGFwcGx5aW5nUmVtb3RlPXRydWU7CiAgICB0cnl7CiAgICAgIGNvbnN0IHJlbW90ZUtleXM9bmV3IFNldChPYmplY3Qua2V5cyh2YWx1ZXMpLmZpbHRlcihpc1NoYXJlZEtleSkpOwogICAgICAvLyBEbyBub3QgcmVtb3ZlIHVua25vd24vbG9jYWwga2V5cy4gQXBwbHkgb25seSBleHBsaWNpdGx5IHNoYXJlZCByZW1vdGUgdmFsdWVzLgogICAgICByZW1vdGVLZXlzLmZvckVhY2goa2V5PT57CiAgICAgICAgY29uc3QgdmFsdWU9dmFsdWVzW2tleV07CiAgICAgICAgaWYodmFsdWU9PT1udWxsfHx0eXBlb2YgdmFsdWU9PT0ndW5kZWZpbmVkJyluYXRpdmVSZW1vdmVJdGVtLmNhbGwobG9jYWxTdG9yYWdlLGtleSk7CiAgICAgICAgZWxzZSBpZihsb2NhbFN0b3JhZ2UuZ2V0SXRlbShrZXkpIT09U3RyaW5nKHZhbHVlKSluYXRpdmVTZXRJdGVtLmNhbGwobG9jYWxTdG9yYWdlLGtleSxTdHJpbmcodmFsdWUpKTsKICAgICAgfSk7CiAgICAgIC8vIEtlZXAgaW4tbWVtb3J5IFBJTiB2YXJpYWJsZXMgYWxpZ25lZCB3aXRob3V0IHRvdWNoaW5nIGJyb3dzZXIgc2Vzc2lvbiBzdGF0ZS4KICAgICAgaWYoT2JqZWN0LnByb3RvdHlwZS5oYXNPd25Qcm9wZXJ0eS5jYWxsKHZhbHVlcywndGJybkFkbWluUGluJykmJnR5cGVvZiBBRE1JTl9QSU4hPT0ndW5kZWZpbmVkJylBRE1JTl9QSU49dmFsdWVzLnRicm5BZG1pblBpbnx8JzI3ODgnOwogICAgfWZpbmFsbHl7YXBwbHlpbmdSZW1vdGU9ZmFsc2V9CiAgICByZWZyZXNoQ3VycmVudFZpZXcodmlldyk7IiIiCm5ldz0iIiIgICAgbGV0IGNoYW5nZWQ9ZmFsc2U7CiAgICBhcHBseWluZ1JlbW90ZT10cnVlOwogICAgdHJ5ewogICAgICBjb25zdCByZW1vdGVLZXlzPW5ldyBTZXQoT2JqZWN0LmtleXModmFsdWVzKS5maWx0ZXIoaXNTaGFyZWRLZXkpKTsKICAgICAgLy8gRG8gbm90IHJlbW92ZSB1bmtub3duL2xvY2FsIGtleXMuIEFwcGx5IG9ubHkgZXhwbGljaXRseSBzaGFyZWQgcmVtb3RlIHZhbHVlcy4KICAgICAgcmVtb3RlS2V5cy5mb3JFYWNoKGtleT0+ewogICAgICAgIGNvbnN0IHZhbHVlPXZhbHVlc1trZXldOwogICAgICAgIGlmKHZhbHVlPT09bnVsbHx8dHlwZW9mIHZhbHVlPT09J3VuZGVmaW5lZCcpewogICAgICAgICAgaWYobG9jYWxTdG9yYWdlLmdldEl0ZW0oa2V5KSE9PW51bGwpewogICAgICAgICAgICBuYXRpdmVSZW1vdmVJdGVtLmNhbGwobG9jYWxTdG9yYWdlLGtleSk7CiAgICAgICAgICAgIGNoYW5nZWQ9dHJ1ZTsKICAgICAgICAgIH0KICAgICAgICB9ZWxzZSBpZihsb2NhbFN0b3JhZ2UuZ2V0SXRlbShrZXkpIT09U3RyaW5nKHZhbHVlKSl7CiAgICAgICAgICBuYXRpdmVTZXRJdGVtLmNhbGwobG9jYWxTdG9yYWdlLGtleSxTdHJpbmcodmFsdWUpKTsKICAgICAgICAgIGNoYW5nZWQ9dHJ1ZTsKICAgICAgICB9CiAgICAgIH0pOwogICAgICAvLyBLZWVwIGluLW1lbW9yeSBQSU4gdmFyaWFibGVzIGFsaWduZWQgd2l0aG91dCB0b3VjaGluZyBicm93c2VyIHNlc3Npb24gc3RhdGUuCiAgICAgIGlmKE9iamVjdC5wcm90b3R5cGUuaGFzT3duUHJvcGVydHkuY2FsbCh2YWx1ZXMsJ3Ricm5BZG1pblBpbicpJiZ0eXBlb2YgQURNSU5fUElOIT09J3VuZGVmaW5lZCcpQURNSU5fUElOPXZhbHVlcy50YnJuQWRtaW5QaW58fCcyNzg4JzsKICAgIH1maW5hbGx5e2FwcGx5aW5nUmVtb3RlPWZhbHNlfQogICAgaWYoY2hhbmdlZClyZWZyZXNoQ3VycmVudFZpZXcoY2FwdHVyZVZpZXcoKSk7IiIiCmlmIG9sZCBub3QgaW4gczogcmFpc2UgU3lzdGVtRXhpdCgicmVtb3RlIHNuYXBzaG90IGFuY2hvciBub3QgZm91bmQiKQpzPXMucmVwbGFjZShvbGQsbmV3LDEpCnAud3JpdGVfdGV4dChzLGVuY29kaW5nPSJ1dGYtOCIpCg==' | base64 -d > /tmp/tbrn_patch.py
+          python /tmp/tbrn_patch.py
       - name: Commit repair and remove temporary workflow
         run: |
           git config user.name "github-actions[bot]"
