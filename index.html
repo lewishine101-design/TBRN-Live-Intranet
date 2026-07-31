@@ -4739,10 +4739,11 @@ function renderEntryBadgeRows(badges){
     if(!metaEl.dataset.originalSubtitle)metaEl.dataset.originalSubtitle=metaEl.textContent;
 
     const saved=readHeaders()[key]||{};
-    titleEl.textContent=
+    const nextTitle=
       (typeof tbrnPageDisplayName==='function'?tbrnPageDisplayName(record):record.title);
+    if(titleEl.textContent!==nextTitle)titleEl.textContent=nextTitle;
 
-    if(saved.subtitle!==undefined)metaEl.textContent=saved.subtitle;
+    if(saved.subtitle!==undefined&&metaEl.textContent!==saved.subtitle)metaEl.textContent=saved.subtitle;
 
     let titleWrap=titleEl.parentElement;
     if(!titleWrap.classList.contains('page-title-edit-wrap')){
@@ -7731,12 +7732,17 @@ function renderEntryBadgeRows(badges){
     return names.pages[id]||cleanNumber(record.title);
   }
 
+  function setText(element,value){
+    const next=String(value??'');
+    if(element&&element.textContent!==next)element.textContent=next;
+  }
+
   function applyAllNames(){
     const names=readNames();
 
     document.querySelectorAll('#nav button[data-cat]').forEach(button=>{
       const label=button.querySelector('span:not(.ico):not(.badge)');
-      if(label)label.textContent=sectionName(button.dataset.cat);
+      setText(label,sectionName(button.dataset.cat));
     });
 
     document.querySelectorAll('.catcard').forEach(card=>{
@@ -7745,7 +7751,7 @@ function renderEntryBadgeRows(badges){
       const original=card.dataset.renameCategory||card.dataset.category||heading.dataset.originalName||heading.textContent.trim();
       card.dataset.renameCategory=original;
       heading.dataset.originalName=original;
-      heading.textContent=sectionName(original);
+      setText(heading,sectionName(original));
     });
 
     document.querySelectorAll('.doccard').forEach(card=>{
@@ -7753,7 +7759,7 @@ function renderEntryBadgeRows(badges){
       if(!heading)return;
       const record=DATA.find(item=>typeof window.tbrnRecordId==='function'&&window.tbrnRecordId(item)===card.dataset.recordId)
         ||DATA.find(item=>item.title===card.dataset.recordTitle);
-      if(record)heading.textContent=pageName(record);
+      if(record)setText(heading,pageName(record));
     });
 
     let activeCategory=window.__tbrnCurrentCategory||null;
@@ -7762,18 +7768,18 @@ function renderEntryBadgeRows(badges){
     }
     const categoryTitle=document.getElementById('catTitle');
     if(categoryTitle&&activeCategory&&!document.getElementById('categoryView')?.classList.contains('hidden')){
-      categoryTitle.textContent=sectionName(activeCategory);
+      setText(categoryTitle,sectionName(activeCategory));
     }
 
     const docTitle=document.getElementById('docTitle');
     if(docTitle&&!document.getElementById('documentView')?.classList.contains('hidden')){
       const record=recordForCurrentView();
-      if(record)docTitle.textContent=pageName(record);
+      if(record)setText(docTitle,pageName(record));
     }
 
     // Some bespoke modules render section-style headings rather than docTitle.
     document.querySelectorAll('[data-tbrn-section-key]').forEach(el=>{
-      el.textContent=sectionName(el.dataset.tbrnSectionKey);
+      setText(el,sectionName(el.dataset.tbrnSectionKey));
     });
 
     if(typeof window.tbrnApplyInlineHeader==='function'){
