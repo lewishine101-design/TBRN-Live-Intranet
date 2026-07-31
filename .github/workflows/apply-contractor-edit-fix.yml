@@ -1,0 +1,50 @@
+name: Apply contractor edit repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-contractor-edit-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Repair contractor edit controls
+        shell: bash
+        env:
+          FIX_B64: PHNjcmlwdCBpZD0idGJybi1jb250cmFjdG9yLWVkaXQtZml4Ij4KKGZ1bmN0aW9uKCl7CiAgJ3VzZSBzdHJpY3QnOwoKICBmdW5jdGlvbiBhY3RpdmVEaXJlY3RvcnkoKXsKICAgIGNvbnN0IHN0b3JlZD13aW5kb3cuX19hY3RpdmVNYW5hZ2VkRGlyZWN0b3J5VGl0bGV8fCcnOwogICAgY29uc3QgdmlzaWJsZT0oZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2RvY1RpdGxlJyk/LnRleHRDb250ZW50fHwnJykudHJpbSgpOwogICAgcmV0dXJuIERBVEEuZmluZChyZWNvcmQ9PnJlY29yZC50aXRsZT09PXN0b3JlZCl8fAogICAgICBEQVRBLmZpbmQocmVjb3JkPT5yZWNvcmQudGl0bGU9PT12aXNpYmxlKXx8CiAgICAgIG51bGw7CiAgfQoKICBjb25zdCBvcmlnaW5hbE9wZW5NYW5hZ2VkRGlyZWN0b3J5PXdpbmRvdy5vcGVuTWFuYWdlZERpcmVjdG9yeTsKICBpZih0eXBlb2Ygb3JpZ2luYWxPcGVuTWFuYWdlZERpcmVjdG9yeT09PSdmdW5jdGlvbicpewogICAgd2luZG93Lm9wZW5NYW5hZ2VkRGlyZWN0b3J5PWZ1bmN0aW9uKHRpdGxlKXsKICAgICAgd2luZG93Ll9fYWN0aXZlTWFuYWdlZERpcmVjdG9yeVRpdGxlPXRpdGxlOwogICAgICByZXR1cm4gb3JpZ2luYWxPcGVuTWFuYWdlZERpcmVjdG9yeS5hcHBseSh0aGlzLGFyZ3VtZW50cyk7CiAgICB9OwogIH0KCiAgZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLGZ1bmN0aW9uKGV2ZW50KXsKICAgIGNvbnN0IGJ1dHRvbj1ldmVudC50YXJnZXQuY2xvc2VzdCgnW2RhdGEtYWRtaW4tYWN0aW9uPSJlZGl0LWVudHJ5Il0nKTsKICAgIGlmKCFidXRvbnx8c2Vzc2lvblN0b3JhZ2UuZ2V0SXRlbSgndGJybkFkbWluTW9kZScpIT09J3RydWUnKXJldHVybjsKICAgIGNvbnN0IHJlY29yZD1hY3RpdmVEaXJlY3RvcnkoKTsKICAgIGlmKCFyZWNvcmR8fHR5cGVvZiBvcGVuRW50cnlFZGl0b3IhPT0nZnVuY3Rpb24nKXJldHVybjsKICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7CiAgICBldmVudC5zdG9wSW1tZWRpYXRlUHJvcGFnYXRpb24oKTsKICAgIG9wZW5FbnRyeUVkaXRvcihyZWNvcmQsYnV0dG9uLmRhdGFzZXQuZW50cnlJZCk7CiAgfSx0cnVlKTsKfSkoKTsKPC9zY3JpcHQ+
+        run: |
+          python3 - <<'PY'
+          import base64, os
+          from pathlib import Path
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          marker = 'id="tbrn-contractor-edit-fix"'
+          if marker not in html:
+              fix = base64.b64decode(os.environ['FIX_B64']).decode('utf-8')
+              anchor = '<script id="tbrn-admin-persistence-fix">'
+              if anchor not in html:
+                  raise SystemExit('Persistence script anchor not found')
+              html = html.replace(anchor, fix + '\n' + anchor, 1)
+              path.write_text(html, encoding='utf-8')
+          PY
+      - name: Validate repaired file
+        run: |
+          grep -q 'id="tbrn-contractor-edit-fix"' index.html
+          grep -q '__activeManagedDirectoryTitle=title' index.html
+          git diff --check
+      - name: Commit repair and remove temporary workflow
+        run: |
+          rm .github/workflows/apply-contractor-edit-fix.yml
+          git config user.name 'TBRN Live Repair'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html .github/workflows/apply-contractor-edit-fix.yml
+          git commit -m 'Fix contractor edit controls'
+          git push origin main
