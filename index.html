@@ -8292,6 +8292,37 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   window.tbrnApplyDevOverrides=applyOverrides;
 })();
 </script>
+<script id="tbrn-contractor-edit-fix">
+(function(){
+  'use strict';
+
+  function activeDirectory(){
+    const stored=window.__activeManagedDirectoryTitle||'';
+    const visible=(document.getElementById('docTitle')?.textContent||'').trim();
+    return DATA.find(record=>record.title===stored)||
+      DATA.find(record=>record.title===visible)||
+      null;
+  }
+
+  const originalOpenManagedDirectory=window.openManagedDirectory;
+  if(typeof originalOpenManagedDirectory==='function'){
+    window.openManagedDirectory=function(title){
+      window.__activeManagedDirectoryTitle=title;
+      return originalOpenManagedDirectory.apply(this,arguments);
+    };
+  }
+
+  document.addEventListener('click',function(event){
+    const button=event.target.closest('[data-admin-action="edit-entry"]');
+    if(!buton||sessionStorage.getItem('tbrnAdminMode')!=='true')return;
+    const record=activeDirectory();
+    if(!record||typeof openEntryEditor!=='function')return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openEntryEditor(record,button.dataset.entryId);
+  },true);
+})();
+</script>
 <script id="tbrn-admin-persistence-fix">
 (function(){
   'use strict';
