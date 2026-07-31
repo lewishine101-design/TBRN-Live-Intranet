@@ -8285,4 +8285,150 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   window.tbrnApplyDevOverrides=applyOverrides;
 })();
 </script>
+<script id="tbrn-admin-persistence-fix">
+(function(){
+  'use strict';
+
+  const PERSONAL_KEYS=new Set([
+    'tbrnDailyBiscuit','tbrnHiddenSearches','tbrnKbOpens','tbrnPrintCount',
+    'tbrnFeePersistentClicks','tbrnEngineResourceCount','tbrnEngineMapSearchCount'
+  ]);
+  const PERSONAL_PREFIXES=['tbrn-achievement','tbrnAchievement','tbrn-easter','tbrnEaster'];
+  const pending=new Map();
+  const nativeSet=Storage.prototype.setItem;
+  const nativeRemove=Storage.prototype.removeItem;
+  let stateRefPromise=null;
+  let savingPromise=null;
+  let retryTimer=null;
+  let statusTimer=null;
+
+  function adminActive(){
+    return sessionStorage.getItem('tbrnAdminMode')==='true' ||
+      sessionStorage.getItem('tbrnDevMode')==='true';
+  }
+
+  function sharedKey(key){
+    key=String(key||'');
+    if(!key.startsWith('tbrn'))return false;
+    if(key==='tbrnDevTextOverrides'||key==='tbrnDevExactTextOverridesV2')return false;
+    if(PERSONAL_KEYS.has(key))return false;
+    return !PERSONAL_PREFIXES.some(prefix=>key.startsWith(prefix));
+  }
+
+  function status(message,type,persistent){
+    let box=document.getElementById('tbrnCloudStatus');
+    if(!box){
+      box=document.createElement('div');
+      box.id='tbrnCloudStatus';
+      document.body.appendChild(box);
+    }
+    const styles={
+      ok:['#e4f7ec','#126f47'],
+      busy:['#fff7df','#805b00'],
+      error:['#fff0ef','#a93636']
+    };
+    const pair=styles[type]||styles.busy;
+    box.style.cssText='position:fixed;right:14px;bottom:14px;z-index:99997;padding:8px 11px;border-radius:10px;font:700 11px Inter,Segoe UI,Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.16);transition:.2s';
+    box.style.background=pair[0];
+    box.style.color=pair[1];
+    box.textContent=message;
+    clearTimeout(statusTimer);
+    if(!persistent&&type==='ok'){
+      statusTimer=setTimeout(()=>{box.textContent='Live data connected'},1800);
+    }
+  }
+
+  async function getStateRef(){
+    if(stateRefPromise)return stateRefPromise;
+    stateRefPromise=(async()=>{
+      if(!window.firebase||!firebase.firestore||!firebase.auth){
+        throw new Error('Firebase is unavailable');
+      }
+      if(!firebase.apps.length)throw new Error('Firebase is not initialised');
+      if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();
+      return firebase.firestore().collection('tbrnSharedState').doc('state');
+    })();
+    try{return await stateRefPromise}
+    catch(error){stateRefPromise=null;throw error}
+  }
+
+  function queue(key,value){
+    if(!adminActive()||!sharedKey(key))return;
+    pending.set(String(key),value===null?null:String(value));
+    status('Saving live changes…','busy',true);
+    flush();
+  }
+
+  async function flush(){
+    if(savingPromise)return savingPromise;
+    if(!pending.size)return Promise.resolve();
+
+    savingPromise=(async()=>{
+      while(pending.size){
+        const batch=new Map(pending);
+        batch.forEach((_,key)=>pending.delete(key));
+        try{
+          const ref=await getStateRef();
+          await firebase.firestore().runTransaction(async transaction=>{
+            const snapshot=await transaction.get(ref);
+            const data=snapshot.exists?snapshot.data()||{}:{};
+            const values=data.values&&typeof data.values==='object'
+              ?Object.assign({},data.values)
+              :{};
+            batch.forEach((value,key)=>{
+              if(value===null)delete values[key];
+              else values[key]=value;
+            });
+            transaction.set(ref,{
+              values,
+              adminDataUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
+            },{merge:true});
+          });
+          clearTimeout(retryTimer);
+          status('All changes saved live','ok',false);
+          window.dispatchEvent(new CustomEvent('tbrn:admin-cloud-saved',{
+            detail:{keys:[...batch.keys()]}
+          }));
+        }catch(error){
+          console.error('TBRN immediate admin save failed',error);
+          batch.forEach((value,key)=>{
+            if(!pending.has(key))pending.set(key,value);
+          });
+          status('Changes not yet saved — retrying','error',true);
+          clearTimeout(retryTimer);
+          retryTimer=setTimeout(flush,1800);
+          break;
+        }
+      }
+    })();
+
+    try{await savingPromise}
+    finally{savingPromise=null}
+    if(pending.size&&!retryTimer)flush();
+  }
+
+  Storage.prototype.setItem=function(key,value){
+    nativeSet.call(this,key,value);
+    if(this===localStorage)queue(key,value);
+  };
+
+  Storage.prototype.removeItem=function(key){
+    nativeRemove.call(this,key);
+    if(this===localStorage)queue(key,null);
+  };
+
+  window.addEventListener('beforeunload',event=>{
+    if(pending.size||savingPromise){
+      event.preventDefault();
+      event.returnValue='';
+    }
+  });
+
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'&&pending.size)flush();
+  });
+
+  window.tbrnFlushAdminChanges=flush;
+})();
+</script>
 </body></html>
