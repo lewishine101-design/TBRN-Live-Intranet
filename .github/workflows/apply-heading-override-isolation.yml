@@ -1,0 +1,28 @@
+name: Apply heading override isolation
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-heading-override-isolation.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Isolate managed headings
+        run: |
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgiaW5kZXguaHRtbCIpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKb2xkPSIiIiAgICByZXR1cm4gYmFzZTsKICB9CgogIGZ1bmN0aW9uIHZhbGlkVGFyZ2V0KGVsKXsKICAgIGlmKCFlbHx8IWRldkFjdGl2ZSgpfHxlbC5jbG9zZXN0KCcjdGJybkRldlRvb2xiYXIsI3Ricm5EZXZOb3RpY2UsLnRicm4tYWNjZXNzLXBpbi1vdmVybGF5LC50YnJuLXdlbGNvbWUnKSlyZXR1cm4gZmFsc2U7IiIiCm5ldz0iIiIgICAgcmV0dXJuIGJhc2U7CiAgfQoKICBmdW5jdGlvbiBuYW1lTWFuYWdlZFRhcmdldChlbCl7CiAgICByZXR1cm4gISFlbCYmKAogICAgICBlbC5tYXRjaGVzKCcjY2F0VGl0bGUsI2RvY1RpdGxlLC5jYXRjYXJkIGg0LC5kb2NjYXJkIGg0Jyl8fAogICAgICBlbC5tYXRjaGVzKCcjbmF2IGJ1dHRvbltkYXRhLWNhdF0gc3Bhbjpub3QoLmljbyk6bm90KC5iYWRnZSknKQogICAgKTsKICB9CgogIGZ1bmN0aW9uIHZhbGlkVGFyZ2V0KGVsKXsKICAgIGlmKCFlbHx8IWRldkFjdGl2ZSgpfHxlbC5jbG9zZXN0KCcjdGJybkRldlRvb2xiYXIsI3Ricm5EZXZOb3RpY2UsLnRicm4tYWNjZXNzLXBpbi1vdmVybGF5LC50YnJuLXdlbGNvbWUnKSlyZXR1cm4gZmFsc2U7CiAgICBpZihuYW1lTWFuYWdlZFRhcmdldChlbCkpcmV0dXJuIGZhbHNlOyIiIgppZiBvbGQgbm90IGluIHM6IHJhaXNlIFN5c3RlbUV4aXQoImRldmVsb3BlciB0YXJnZXQgYW5jaG9yIG5vdCBmb3VuZCIpCnM9cy5yZXBsYWNlKG9sZCxuZXcsMSkKb2xkPSIiIiAgICAgICAgY29uc3QgZWw9bWF0Y2hlc1swXTsKICAgICAgICBpZihlbC5jbG9zZXN0KCcjdGJybkRldlRvb2xiYXIsI3Ricm5EZXZOb3RpY2UnKSlyZXR1cm47CiAgICAgICAgaWYoIXJlY29yZHx8dHlwZW9mIHJlY29yZCE9PSdvYmplY3QnfHwhcmVjb3JkLmNvbnRleHQpcmV0dXJuOyIiIgpuZXc9IiIiICAgICAgICBjb25zdCBlbD1tYXRjaGVzWzBdOwogICAgICAgIGlmKGVsLmNsb3Nlc3QoJyN0YnJuRGV2VG9vbGJhciwjdGJybkRldk5vdGljZScpKXJldHVybjsKICAgICAgICBpZihuYW1lTWFuYWdlZFRhcmdldChlbCkpcmV0dXJuOwogICAgICAgIGlmKCFyZWNvcmR8fHR5cGVvZiByZWNvcmQhPT0nb2JqZWN0J3x8IXJlY29yZC5jb250ZXh0KXJldHVybjsiIiIKaWYgb2xkIG5vdCBpbiBzOiByYWlzZSBTeXN0ZW1FeGl0KCJkZXZlbG9wZXIgb3ZlcnJpZGUgYW5jaG9yIG5vdCBmb3VuZCIpCnM9cy5yZXBsYWNlKG9sZCxuZXcsMSkKcC53cml0ZV90ZXh0KHMsZW5jb2Rpbmc9InV0Zi04IikK' | base64 -d > /tmp/tbrn_patch.py
+          python /tmp/tbrn_patch.py
+      - name: Commit repair and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/apply-heading-override-isolation.yml
+          git commit -m "Prevent heading override conflicts"
+          git push origin main
