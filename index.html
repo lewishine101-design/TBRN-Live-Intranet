@@ -7386,12 +7386,14 @@ function renderEntryBadgeRows(badges){
   }
 
   Storage.prototype.setItem=function(key,value){
+    const previous=this===localStorage?this.getItem(String(key)):null;
     nativeSetItem.call(this,key,value);
-    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+    if(this===localStorage&&previous!==String(value)&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
   };
   Storage.prototype.removeItem=function(key){
+    const existed=this===localStorage&&this.getItem(String(key))!==null;
     nativeRemoveItem.call(this,key);
-    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+    if(this===localStorage&&existed&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
   };
 
   function extractValues(raw){
@@ -7445,20 +7447,27 @@ function renderEntryBadgeRows(badges){
     const json=JSON.stringify(values||{});
     if(!values||json===lastRemoteJson)return;
     lastRemoteJson=json;
-    const view=captureView();
+    let changed=false;
     applyingRemote=true;
     try{
       const remoteKeys=new Set(Object.keys(values).filter(isSharedKey));
       // Do not remove unknown/local keys. Apply only explicitly shared remote values.
       remoteKeys.forEach(key=>{
         const value=values[key];
-        if(value===null||typeof value==='undefined')nativeRemoveItem.call(localStorage,key);
-        else if(localStorage.getItem(key)!==String(value))nativeSetItem.call(localStorage,key,String(value));
+        if(value===null||typeof value==='undefined'){
+          if(localStorage.getItem(key)!==null){
+            nativeRemoveItem.call(localStorage,key);
+            changed=true;
+          }
+        }else if(localStorage.getItem(key)!==String(value)){
+          nativeSetItem.call(localStorage,key,String(value));
+          changed=true;
+        }
       });
       // Keep in-memory PIN variables aligned without touching browser session state.
       if(Object.prototype.hasOwnProperty.call(values,'tbrnAdminPin')&&typeof ADMIN_PIN!=='undefined')ADMIN_PIN=values.tbrnAdminPin||'2788';
     }finally{applyingRemote=false}
-    refreshCurrentView(view);
+    if(changed)refreshCurrentView(captureView());
   }
 
   async function start(){
