@@ -1,0 +1,71 @@
+name: Apply admin stability repair v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-admin-stability-fix-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Stop repeated admin rerenders
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          if 'function setText(element,value)' not in html:
+              pattern = r'(  function applyAllNames\(\)\{\n    const names=readNames\(\);)'
+              helper = "  function setText(element,value){\n    const next=String(value??'');\n    if(element&&element.textContent!==next)element.textContent=next;\n  }\n\n"
+              html, count = re.subn(pattern, helper + r'\1', html, count=1)
+              if count != 1:
+                  raise SystemExit('Stable text helper anchor not found')
+
+          replacements = {
+              'if(label)label.textContent=sectionName(button.dataset.cat);':'setText(label,sectionName(button.dataset.cat));',
+              'heading.textContent=sectionName(original);':'setText(heading,sectionName(original));',
+              'if(record)heading.textContent=pageName(record);':'if(record)setText(heading,pageName(record));',
+              'categoryTitle.textContent=sectionName(activeCategory);':'setText(categoryTitle,sectionName(activeCategory));',
+              'if(record)docTitle.textContent=pageName(record);':'if(record)setText(docTitle,pageName(record));',
+              'el.textContent=sectionName(el.dataset.tbrnSectionKey);':'setText(el,sectionName(el.dataset.tbrnSectionKey));',
+          }
+          for old, new in replacements.items():
+              if new not in html:
+                  if old not in html:
+                      raise SystemExit(f'Render assignment not found: {old}')
+                  html = html.replace(old, new, 1)
+
+          if 'if(titleEl.textContent!==nextTitle)' not in html:
+              pattern = r"    titleEl\.textContent=\s*\n\s*\(typeof tbrnPageDisplayName==='function'\?tbrnPageDisplayName\(record\):record\.title\);\s*\n\s*if\(saved\.subtitle!==undefined\)metaEl\.textContent=saved\.subtitle;"
+              replacement = "    const nextTitle=\n      (typeof tbrnPageDisplayName==='function'?tbrnPageDisplayName(record):record.title);\n    if(titleEl.textContent!==nextTitle)titleEl.textContent=nextTitle;\n\n    if(saved.subtitle!==undefined&&metaEl.textContent!==saved.subtitle)metaEl.textContent=saved.subtitle;"
+              html, count = re.subn(pattern, replacement, html, count=1)
+              if count != 1:
+                  raise SystemExit('Inline heading stability anchor not found')
+
+          path.write_text(html, encoding='utf-8')
+          PY
+      - name: Validate repaired file
+        run: |
+          grep -q 'function setText(element,value)' index.html
+          grep -q 'if(titleEl.textContent!==nextTitle)' index.html
+          git diff --check
+      - name: Commit repair and remove temporary workflows
+        run: |
+          rm -f .github/workflows/apply-admin-stability-fix.yml
+          rm -f .github/workflows/apply-admin-stability-fix-v2.yml
+          git config user.name 'TBRN Live Repair'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html .github/workflows/apply-admin-stability-fix.yml .github/workflows/apply-admin-stability-fix-v2.yml
+          git commit -m 'Stop admin mode render flicker'
+          git push origin main
