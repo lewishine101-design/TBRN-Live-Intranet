@@ -3299,11 +3299,18 @@ renderResponsibilities=function(){
 
 <script id="tbrn-welcome-script">
 (function(){
+  const WELCOME_SESSION_KEY='tbrnWelcomePassed';
   const welcome=document.getElementById('tbrnWelcome');
   const enter=document.getElementById('tbrnEnter');
   if(!welcome||!enter)return;
+  if(sessionStorage.getItem(WELCOME_SESSION_KEY)==='true'){
+    welcome.remove();
+    document.body.classList.remove('tbrn-welcome-open');
+    return;
+  }
   document.body.classList.add('tbrn-welcome-open');
   const closeWelcome=()=>{
+    sessionStorage.setItem(WELCOME_SESSION_KEY,'true');
     welcome.classList.add('is-leaving');
     document.body.classList.remove('tbrn-welcome-open');
     window.setTimeout(()=>welcome.remove(),700);
@@ -5699,6 +5706,7 @@ function renderEntryBadgeRows(badges){
 <script id="tbrn-welcome-access-pin-script">
 (function(){
   const ACCESS_PIN_KEY='tbrnStaffAccessPin';
+  const WELCOME_SESSION_KEY='tbrnWelcomePassed';
   let pendingWelcomeEntry=false;
 
   function currentAccessPin(){
@@ -5729,6 +5737,7 @@ function renderEntryBadgeRows(badges){
     if(!input)return;
 
     if(input.value===currentAccessPin()){
+      sessionStorage.setItem(WELCOME_SESSION_KEY,'true');
       const overlay=document.getElementById('tbrnAccessPinOverlay');
       overlay?.classList.remove('is-open');
       pendingWelcomeEntry=false;
@@ -8180,6 +8189,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   }
 
   function dismissWelcome(){
+    sessionStorage.setItem('tbrnWelcomePassed','true');
     document.getElementById('tbrnAccessPinOverlay')?.classList.remove('is-open');
     const welcome=document.getElementById('tbrnWelcome');
     if(welcome){welcome.classList.add('is-leaving');setTimeout(()=>welcome.remove(),700)}
