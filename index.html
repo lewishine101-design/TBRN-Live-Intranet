@@ -8132,8 +8132,16 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
     return base;
   }
 
+  function nameManagedTarget(el){
+    return !!el&&(
+      el.matches('#catTitle,#docTitle,.catcard h4,.doccard h4')||
+      el.matches('#nav button[data-cat] span:not(.ico):not(.badge)')
+    );
+  }
+
   function validTarget(el){
     if(!el||!devActive()||el.closest('#tbrnDevToolbar,#tbrnDevNotice,.tbrn-access-pin-overlay,.tbrn-welcome'))return false;
+    if(nameManagedTarget(el))return false;
     if(el.matches('html,body,script,style,link,meta,svg,path,canvas,img,video,audio,input,textarea,select,option,iframe'))return false;
     if(el.isContentEditable)return false;
     const text=(el.textContent||'').trim();
@@ -8162,6 +8170,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
         if(matches.length!==1)return;
         const el=matches[0];
         if(el.closest('#tbrnDevToolbar,#tbrnDevNotice'))return;
+        if(nameManagedTarget(el))return;
         if(!record||typeof record!=='object'||!record.context)return;
         if(elementContext(el)!==record.context)return;
         const value=record.text;
