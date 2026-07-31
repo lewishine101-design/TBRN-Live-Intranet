@@ -1,0 +1,90 @@
+name: Apply cloud refresh stability fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-cloud-refresh-stability.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch unchanged snapshot handling
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          s=p.read_text(encoding="utf-8")
+          old="""  Storage.prototype.setItem=function(key,value){
+    nativeSetItem.call(this,key,value);
+    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+  };
+  Storage.prototype.removeItem=function(key){
+    nativeRemoveItem.call(this,key);
+    if(this===localStorage&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+  };"""
+          new="""  Storage.prototype.setItem=function(key,value){
+    const previous=this===localStorage?this.getItem(String(key)):null;
+    nativeSetItem.call(this,key,value);
+    if(this===localStorage&&previous!==String(value)&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+  };
+  Storage.prototype.removeItem=function(key){
+    const existed=this===localStorage&&this.getItem(String(key))!==null;
+    nativeRemoveItem.call(this,key);
+    if(this===localStorage&&existed&&isSharedKey(String(key))&&!applyingRemote)scheduleSave();
+  };"""
+          if old not in s:
+              raise SystemExit("storage write anchor not found")
+          s=s.replace(old,new,1)
+          old="""    const view=captureView();
+    applyingRemote=true;
+    try{
+      const remoteKeys=new Set(Object.keys(values).filter(isSharedKey));
+      // Do not remove unknown/local keys. Apply only explicitly shared remote values.
+      remoteKeys.forEach(key=>{
+        const value=values[key];
+        if(value===null||typeof value==='undefined')nativeRemoveItem.call(localStorage,key);
+        else if(localStorage.getItem(key)!==String(value))nativeSetItem.call(localStorage,key,String(value));
+      });
+      // Keep in-memory PIN variables aligned without touching browser session state.
+      if(Object.prototype.hasOwnProperty.call(values,'tbrnAdminPin')&&typeof ADMIN_PIN!=='undefined')ADMIN_PIN=values.tbrnAdminPin||'2788';
+    }finally{applyingRemote=false}
+    refreshCurrentView(view);"""
+          new="""    let changed=false;
+    applyingRemote=true;
+    try{
+      const remoteKeys=new Set(Object.keys(values).filter(isSharedKey));
+      // Do not remove unknown/local keys. Apply only explicitly shared remote values.
+      remoteKeys.forEach(key=>{
+        const value=values[key];
+        if(value===null||typeof value==='undefined'){
+          if(localStorage.getItem(key)!==null){
+            nativeRemoveItem.call(localStorage,key);
+            changed=true;
+          }
+        }else if(localStorage.getItem(key)!==String(value)){
+          nativeSetItem.call(localStorage,key,String(value));
+          changed=true;
+        }
+      });
+      // Keep in-memory PIN variables aligned without touching browser session state.
+      if(Object.prototype.hasOwnProperty.call(values,'tbrnAdminPin')&&typeof ADMIN_PIN!=='undefined')ADMIN_PIN=values.tbrnAdminPin||'2788';
+    }finally{applyingRemote=false}
+    if(changed)refreshCurrentView(captureView());"""
+          if old not in s:
+              raise SystemExit("remote snapshot anchor not found")
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding="utf-8")
+      - name: Commit repair and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/apply-cloud-refresh-stability.yml
+          git commit -m "Prevent unchanged cloud refreshes"
+          git push origin main
