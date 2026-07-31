@@ -1028,6 +1028,13 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
   text-transform:uppercase;
   letter-spacing:.05em;
 }
+.entry-note{
+  white-space:pre-wrap;
+}
+.on-hold-notes-box span{
+  display:block;
+  white-space:pre-wrap;
+}
 </style>
 
 
@@ -4976,7 +4983,7 @@ function renderEntryBadgeRows(badges){
 
       const notes=document.createElement('div');
       notes.className='on-hold-notes-box '+(status==='taking'?'taking':'');
-      notes.innerHTML='<b>On Hold Notes</b>'+esc(entry.onHoldNotes);
+      notes.innerHTML='<b>On Hold Notes</b><span>'+esc(entry.onHoldNotes)+'</span>';
 
       const actions=card.querySelector('.entry-actions');
       card.insertBefore(notes,actions||null);
