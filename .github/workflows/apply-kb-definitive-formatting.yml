@@ -1,0 +1,55 @@
+name: Apply definitive Knowledge Base formatting
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-kb-definitive-formatting.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply definitive Staff-mode formatting
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          css_anchor = ".kb-table tr:nth-child(even) td{background:#f8fbf9}"
+          css_insert = ".content-canvas .kb-table tbody tr:first-child td{\n  font-weight:400!important;\n}\n.kb-staff-cell{\n  display:block;\n  width:100%;\n  text-align:left!important;\n  white-space:normal!important;\n  font-weight:400!important;\n}\n.kb-staff-line{\n  display:block;\n  min-height:1.5em;\n  text-align:left!important;\n  font-weight:400!important;\n}\n"
+          if "class=\"kb-staff-cell\"" not in text:
+              if text.count(css_anchor) != 1:
+                  raise SystemExit(f"Expected one Knowledge Base CSS anchor, found {text.count(css_anchor)}")
+              text = text.replace(css_anchor, css_insert + css_anchor, 1)
+
+          helper_anchor = "  function seedFromExistingContent(record){"
+          helper = "  function renderStaffCell(value){\n    const lines=String(value??'')\n      .replace(/\\r\\n?/g,'\\n')\n      .replace(/\\\\n/g,'\\n')\n      .replace(/([^\\n])•/g,'$1\\n•')\n      .split('\\n');\n    return \`<div class=\"kb-staff-cell\">\${lines.map(line=>\`<span class=\"kb-staff-line\">\${esc(line)}</span>\`).join('')}</div>\`;\n  }\n\n"
+          if "function renderStaffCell(value)" not in text:
+              if text.count(helper_anchor) != 1:
+                  raise SystemExit(f"Expected one renderer helper anchor, found {text.count(helper_anchor)}")
+              text = text.replace(helper_anchor, helper + helper_anchor, 1)
+
+          old_render = "                      <td>\n                        ${adminMode\n                          ?\`<textarea data-kb-cell=\"${rowIndex}:${columnIndex}\">${esc(row[columnIndex]||'')}</textarea>\`\n                          :esc(row[columnIndex]||'').replace(/\\r\\n?|\\n/g,'<br>')}\n                      </td>"
+          new_render = "                      <td${adminMode?'':' style=\"text-align:left!important;white-space:normal!important;font-weight:400!important\"'}>\n                        ${adminMode\n                          ?\`<textarea data-kb-cell=\"${rowIndex}:${columnIndex}\">${esc(row[columnIndex]||'')}</textarea>\`\n                          :renderStaffCell(row[columnIndex]||'')}\n                      </td>"
+          if text.count(old_render) != 1:
+              raise SystemExit(f"Expected one Knowledge Base Staff renderer, found {text.count(old_render)}")
+          text = text.replace(old_render, new_render, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit fix and remove temporary workflow
+        run: |
+          rm .github/workflows/apply-kb-definitive-formatting.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-kb-definitive-formatting.yml
+          git commit -m "Render staff table lines explicitly"
+          git push
