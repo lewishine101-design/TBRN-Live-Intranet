@@ -8764,4 +8764,52 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   window.addEventListener('load',()=>setTimeout(restoreView,80),{once:true});
 })();
 </script>
+
+<style id="tbrn-kb-final-staff-format">
+.content-canvas .kb-table tbody td,
+.content-canvas .kb-table tbody tr:first-child td{
+  text-align:left!important;
+  white-space:normal!important;
+  font-weight:400!important;
+}
+.kb-final-cell,.kb-final-line{
+  display:block!important;
+  width:100%!important;
+  text-align:left!important;
+  font-weight:400!important;
+}
+.kb-final-line{min-height:1.5em}
+</style>
+<script id="tbrn-kb-final-staff-format-script">
+(function(){
+  function formatKnowledgeTable(root){
+    (root||document).querySelectorAll('.kb-table tbody td').forEach(function(td){
+      if(td.querySelector('textarea')||td.querySelector('.kb-final-cell'))return;
+      var lines=td.innerText
+        .replace(/\r\n?/g,'\n')
+        .replace(/\\n/g,'\n')
+        .replace(/([^\n])\u2022/g,'$1\n\u2022')
+        .split('\n');
+      var cell=document.createElement('div');
+      cell.className='kb-final-cell';
+      lines.forEach(function(line){
+        var item=document.createElement('span');
+        item.className='kb-final-line';
+        item.textContent=line;
+        cell.appendChild(item);
+      });
+      td.replaceChildren(cell);
+      td.style.setProperty('text-align','left','important');
+      td.style.setProperty('white-space','normal','important');
+      td.style.setProperty('font-weight','400','important');
+    });
+  }
+  var canvas=document.getElementById('canvas');
+  if(canvas){
+    new MutationObserver(function(){formatKnowledgeTable(canvas)}).observe(canvas,{childList:true,subtree:true});
+  }
+  formatKnowledgeTable(document);
+})();
+</script>
+
 </body></html>
