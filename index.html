@@ -5008,6 +5008,9 @@ function renderEntryBadgeRows(badges){
   window.renderDirectory=function(record){
     originalRenderDirectory(record);
     setTimeout(()=>applyNotesToCards(record),30);
+    const reapplyNotes=()=>setTimeout(()=>applyNotesToCards(record),0);
+    document.getElementById('entrySearch')?.addEventListener('input',reapplyNotes);
+    document.getElementById('regionFilter')?.addEventListener('change',reapplyNotes);
   };
 
   document.addEventListener('input',function(event){
