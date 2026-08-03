@@ -2640,8 +2640,8 @@ DATA.push({
   externalMap:true
 });
 
-const ICONS={"Home":"⌂","Coverage Map":"⌖","Contractor Network":"⌘","Surveyors":"◉","Contacts":"☎","Pricing & Finance":"£","Processes":"✓","Knowledge Base":"?"};
-const DESCS={"Home":"Welcome, announcements and core intranet links.","Coverage Map":"Postcode coverage and geographical reference.","Contractor Network":"General, emergency and specialist contractor information.","Surveyors":"Surveyor directory, regions and locations.","Contacts":"Useful operational and support contacts.","Pricing & Finance":"Price lists, VAT and financial guidance.","Processes":"Task processes, ownership and responsibilities.","Knowledge Base":"Troubleshooting, guidance and reference material."};
+const ICONS={"Home":"⌂","Coverage Map":"⌖","Contractor Network":"⌘","Surveyors":"◉","Contacts":"☎","Finance":"£","Pricing & Finance":"£","Processes":"✓","Knowledge Base":"?"};
+const DESCS={"Home":"Welcome, announcements and core intranet links.","Coverage Map":"Postcode coverage and geographical reference.","Contractor Network":"General, emergency and specialist contractor information.","Surveyors":"Surveyor directory, regions and locations.","Contacts":"Useful operational and support contacts.","Finance":"Financial calculators and fee tools.","Pricing & Finance":"VAT treatment and invoicing guidance.","Processes":"Task processes, ownership and responsibilities.","Knowledge Base":"Troubleshooting, guidance and reference material."};
 const cats=[...new Set(DATA.map(x=>x.category))];let currentCategory=null;
 const $=id=>document.getElementById(id);function hideAll(){['home','categoryView','documentView','searchView'].forEach(x=>$(x).classList.add('hidden'))}function setNav(cat){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat))}
 function showHome(){hideAll();$('home').classList.remove('hidden');setNav('Home');closeSide();window.scrollTo(0,0)}
@@ -4520,7 +4520,7 @@ function renderEntryBadgeRows(badges){
   }
 
   function sectionDisplayName(category){
-    return readRenameSettings().sections[category]||category;
+    return readRenameSettings().sections[category]||(category==='Pricing & Finance'?'VAT':category);
   }
 
   function resolveRecord(recordOrTitle,category){
@@ -5861,13 +5861,13 @@ function renderEntryBadgeRows(badges){
   if(!feeRecord){
     feeRecord={
       title:TITLE,
-      category:'Pricing & Finance',
+      category:'Finance',
       html:'',
       feeCalculatorPlaceholder:true
     };
     DATA.push(feeRecord);
   }else{
-    feeRecord.category='Pricing & Finance';
+    feeRecord.category='Finance';
     feeRecord.feeCalculatorPlaceholder=true;
   }
 
@@ -7749,7 +7749,7 @@ function renderEntryBadgeRows(badges){
 
   function sectionName(category){
     const names=readNames();
-    return names.sections[category]||cleanNumber(category);
+    return names.sections[category]||(category==='Pricing & Finance'?'VAT':cleanNumber(category));
   }
 
   function pageName(record){
@@ -7933,8 +7933,8 @@ function renderEntryBadgeRows(badges){
   'use strict';
   const TITLE='Savings Calculator';
   let record=DATA.find(item=>item.title===TITLE);
-  if(!record){record={title:TITLE,category:'Pricing & Finance',html:'',savingsCalculator:true};DATA.push(record)}
-  else{record.category='Pricing & Finance';record.savingsCalculator=true}
+  if(!record){record={title:TITLE,category:'Finance',html:'',savingsCalculator:true};DATA.push(record)}
+  else{record.category='Finance';record.savingsCalculator=true}
 
   const money=new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'});
   const byId=id=>document.getElementById(id);
@@ -7977,8 +7977,24 @@ function renderEntryBadgeRows(badges){
   }
 
   const previousOpenDoc=window.openDoc;
-  window.openDoc=function(index){const item=DATA[index];if(!item?.savingsCalculator&&item?.title!==TITLE)return previousOpenDoc(index);window.__tbrnCurrentPageTitle=item.title;window.__tbrnCurrentCategory=item.category;if(typeof window.tbrnRecordId==='function')window.__tbrnCurrentPageId=window.tbrnRecordId(item);currentCategory=item.category;hideAll();$('documentView').classList.remove('hidden');$('docTitle').textContent=typeof window.tbrnPageDisplayName==='function'?window.tbrnPageDisplayName(item):item.title;$('docMeta').textContent='Pricing & Finance · Settlement savings and fee calculation';$('docIcon').textContent='£';render();setNav(item.category);window.scrollTo(0,0);setTimeout(()=>window.tbrnApplyInlineHeader?.(),30)};
-  try{buildNavigation();renderDashboard();window.tbrnReconcileResourceCounts?.()}catch(error){console.warn('Savings Calculator navigation refresh failed',error)}
+  window.openDoc=function(index){const item=DATA[index];if(!item?.savingsCalculator&&item?.title!==TITLE)return previousOpenDoc(index);window.__tbrnCurrentPageTitle=item.title;window.__tbrnCurrentCategory=item.category;if(typeof window.tbrnRecordId==='function')window.__tbrnCurrentPageId=window.tbrnRecordId(item);currentCategory=item.category;hideAll();$('documentView').classList.remove('hidden');$('docTitle').textContent=typeof window.tbrnPageDisplayName==='function'?window.tbrnPageDisplayName(item):item.title;$('docMeta').textContent='Finance · Settlement savings and fee calculation';$('docIcon').textContent='£';render();setNav(item.category);window.scrollTo(0,0);setTimeout(()=>window.tbrnApplyInlineHeader?.(),30)};
+
+  function ensureFinanceSection(){
+    const financeItems=DATA.filter(item=>item.category==='Finance');
+    const vatButton=document.querySelector('#nav button[data-cat="Pricing & Finance"]');
+    let financeButton=document.querySelector('#nav button[data-cat="Finance"]');
+    if(!financeButton&&vatButton){financeButton=document.createElement('button');financeButton.dataset.cat='Finance';financeButton.innerHTML=`<span class="ico">£</span><span>Finance</span><span class="badge">${financeItems.length}</span>`;financeButton.onclick=()=>showCategory('Finance');vatButton.before(financeButton)}
+    else if(financeButton){const badge=financeButton.querySelector('.badge');if(badge)badge.textContent=String(financeItems.length)}
+
+    const vatCard=[...document.querySelectorAll('.catcard')].find(card=>(card.dataset.renameCategory||card.querySelector('h4')?.textContent.trim())==='Pricing & Finance');
+    let financeCard=[...document.querySelectorAll('.catcard')].find(card=>(card.dataset.renameCategory||card.querySelector('h4')?.textContent.trim())==='Finance');
+    if(!financeCard&&vatCard){financeCard=document.createElement('div');financeCard.className='catcard';financeCard.dataset.renameCategory='Finance';financeCard.innerHTML=`<div class="cat-top"><div class="cat-icon">£</div><span class="smallpill">${financeItems.length} resources</span></div><h4>Finance</h4><p>${DESCS.Finance}</p><div class="catfoot"><span>Open workspace</span><span>→</span></div>`;financeCard.onclick=()=>showCategory('Finance');vatCard.before(financeCard)}
+    if(vatButton){const label=vatButton.querySelector('span:not(.ico):not(.badge)');if(label&&!window.tbrnSectionDisplayName?.('Pricing & Finance'))label.textContent='VAT'}
+    window.tbrnReconcileResourceCounts?.();
+  }
+
+  ensureFinanceSection();
+  setTimeout(ensureFinanceSection,80);
 })();
 </script>
 
@@ -8003,7 +8019,7 @@ function renderEntryBadgeRows(badges){
     setText('contractCount',resourceCount('Contractor Network'));
     setText('processCount',resourceCount('Processes')+resourceCount('Knowledge Base'));
     setText('staffCount',resourceCount('Surveyors')+resourceCount('Contacts'));
-    setText('financeCount',resourceCount('Pricing & Finance'));
+    setText('financeCount',resourceCount('Finance')+resourceCount('Pricing & Finance'));
 
     document.querySelectorAll('#nav button[data-cat]').forEach(button=>{
       const badge=button.querySelector('.badge');
