@@ -2660,7 +2660,7 @@ function cleanContent(raw){const box=document.createElement('div');box.innerHTML
 function stripComment(v){v=String(v||'').replace(/\[Threaded comment\][\s\S]*?Comment:\s*/i,'').replace(/Learn more:[^\n]*/gi,'').replace(/Your version of Excel[^\n]*/gi,'').replace(/Reply:[\s\S]*/i,'').trim();return v}
 function shortName(v){const c=stripComment(v),lines=c.split(/\n+/).map(x=>x.trim()).filter(Boolean);return lines.length?lines[lines.length-1]:c}
 function tableRows(raw){const box=document.createElement('div');box.innerHTML=raw;return [...box.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll(':scope > td,:scope > th')].map(td=>td.innerText.replace(/\s+/g,' ').trim())).filter(r=>r.some(Boolean))}
-function mailLink(v){const e=stripComment(v).split(/[;,]/)[0].trim();return e&&e.includes('@')?`<a href="mailto:${esc(e)}">Email</a>`:''}
+function mailLink(v){const emails=[...new Set(stripComment(v).split(';').map(value=>value.trim()).filter(value=>value.includes('@')))];return emails.map((email,index)=>`<a href="mailto:${esc(email)}">Email${emails.length>1?` ${index+1}`:''}</a>`).join('')}
 function phoneLink(v){const p=stripComment(v).split('/')[0].replace(/[^0-9+]/g,'');return p?`<a href="tel:${esc(p)}">Call</a>`:''}
 function flagChip(label,v){const raw=stripComment(v),yes=raw.includes('✔'),no=raw.includes('❌');return `<span class="mini-chip ${yes?'yes':no?'no':''}">${esc(label)} ${yes?'✓':no?'×':raw||'—'}</span>`}
 function cardDetail(label,value,link){value=stripComment(value);if(!value)return'';return `<div class="detail-row"><b>${esc(label)}</b><span>${link?`<a href="${link}${encodeURIComponent(value)}">${esc(value)}</a>`:esc(value)}</span></div>`}
@@ -2822,7 +2822,7 @@ function entryForm(x,e){
     <div class="form-field"><label>Base postcode</label><input name="postcode" value="${esc(e.postcode||'')}"></div>
     ${x.title==='Emergency & Specialist'?`<div class="form-field"><label>VAT type</label><input name="vat" value="${esc(e.vat||'')}"></div>`:''}
     <div class="form-field"><label>Telephone</label><input name="phone" value="${esc(e.phone||'')}"></div>
-    <div class="form-field"><label>Email</label><input name="email" type="email" value="${esc(e.email||'')}"></div>
+    <div class="form-field"><label>Email</label><input name="email" type="text" placeholder="Separate multiple emails with ;" value="${esc(e.email||'')}"></div>
     <div class="form-field"><label>Primary coverage</label><input name="primary" value="${esc(e.primary||'')}"></div>
     <div class="form-field"><label>Secondary coverage</label><input name="secondary" value="${esc(e.secondary||'')}"></div>
     <div class="form-field full"><label>Important notes</label><textarea name="notes">${esc(e.notes||'')}</textarea></div>
