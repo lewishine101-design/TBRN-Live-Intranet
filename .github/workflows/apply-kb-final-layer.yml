@@ -1,0 +1,44 @@
+name: Apply final Staff table formatting
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-kb-final-layer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add final Staff-mode formatting layer
+        shell: bash
+        run: |
+          python - <<'PY'
+          from base64 import b64decode
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          marker = 'id="tbrn-kb-final-staff-format"'
+          payload = b64decode("CjxzdHlsZSBpZD0idGJybi1rYi1maW5hbC1zdGFmZi1mb3JtYXQiPgouY29udGVudC1jYW52YXMgLmtiLXRhYmxlIHRib2R5IHRkLAouY29udGVudC1jYW52YXMgLmtiLXRhYmxlIHRib2R5IHRyOmZpcnN0LWNoaWxkIHRkewogIHRleHQtYWxpZ246bGVmdCFpbXBvcnRhbnQ7CiAgd2hpdGUtc3BhY2U6bm9ybWFsIWltcG9ydGFudDsKICBmb250LXdlaWdodDo0MDAhaW1wb3J0YW50Owp9Ci5rYi1maW5hbC1jZWxsLC5rYi1maW5hbC1saW5lewogIGRpc3BsYXk6YmxvY2shaW1wb3J0YW50OwogIHdpZHRoOjEwMCUhaW1wb3J0YW50OwogIHRleHQtYWxpZ246bGVmdCFpbXBvcnRhbnQ7CiAgZm9udC13ZWlnaHQ6NDAwIWltcG9ydGFudDsKfQoua2ItZmluYWwtbGluZXttaW4taGVpZ2h0OjEuNWVtfQo8L3N0eWxlPgo8c2NyaXB0IGlkPSJ0YnJuLWtiLWZpbmFsLXN0YWZmLWZvcm1hdC1zY3JpcHQiPgooZnVuY3Rpb24oKXsKICBmdW5jdGlvbiBmb3JtYXRLbm93bGVkZ2VUYWJsZShyb290KXsKICAgIChyb290fHxkb2N1bWVudCkucXVlcnlTZWxlY3RvckFsbCgnLmtiLXRhYmxlIHRib2R5IHRkJykuZm9yRWFjaChmdW5jdGlvbih0ZCl7CiAgICAgIGlmKHRkLnF1ZXJ5U2VsZWN0b3IoJ3RleHRhcmVhJyl8fHRkLnF1ZXJ5U2VsZWN0b3IoJy5rYi1maW5hbC1jZWxsJykpcmV0dXJuOwogICAgICB2YXIgbGluZXM9dGQuaW5uZXJUZXh0CiAgICAgICAgLnJlcGxhY2UoL1xyXG4/L2csJ1xuJykKICAgICAgICAucmVwbGFjZSgvXFxuL2csJ1xuJykKICAgICAgICAucmVwbGFjZSgvKFteXG5dKVx1MjAyMi9nLCckMVxuXHUyMDIyJykKICAgICAgICAuc3BsaXQoJ1xuJyk7CiAgICAgIHZhciBjZWxsPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICBjZWxsLmNsYXNzTmFtZT0na2ItZmluYWwtY2VsbCc7CiAgICAgIGxpbmVzLmZvckVhY2goZnVuY3Rpb24obGluZSl7CiAgICAgICAgdmFyIGl0ZW09ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc3BhbicpOwogICAgICAgIGl0ZW0uY2xhc3NOYW1lPSdrYi1maW5hbC1saW5lJzsKICAgICAgICBpdGVtLnRleHRDb250ZW50PWxpbmU7CiAgICAgICAgY2VsbC5hcHBlbmRDaGlsZChpdGVtKTsKICAgICAgfSk7CiAgICAgIHRkLnJlcGxhY2VDaGlsZHJlbihjZWxsKTsKICAgICAgdGQuc3R5bGUuc2V0UHJvcGVydHkoJ3RleHQtYWxpZ24nLCdsZWZ0JywnaW1wb3J0YW50Jyk7CiAgICAgIHRkLnN0eWxlLnNldFByb3BlcnR5KCd3aGl0ZS1zcGFjZScsJ25vcm1hbCcsJ2ltcG9ydGFudCcpOwogICAgICB0ZC5zdHlsZS5zZXRQcm9wZXJ0eSgnZm9udC13ZWlnaHQnLCc0MDAnLCdpbXBvcnRhbnQnKTsKICAgIH0pOwogIH0KICB2YXIgY2FudmFzPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjYW52YXMnKTsKICBpZihjYW52YXMpewogICAgbmV3IE11dGF0aW9uT2JzZXJ2ZXIoZnVuY3Rpb24oKXtmb3JtYXRLbm93bGVkZ2VUYWJsZShjYW52YXMpfSkub2JzZXJ2ZShjYW52YXMse2NoaWxkTGlzdDp0cnVlLHN1YnRyZWU6dHJ1ZX0pOwogIH0KICBmb3JtYXRLbm93bGVkZ2VUYWJsZShkb2N1bWVudCk7Cn0pKCk7Cjwvc2NyaXB0Pgo=").decode("utf-8")
+          if marker not in text:
+              if text.count("</body>") != 1:
+                  raise SystemExit("Could not locate the closing body tag")
+              text = text.replace("</body>", payload + "\n</body>", 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit fix and remove temporary workflows
+        run: |
+          rm -f .github/workflows/apply-kb-final-layer.yml
+          rm -f .github/workflows/apply-kb-definitive-formatting.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows
+          git commit -m "Enforce staff table formatting"
+          git push
