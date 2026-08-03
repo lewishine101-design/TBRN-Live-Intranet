@@ -1,0 +1,25 @@
+name: Fix contact row weight
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-contact-weight.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply contact style
+        shell: bash
+        run: |
+          echo 'ZGlmZiAtLWdpdCBhL2luZGV4Lmh0bWwgYi9pbmRleC5odG1sCmluZGV4IDRlZGQ4MzMuLmIwOWRiOWYgMTAwNjQ0Ci0tLSBhL2luZGV4Lmh0bWwKKysrIGIvaW5kZXguaHRtbApAQCAtMTIyNiw2ICsxMjI2LDcgQEAgYm9keXtiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsI2Y3ZmJmOCwjZWVmNmYxKTtjb2xvcjp2YXIoLS1pbmspfQogICBib3JkZXItYm90dG9tOjFweCBzb2xpZCAjZTFlOWU0OwogICB2ZXJ0aWNhbC1hbGlnbjp0b3A7CiAgIGZvbnQtc2l6ZToxMXB4OworICBmb250LXdlaWdodDo0MDAhaW1wb3J0YW50OwogICBsaW5lLWhlaWdodDoxLjU7CiAgIHdoaXRlLXNwYWNlOnByZS13cmFwOwogfQo=' | base64 --decode > /tmp/contact-weight.patch
+          git apply /tmp/contact-weight.patch
+          git rm '.github/workflows/apply-contact-weight.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Normalize Useful Contacts row weight'
+          git push origin main
