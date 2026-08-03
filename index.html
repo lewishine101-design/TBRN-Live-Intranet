@@ -1232,6 +1232,10 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
   white-space:pre-wrap;
 }
 .contacts-table tr:nth-child(even) td{background:#f8fbf9}
+.contacts-table td a,
+.escalation-table td a{color:#087252;font-weight:400;text-decoration:underline;text-underline-offset:2px}
+.contacts-table td a:hover,
+.escalation-table td a:hover{color:#064c3d}
 .contacts-table input,
 .contacts-table textarea{
   width:100%;
@@ -5335,6 +5339,22 @@ function renderEntryBadgeRows(badges){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(normaliseRows(rows)));
   }
 
+  function displayCell(value,columnIndex){
+    const lines=String(value||'').replace(/\r/g,'').split('\n');
+    return lines.map(line=>{
+      const text=line.trim();
+      if(!text)return '';
+      if(columnIndex===2){
+        const number=text.replace(/[^0-9+]/g,'');
+        return number?`<a href="tel:${esc(number)}">${esc(text)}</a>`:esc(text);
+      }
+      if(columnIndex===3){
+        return text.includes('@')?`<a href="mailto:${esc(text)}">${esc(text)}</a>`:esc(text);
+      }
+      return esc(line);
+    }).join('<br>');
+  }
+
   function collectEditedRows(){
     return [...document.querySelectorAll('#contactsTableBody tr[data-contact-row]')].map(row=>
       [...row.querySelectorAll('[data-contact-cell]')].map(cell=>cell.value)
@@ -5406,7 +5426,7 @@ function renderEntryBadgeRows(badges){
                           ?columnIndex===4
                             ?`<textarea data-contact-cell="${rowIndex}:${columnIndex}">${esc(row[columnIndex]||'')}</textarea>`
                             :`<input data-contact-cell="${rowIndex}:${columnIndex}" value="${esc(row[columnIndex]||'')}">`
-                          :esc(row[columnIndex]||'').replace(/\r\n?|\n/g,'<br>')}
+                          :displayCell(row[columnIndex],columnIndex)}
                       </td>`).join('')}
                     ${adminMode?`<td class="contacts-actions"><button type="button" class="contacts-remove-row" data-contact-remove="${rowIndex}">Remove</button></td>`:''}
                   </tr>`).join('')
@@ -5522,6 +5542,22 @@ function renderEntryBadgeRows(badges){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(rows));
   }
 
+  function displayCell(value,columnIndex){
+    const lines=String(value||'').replace(/\r/g,'').split('\n');
+    return lines.map(line=>{
+      const text=line.trim();
+      if(!text)return '';
+      if(columnIndex===3){
+        const number=text.replace(/[^0-9+]/g,'');
+        return number?`<a href="tel:${esc(number)}">${esc(text)}</a>`:esc(text);
+      }
+      if(columnIndex===4){
+        return text.includes('@')?`<a href="mailto:${esc(text)}">${esc(text)}</a>`:esc(text);
+      }
+      return esc(line);
+    }).join('<br>');
+  }
+
   function collectRows(){
     return [...document.querySelectorAll('#escalationBody tr[data-escalation-row]')].map(row=>
       [...row.querySelectorAll('[data-escalation-cell]')].map(cell=>cell.value)
@@ -5562,7 +5598,7 @@ function renderEntryBadgeRows(badges){
                           ?columnIndex===5
                             ?`<textarea data-escalation-cell="${rowIndex}:${columnIndex}">${esc(row[columnIndex]||'')}</textarea>`
                             :`<input data-escalation-cell="${rowIndex}:${columnIndex}" value="${esc(row[columnIndex]||'')}">`
-                          :esc(row[columnIndex]||'').replace(/\r\n?|\n/g,'<br>')}
+                          :displayCell(row[columnIndex],columnIndex)}
                       </td>`).join('')}
                     ${adminMode?`<td class="escalation-actions"><button type="button" class="escalation-remove" data-escalation-remove="${rowIndex}">Remove</button></td>`:''}
                   </tr>`).join('')
