@@ -1,0 +1,25 @@
+name: Fix first contact row
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-contact-specificity.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply contact override
+        shell: bash
+        run: |
+          echo 'ZGlmZiAtLWdpdCBhL2luZGV4Lmh0bWwgYi9pbmRleC5odG1sCmluZGV4IGIwOWRiOWYuLmNlNTYyN2IgMTAwNjQ0Ci0tLSBhL2luZGV4Lmh0bWwKKysrIGIvaW5kZXguaHRtbApAQCAtMTIyMSw3ICsxMjIxLDggQEAgYm9keXtiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsI2Y3ZmJmOCwjZWVmNmYxKTtjb2xvcjp2YXIoLS1pbmspfQogICB0b3A6MDsKICAgei1pbmRleDoyOwogfQotLmNvbnRhY3RzLXRhYmxlIHRkeworLmNvbnRhY3RzLXRhYmxlIHRkLAorI2NvbnRhY3RzVGFibGVCb2R5IHRkewogICBwYWRkaW5nOjEwcHggMTFweDsKICAgYm9yZGVyLWJvdHRvbToxcHggc29saWQgI2UxZTllNDsKICAgdmVydGljYWwtYWxpZ246dG9wOwo=' | base64 --decode > /tmp/contact-specificity.patch
+          git apply /tmp/contact-specificity.patch
+          git rm '.github/workflows/apply-contact-specificity.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Override bold first contact row'
+          git push origin main
