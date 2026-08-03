@@ -8138,6 +8138,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   function nameManagedTarget(el){
     return !!el&&(
       el.matches('#catTitle,#docTitle,.catcard h4,.doccard h4')||
+      !!el.closest('#rollingHero')||
       el.matches('#nav button[data-cat] span:not(.ico):not(.badge)')
     );
   }
@@ -8510,6 +8511,156 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   });
 
   window.tbrnFlushAdminChanges=flush;
+})();
+</script>
+<script id="tbrn-rolling-dashboard-admin-editor">
+(function(){
+  'use strict';
+  const STORAGE_KEY='tbrnRollingHeroSlidesV1';
+  const hero=document.getElementById('rollingHero');
+  if(!hero)return;
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .rolling-hero-admin-edit{display:none;position:absolute;right:18px;bottom:14px;z-index:8;border:1px solid rgba(255,255,255,.45);background:rgba(5,58,47,.62);color:#fff;border-radius:10px;padding:7px 10px;font:700 11px Inter,Segoe UI,Arial,sans-serif;cursor:pointer;backdrop-filter:blur(8px)}
+    .rolling-hero-admin-edit:hover{background:rgba(5,58,47,.9)}
+    .rolling-hero-admin-edit.is-visible{display:block}
+    .admin-modal-card.rolling-editor-wide{width:min(1040px,94vw);max-height:90vh}
+    .rolling-editor-intro{margin:0 0 14px;padding:11px 13px;border-radius:12px;background:#eef8f3;color:#386052;font-size:12px}
+    .rolling-editor-list{display:grid;gap:14px}
+    .rolling-editor-slide{border:1px solid #dfe8e4;border-radius:15px;padding:14px;background:#fbfdfc}
+    .rolling-editor-slide h4{margin:0 0 12px;color:#0b4d3d}
+    .rolling-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .rolling-editor-grid .full{grid-column:1/-1}
+    .rolling-editor-grid label{display:grid;gap:5px;font-size:11px;font-weight:750;color:#4c625a}
+    .rolling-editor-grid input,.rolling-editor-grid textarea{width:100%;border:1px solid #cedbd6;border-radius:9px;padding:9px 10px;font:12px Inter,Segoe UI,Arial,sans-serif;color:#173b31;background:#fff}
+    .rolling-editor-grid textarea{min-height:72px;resize:vertical}
+    @media(max-width:700px){.rolling-editor-grid{grid-template-columns:1fr}.rolling-editor-grid .full{grid-column:auto}.rolling-hero-admin-edit{right:12px;bottom:10px}}
+  `;
+  document.head.appendChild(style);
+
+  function standardSlides(){
+    return [...hero.querySelectorAll('.rolling-hero-slide')].filter(slide=>!slide.classList.contains('weekend-morale-slide'));
+  }
+
+  function defaults(){
+    return standardSlides().map(slide=>{
+      const copy=slide.querySelector('.rolling-hero-copy');
+      const panel=slide.querySelector('.rolling-update-panel');
+      const pulse=slide.querySelector('.pulse');
+      const rows=pulse?[...pulse.querySelectorAll('.pulse-row')]:[];
+      return {
+        eyebrow:copy?.querySelector('.eyebrow')?.textContent||'',
+        title:copy?.querySelector('h2')?.textContent||'',
+        body:copy?.querySelector('p')?.textContent||'',
+        panelIcon:panel?.querySelector('.rolling-update-icon')?.textContent||'',
+        panelTitle:panel?.querySelector('strong')?.textContent||'',
+        panelBody:panel?.querySelector('p')?.textContent||'',
+        metricOne:rows[0]?.querySelector('span')?.textContent||'',
+        metricTwo:rows[1]?.querySelector('span')?.textContent||'',
+        metricThree:rows[2]?.querySelector('span')?.textContent||'',
+        metricStatus:rows[2]?.querySelector('b')?.textContent||''
+      };
+    });
+  }
+
+  const originalDefaults=defaults();
+
+  function readSlides(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+      if(Array.isArray(saved))return originalDefaults.map((item,index)=>Object.assign({},item,saved[index]||{}));
+    }catch(error){}
+    return originalDefaults.map(item=>Object.assign({},item));
+  }
+
+  function setText(element,value){
+    const next=String(value??'');
+    if(element&&element.textContent!==next)element.textContent=next;
+  }
+
+  function applySlides(items=readSlides()){
+    standardSlides().forEach((slide,index)=>{
+      const item=items[index];
+      if(!item)return;
+      const copy=slide.querySelector('.rolling-hero-copy');
+      setText(copy?.querySelector('.eyebrow'),item.eyebrow);
+      setText(copy?.querySelector('h2'),item.title);
+      setText(copy?.querySelector('p'),item.body);
+      const panel=slide.querySelector('.rolling-update-panel');
+      if(panel){
+        setText(panel.querySelector('.rolling-update-icon'),item.panelIcon);
+        setText(panel.querySelector('strong'),item.panelTitle);
+        setText(panel.querySelector('p'),item.panelBody);
+      }
+      const rows=[...slide.querySelectorAll('.pulse-row')];
+      if(rows.length){
+        setText(rows[0]?.querySelector('span'),item.metricOne);
+        setText(rows[1]?.querySelector('span'),item.metricTwo);
+        setText(rows[2]?.querySelector('span'),item.metricThree);
+        setText(rows[2]?.querySelector('b'),item.metricStatus);
+      }
+    });
+  }
+
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>\"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function field(index,key,label,value,full=false,textarea=false){
+    const control=textarea
+      ?`<textarea data-rolling-index="${index}" data-rolling-key="${key}">${escapeHtml(value)}</textarea>`
+      :`<input data-rolling-index="${index}" data-rolling-key="${key}" value="${escapeHtml(value)}">`;
+    return `<label class="${full?'full':''}">${label}${control}</label>`;
+  }
+
+  function openEditor(){
+    if(sessionStorage.getItem('tbrnAdminMode')!=='true')return;
+    const items=readSlides();
+    const body=document.getElementById('adminModalBody');
+    const foot=document.getElementById('adminModalFoot');
+    const modal=document.getElementById('adminModal');
+    document.getElementById('adminModalTitle').textContent='Edit rolling dashboard display';
+    modal.querySelector('.admin-modal-card')?.classList.add('rolling-editor-wide');
+    body.innerHTML='<p class="rolling-editor-intro">Edit the five standard slides below. Live knowledge and resource totals remain automatic.</p><div class="rolling-editor-list">'+items.map((item,index)=>{
+      const first=index===0;
+      return `<section class="rolling-editor-slide"><h4>Slide ${index+1}</h4><div class="rolling-editor-grid">${field(index,'eyebrow','Small heading',item.eyebrow)}${field(index,'title','Main heading',item.title)}${field(index,'body','Description',item.body,true,true)}${first?field(index,'metricOne','First metric label',item.metricOne)+field(index,'metricTwo','Second metric label',item.metricTwo)+field(index,'metricThree','Status label',item.metricThree)+field(index,'metricStatus','Status value',item.metricStatus):field(index,'panelIcon','Panel icon',item.panelIcon)+field(index,'panelTitle','Panel heading',item.panelTitle)+field(index,'panelBody','Panel description',item.panelBody,true,true)}</div></section>`;
+    }).join('')+'</div>';
+    foot.innerHTML='<button class="action" id="rollingReset">Reset defaults</button><button class="action" id="rollingCancel">Cancel</button><button class="action primary" id="rollingSave">Save rolling display</button>';
+    document.getElementById('rollingCancel').onclick=()=>{modal.classList.remove('open');modal.querySelector('.admin-modal-card')?.classList.remove('rolling-editor-wide')};
+    document.getElementById('rollingReset').onclick=()=>{
+      if(!confirm('Reset all rolling display slides to their original wording?'))return;
+      localStorage.removeItem(STORAGE_KEY);applySlides(originalDefaults);modal.classList.remove('open');modal.querySelector('.admin-modal-card')?.classList.remove('rolling-editor-wide');
+      if(typeof holdToast==='function')holdToast('Rolling display reset');
+    };
+    document.getElementById('rollingSave').onclick=()=>{
+      const updated=readSlides();
+      body.querySelectorAll('[data-rolling-index]').forEach(input=>{
+        updated[Number(input.dataset.rollingIndex)][input.dataset.rollingKey]=input.value.trim();
+      });
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(updated));
+      applySlides(updated);modal.classList.remove('open');modal.querySelector('.admin-modal-card')?.classList.remove('rolling-editor-wide');
+      if(typeof holdToast==='function')holdToast('Rolling display saved live');
+    };
+    modal.classList.add('open');
+  }
+
+  const editButton=document.createElement('button');
+  editButton.type='button';
+  editButton.className='rolling-hero-admin-edit';
+  editButton.textContent='Edit rolling display';
+  editButton.onclick=openEditor;
+  hero.appendChild(editButton);
+
+  function syncAdminButton(){
+    editButton.classList.toggle('is-visible',sessionStorage.getItem('tbrnAdminMode')==='true');
+  }
+
+  applySlides();
+  syncAdminButton();
+  setInterval(syncAdminButton,300);
+  window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY)applySlides()});
+  window.addEventListener('tbrn:cloud-data-updated',applySlides);
 })();
 </script>
 <script id="tbrn-refresh-view-persistence">
