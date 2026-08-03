@@ -21,29 +21,19 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           path = Path("index.html")
           text = path.read_text(encoding="utf-8")
-
-          css_old = """  line-height:1.5;
-  white-space:pre-wrap;
-}
-.kb-table tr:nth-child(even) td"""
-          css_new = """  line-height:1.5;
-  white-space:pre-wrap!important;
-}
-.kb-table tr:nth-child(even) td"""
+          css_old = "  line-height:1.5;\n  white-space:pre-wrap;\n}\n.kb-table tr:nth-child(even) td"
+          css_new = "  line-height:1.5;\n  white-space:pre-wrap!important;\n}\n.kb-table tr:nth-child(even) td"
           if text.count(css_old) != 1:
               raise SystemExit(f"Expected one Knowledge Base CSS target, found {text.count(css_old)}")
           text = text.replace(css_old, css_new, 1)
-
-          render_old = """.replace(/\\n/g,'<br>')"""
-          render_new = """.replace(/\\r\\n?|\\n/g,'<br>')"""
+          render_old = ".replace(/\\n/g,'<br>')"
+          render_new = ".replace(/\\r\\n?|\\n/g,'<br>')"
           count = text.count(render_old)
           if count != 3:
               raise SystemExit(f"Expected three staff table render targets, found {count}")
           text = text.replace(render_old, render_new)
-
           path.write_text(text, encoding="utf-8")
           PY
 
