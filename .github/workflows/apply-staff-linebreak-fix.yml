@@ -17,8 +17,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Preserve staff-mode line breaks
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
 
           path = Path("index.html")
@@ -44,6 +45,7 @@ jobs:
           text = text.replace(render_old, render_new)
 
           path.write_text(text, encoding="utf-8")
+          PY
 
       - name: Commit fix and remove temporary workflow
         run: |
