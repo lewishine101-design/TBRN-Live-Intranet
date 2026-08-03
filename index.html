@@ -5499,13 +5499,13 @@ function renderEntryBadgeRows(badges){
   if(!record){
     record={
       title:TITLE,
-      category:'Processes',
+      category:'Contacts',
       html:'',
       escalationContacts:true
     };
     DATA.push(record);
   }else{
-    record.category='Processes';
+    record.category='Contacts';
     record.escalationContacts=true;
   }
 
@@ -5604,14 +5604,17 @@ function renderEntryBadgeRows(badges){
   window.openDoc=function(index){
     const item=DATA[index];
     if(item?.escalationContacts||item?.title===TITLE){
-      currentCategory='Processes';
+      currentCategory='Contacts';
+      window.__tbrnCurrentCategory='Contacts';
+      window.__tbrnCurrentPageTitle=item.title;
+      if(typeof window.tbrnRecordId==='function')window.__tbrnCurrentPageId=window.tbrnRecordId(item);
       hideAll();
       $('documentView').classList.remove('hidden');
       $('docTitle').textContent=TITLE;
-      $('docMeta').textContent='Processes · Escalation contact register';
-      $('docIcon').textContent=ICONS.Processes||'•';
+      $('docMeta').textContent='Contacts · Escalation contact register';
+      $('docIcon').textContent=ICONS.Contacts||'•';
       renderEscalationTable();
-      setNav('Processes');
+      setNav('Contacts');
       window.scrollTo(0,0);
       return;
     }
