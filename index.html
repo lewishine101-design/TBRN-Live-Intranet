@@ -2648,6 +2648,17 @@ DATA.push({
   externalMap:true
 });
 
+const sharedPostcodeMap=DATA.find(item=>item.title==='1. Post Code Map');
+if(sharedPostcodeMap){
+  sharedPostcodeMap.category='Contractor Network';
+  sharedPostcodeMap.sharedPostcodeMap=true;
+  DATA.push({
+    ...sharedPostcodeMap,
+    category:'Surveyors',
+    sharedPostcodeMapCopy:true
+  });
+}
+
 const ICONS={"Home":"⌂","Coverage Map":"⌖","Contractor Network":"⌘","Surveyors":"◉","Contacts":"☎","Finance":"£","Pricing & Finance":"£","Processes":"✓","Knowledge Base":"?"};
 const DESCS={"Home":"Welcome, announcements and core intranet links.","Coverage Map":"Postcode coverage and geographical reference.","Contractor Network":"General, emergency and specialist contractor information.","Surveyors":"Surveyor directory, regions and locations.","Contacts":"Useful operational and support contacts.","Finance":"Financial calculators and fee tools.","Pricing & Finance":"VAT treatment and invoicing guidance.","Processes":"Task processes, ownership and responsibilities.","Knowledge Base":"Troubleshooting, guidance and reference material."};
 const cats=[...new Set(DATA.map(x=>x.category))];let currentCategory=null;
