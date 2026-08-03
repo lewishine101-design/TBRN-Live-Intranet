@@ -1,0 +1,55 @@
+name: Apply staff table line-break fix
+
+on:
+  push:
+    paths:
+      - .github/workflows/apply-staff-linebreak-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Preserve staff-mode line breaks
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          css_old = """  line-height:1.5;
+  white-space:pre-wrap;
+}
+.kb-table tr:nth-child(even) td"""
+          css_new = """  line-height:1.5;
+  white-space:pre-wrap!important;
+}
+.kb-table tr:nth-child(even) td"""
+          if text.count(css_old) != 1:
+              raise SystemExit(f"Expected one Knowledge Base CSS target, found {text.count(css_old)}")
+          text = text.replace(css_old, css_new, 1)
+
+          render_old = """.replace(/\\n/g,'<br>')"""
+          render_new = """.replace(/\\r\\n?|\\n/g,'<br>')"""
+          count = text.count(render_old)
+          if count != 3:
+              raise SystemExit(f"Expected three staff table render targets, found {count}")
+          text = text.replace(render_old, render_new)
+
+          path.write_text(text, encoding="utf-8")
+
+      - name: Commit fix and remove temporary workflow
+        run: |
+          rm .github/workflows/apply-staff-linebreak-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-staff-linebreak-fix.yml
+          git commit -m "Preserve staff table line breaks"
+          git push
