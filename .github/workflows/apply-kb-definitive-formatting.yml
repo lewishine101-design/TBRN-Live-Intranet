@@ -33,8 +33,8 @@ jobs:
           helper_anchor = "  function seedFromExistingContent(record){"
           helper = "  function renderStaffCell(value){\n    const lines=String(value??'')\n      .replace(/\\r\\n?/g,'\\n')\n      .replace(/\\\\n/g,'\\n')\n      .replace(/([^\\n])•/g,'$1\\n•')\n      .split('\\n');\n    return \`<div class=\"kb-staff-cell\">\${lines.map(line=>\`<span class=\"kb-staff-line\">\${esc(line)}</span>\`).join('')}</div>\`;\n  }\n\n"
           if "function renderStaffCell(value)" not in text:
-              if text.count(helper_anchor) != 1:
-                  raise SystemExit(f"Expected one renderer helper anchor, found {text.count(helper_anchor)}")
+              if text.count(helper_anchor) != 2:
+                  raise SystemExit(f"Expected two renderer helper anchors, found {text.count(helper_anchor)}")
               text = text.replace(helper_anchor, helper + helper_anchor, 1)
 
           old_render = "                      <td>\n                        ${adminMode\n                          ?\`<textarea data-kb-cell=\"${rowIndex}:${columnIndex}\">${esc(row[columnIndex]||'')}</textarea>\`\n                          :esc(row[columnIndex]||'').replace(/\\r\\n?|\\n/g,'<br>')}\n                      </td>"
