@@ -8940,4 +8940,12 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
 })();
 </script>
 
+<script id="tbrn-home-stats-position-script">
+(function(){
+  const home=document.getElementById('home');
+  const stats=home?.querySelector('.stats');
+  if(home&&stats)home.appendChild(stats);
+})();
+</script>
+
 </body></html>
