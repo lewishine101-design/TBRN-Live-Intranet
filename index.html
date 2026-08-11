@@ -8062,6 +8062,9 @@ function renderEntryBadgeRows(badges){
   const INSURED_TITLE='Insured Executive Summary Templates';
   const INSURED_STORAGE_KEY='tbrn-resource-cards-v13-'+encodeURIComponent(INSURED_TITLE);
   const INSURED_SEED_KEY='tbrn-executive-summary-insured-seed-v1';
+  const THIRD_PARTY_TITLE='Third Party Executive Summary Templates';
+  const THIRD_PARTY_STORAGE_KEY='tbrn-resource-cards-v13-'+encodeURIComponent(THIRD_PARTY_TITLE);
+  const THIRD_PARTY_SEED_KEY='tbrn-executive-summary-third-party-seed-v1';
   const INSURED_CARDS=[
     {
       id:'insured-template-final-v1',
@@ -8112,6 +8115,55 @@ function renderEntryBadgeRows(badges){
       ]
     }
   ];
+  const THIRD_PARTY_CARDS=[
+    {
+      id:'third-party-template-final-v1',
+      title:'Third Party Final Reports',
+      subtitle:'Executive Summary Template · Final',
+      fields:[
+        {label:'Cash Settled - No Saving',value:'In accordance with your instructions/Further to previous correspondence, we have agreed a cash settlement with the Third Party, and payment is recommended as outlined below. A copy of our invoice is enclosed with this report, along with the Third Party’s signed mandate/email acceptance. Our fee has been calculated at the fixed rate of £XXX.XX + VAT for desktop negotiations.'},
+        {label:'Cash Settled - With Saving',value:'In accordance with your instructions/Further to previous correspondence, we have agreed a cash settlement with the Third Party, and payment is recommended as outlined below. The claim was originally presented in the sum of £XXX.XX and was settled at £XXX.XX, representing a saving of £XXX.XX (XX%). Enclosed with this report is a note of our fee, along with the Third Party’s signed mandate/email acceptance. Our fee comprises a base fee of £XXX.XX + VAT, plus a savings fee of £XXX.XX + VAT, calculated as XX% of the saving achieved.'},
+        {label:'Repaired & Cash Settled',value:'In accordance with your instructions/Further to our previous correspondence, we can confirm that this claim has been concluded through a combination of contractor-led repairs and a cash settlement to the Third Party. Our contractor completed repairs to the [insert details of what was repaired]. A cash settlement was then agreed with the Third Party in respect of the [insert item/area relating to settlement]. Payment recommendations for both TBRN and the Third Party are provided below. Enclosed with this report is a copy of the invoice for the completed works, along with a note of our fee. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'Repaired - No Saving',value:'In accordance with your instructions/Further to previous correspondence, repairs have now been completed. We enclose a note of our fee and expenses, and will now proceed to close our file accordingly. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'Repaired - With Saving',value:'In accordance with your instructions/Further to previous correspondence, the Third Party initially presented a quotation totalling £X,XXX.XX, which we considered overstated. In line with your instructions, we appointed our contractor, who has now completed the necessary repairs. The conclusion of this claim represents a saving of £X,XXX.XX (XX%) compared to the Third Party’s original quotation. Enclosed with this report is a copy of the invoice for the completed works, along with a note of our fee. Our fee comprises a base fee of £XXX.XX + VAT, plus a savings fee of £XXX.XX + VAT, calculated as XX% of the saving achieved.'},
+        {label:'Addition · Net payment',value:'The Third Party is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'},
+        {label:'Addition · VAT invoice to follow',value:'The payment recommended below excludes the VAT element. A supplementary report will be issued upon receipt of the Third Party’s valid VAT invoice.'},
+        {label:'Addition · VAT registered',value:'As the Third Party is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · Desktop negotiations and attendance',value:'Our fee has been calculated at the fixed rate of £XX.XX + VAT for desktop negotiations, along with £XX.XX + VAT in respect of our contractor’s attendance.'},
+        {label:'Addition · Centrica only',value:'The claim costs are detailed as follows: Labour £XXX.XX + VAT. Material cost £XXX.XX + VAT.'}
+      ]
+    },
+    {
+      id:'third-party-template-interim-v1',
+      title:'Third Party Interim Reports',
+      subtitle:'Executive Summary Template · Interim',
+      fields:[
+        {label:'Emergency Electrician',value:'In accordance with your instructions, we appointed our emergency contractor to arrange for an electrician to attend the Third Party’s property to complete urgent repairs to the damaged cable and restore the power supply. The electrician has attended, completed the necessary repairs, and the power supply has now been restored. Reinstatement works to the wall remain outstanding and our general contractor has been appointed to compile a scope of work for this element, to enable us to report further to you. In the meantime, we kindly request an interim payment in respect of the emergency works completed to date. A copy of our invoice is enclosed with this report.'},
+        {label:'Emergency Gas',value:'In accordance with your instructions, we appointed our emergency contractor to arrange for a gas engineer to attend the Third Party’s property to complete urgent repairs to the damaged pipe and restore the gas supply. The engineer has attended, completed the necessary repairs, and the gas supply has now been restored. Reinstatement works to the wall remain outstanding and our general contractor has been appointed to compile a scope of work for this element, to enable us to report further to you. In the meantime, we kindly request an interim payment in respect of the emergency works completed to date. A copy of our invoice is enclosed with this report.'},
+        {label:'Emergency Plumber',value:'In accordance with your instructions, we appointed our emergency contractor to arrange for a plumber to attend the Third Party’s property to complete urgent repairs to the damaged pipe. The plumber has attended, completed the necessary repairs, and the hot water AND/OR heating has now been restored. Reinstatement works to the wall remain outstanding and our general contractor has been appointed to compile a scope of work for this element, to enable us to report further to you. In the meantime, we kindly request an interim payment in respect of the emergency works completed to date. A copy of our invoice is enclosed with this report.'},
+        {label:'Contractor Costs To Date',value:'In accordance with your instructions, work at the property is currently underway. To date, the works completed are ____. Outstanding elements of the claim include ____. We recommend payment of the interim amount for the works completed so far and have enclosed our invoice for payment. We will continue to keep you updated on progress and will provide our final report upon completion of all works.'},
+        {label:'Cash Settlement with Repairs Following',value:'Further to our previous correspondence, we have received and reviewed quotations from the Third Party for the ____, and costs have now been agreed. We therefore recommend payment to the Third Party as detailed below and enclose the settlement mandate/have notified them that you will be in contact to confirm payment options. The remainder of the works will be completed by our contractor and are in the process of being scheduled. We will report further upon completion of the works.'},
+        {label:'Addition · Net payment',value:'The Third Party is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'},
+        {label:'Addition · VAT registered',value:'As the Third Party is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · VAT invoice to follow',value:'The payment recommended below excludes the VAT element. A further report will be issued upon receipt of the Third Party’s valid VAT invoice.'}
+      ]
+    },
+    {
+      id:'third-party-template-supplementary-v1',
+      title:'Third Party Supplementary Reports',
+      subtitle:'Executive Summary Template · Supplementary',
+      fields:[
+        {label:'General',value:'Further to our previous report, ____________. We kindly request payment as recommended below for the balance of the repair works; we apologise for any inconvenience this may have caused. A copy of our invoice is enclosed with this report.'},
+        {label:'Error',value:'Further to our previous report, unfortunately there was a typographical error when reconciling our file. We kindly request payment as recommended below for the balance of the repair works; we apologise for any inconvenience this may have caused. A copy of our invoice is enclosed with this report.'},
+        {label:'VAT Element',value:'Further to our previous report, the Third Party has now provided a valid VAT invoice for the repair works carried out by their appointed contractor. Payment is therefore recommended to the Third Party as outlined below.'},
+        {label:'Cash Settled',value:'Further to our previous report, the Third Party has since advised us of an additional element of the claim that had not been disclosed previously, namely damage to the _____. We have now validated this damage and recommend payment to the Third Party as outlined below. NOTE - If previously closed following a repair, there may be an additional fee to include on the Supp, check with PS/BH.'},
+        {label:'Addition · Net payment',value:'The Third Party is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'},
+        {label:'Addition · VAT invoice to follow',value:'The payment recommended below excludes the VAT element. A supplementary report will be issued upon receipt of the Third Party’s valid VAT invoice.'},
+        {label:'Addition · VAT registered',value:'As the Third Party is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · Desktop negotiations and attendance',value:'Our fee has been calculated at the fixed rate of £XX.XX + VAT for desktop negotiations, along with £XX.XX + VAT in respect of our contractor’s attendance.'}
+      ]
+    }
+  ];
   let record=DATA.find(item=>item.title===TITLE);
 
   if(!record){
@@ -8135,6 +8187,20 @@ function renderEntryBadgeRows(badges){
     });
     localStorage.setItem(INSURED_STORAGE_KEY,JSON.stringify(cards));
     localStorage.setItem(INSURED_SEED_KEY,'complete');
+  }
+
+  function seedThirdPartyCards(){
+    if(localStorage.getItem(THIRD_PARTY_SEED_KEY)==='complete')return;
+    let cards=[];
+    try{
+      const saved=JSON.parse(localStorage.getItem(THIRD_PARTY_STORAGE_KEY)||'[]');
+      if(Array.isArray(saved))cards=saved;
+    }catch(error){}
+    THIRD_PARTY_CARDS.forEach(template=>{
+      if(!cards.some(card=>card?.id===template.id))cards.push(JSON.parse(JSON.stringify(template)));
+    });
+    localStorage.setItem(THIRD_PARTY_STORAGE_KEY,JSON.stringify(cards));
+    localStorage.setItem(THIRD_PARTY_SEED_KEY,'complete');
   }
 
   function renderChoices(){
@@ -8168,6 +8234,7 @@ function renderEntryBadgeRows(badges){
     };
     const storageKey='tbrn-resource-cards-v13-'+encodeURIComponent(groupRecord.title);
     if(group==='Insured')seedInsuredCards();
+    if(group==='Third Party')seedThirdPartyCards();
     if(localStorage.getItem(storageKey)===null)localStorage.setItem(storageKey,'[]');
 
     $('docTitle').textContent=groupRecord.title;
