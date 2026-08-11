@@ -8059,6 +8059,59 @@ function renderEntryBadgeRows(badges){
 <script id="tbrn-executive-summary-templates-resource">
 (function(){
   const TITLE='Executive Summary Templates';
+  const INSURED_TITLE='Insured Executive Summary Templates';
+  const INSURED_STORAGE_KEY='tbrn-resource-cards-v13-'+encodeURIComponent(INSURED_TITLE);
+  const INSURED_SEED_KEY='tbrn-executive-summary-insured-seed-v1';
+  const INSURED_CARDS=[
+    {
+      id:'insured-template-final-v1',
+      title:'Insured Final Reports',
+      subtitle:'Executive Summary Template · Final',
+      fields:[
+        {label:'Repaired – Insured Satisfied · No fee',value:'In accordance with your instruction, repairs have now been completed to the Insured’s satisfaction and we will now proceed to close our file accordingly. We enclose a copy of our invoice for payment.'},
+        {label:'Repaired – Insured Satisfied · Fee',value:'In accordance with your instruction, repairs have now been completed to the Insured’s satisfaction. We enclose a note of our fee and expenses, and will now proceed to close our file accordingly. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'Repaired – Insured Not Responded · No fee',value:'In accordance with your instruction, repairs have now been completed. We will now proceed to close our file accordingly, and we enclose a copy of our invoice for payment.'},
+        {label:'Repaired – Insured Not Responded · Fee',value:'In accordance with your instruction, our contractor’s works have now been completed. We enclose a note of our fee and expenses, and will now proceed to close our file accordingly. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'Validated – Cash Settled',value:'In accordance with your instructions, the claim has been validated and a cash settlement has been agreed with the Insured. Payment is recommended as outlined below. We enclose a note of our fee and will now proceed to close our file. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'No Further Instructions Received – Email (No Report)',value:'Further to your instruction and our subsequent report dated ____, as we have not received any further instruction from you, therefore we will proceed to close our file and attach our invoice for payment. Should you require our assistance in the future, we will be happy to reopen our file.'},
+        {label:'Withdrawn – Email (No Report)',value:'Further to our previous correspondence and the arranged visit, the Insured has now decided to withdraw their claim. We have therefore closed our file and attach our fee invoice for payment. Our fee has been calculated at the base fee of £XXX.XX + VAT.'},
+        {label:'Trace & Access',value:'In accordance with your instruction, the trace and access works have now been completed, and we enclose a copy of our invoice for this element. We will now proceed to close our file.'},
+        {label:'Repudiated',value:'Further to our recent visit, the claim has been repudiated as the damage is not considered to have been proximately caused by an insured peril. A copy of the conclusion letter is enclosed with this report. Accordingly, we are closing our file and attach a note of our fee.'},
+        {label:'Addition · Desktop negotiations and attendance',value:'Our fee has been calculated at the fixed rate of £XXX.XX + VAT for desktop negotiations, along with £XXX.XX + VAT in respect of our contractor’s attendance.'},
+        {label:'Addition · VAT invoice to follow',value:'The payment recommended below excludes the VAT element. A supplementary report will be issued upon receipt of the Insured’s valid VAT invoice.'},
+        {label:'Addition · VAT registered',value:'As the Insured is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · Net payment',value:'The Insured is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'}
+      ]
+    },
+    {
+      id:'insured-template-interim-v1',
+      title:'Insured Interim Reports',
+      subtitle:'Executive Summary Template · Interim',
+      fields:[
+        {label:'Contractor Costs To Date',value:'In accordance with your instructions, payment is now requested as detailed below in respect of the ____. The remedial works remain underway; the outstanding repairs include ____, and we will provide a further update once all works have been completed. Please note that the policy excess has been paid directly to the contractor undertaking the works and will be reflected in our final report.'},
+        {label:'Cash Settlement',value:'Further to our previous correspondence, we have received and reviewed quotations from the Insured for the ____, and costs have now been agreed. We therefore recommend payment to the Insured as detailed below and have notified them that you will be in contact to confirm payment options. The remainder of the works will be completed by our contractor and are in the process of being scheduled. The excess has been collected by the contractor and will be reflected in our final report to you. We will report further upon completion of the works.'},
+        {label:'Trace & Access – Reinstatements Following',value:'In accordance with your instruction, the trace and access works have now been completed, and we enclose a copy of our invoice for this element. Our general contractor has been appointed to carry out the reinstatement works and is in the process of arranging a visit date. We will provide a further update in due course.'},
+        {label:'Trace & Access – Further Instructions',value:'In accordance with your instruction, the trace and access works have now been completed, and we enclose a copy of our invoice for this element. We will now await your further instructions on the next steps for the claim.'},
+        {label:'Addition · VAT invoice to follow',value:'The payment recommended below excludes the VAT element. A supplementary report will be issued upon receipt of the Insured’s valid VAT invoice.'},
+        {label:'Addition · VAT registered',value:'As the Insured is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · Net payment',value:'The Insured is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'}
+      ]
+    },
+    {
+      id:'insured-template-supplementary-v1',
+      title:'Insured Supplementary Reports',
+      subtitle:'Executive Summary Template · Supplementary',
+      fields:[
+        {label:'General',value:'Further to our previous report, ____________. Payment in recommended below for the balance of the repair works; we apologise for any inconvenience that may have been caused. A copy of our invoice is enclosed with this report.'},
+        {label:'Error',value:'Further to our previous report, unfortunately there was a typographical error when reconciling our file. Payment in recommended below for the balance of the repair works; we apologise for any inconvenience that may have been caused. A copy of our invoice is enclosed with this report.'},
+        {label:'VAT',value:'Further to our previous report, the Insured has now provided a valid VAT invoice and payment is recommended below. A copy of our invoice is enclosed with this report.'},
+        {label:'Cash Settled',value:'Further to our previous report, the Insured has since advised us of an additional element of the claim that had not been disclosed previously, namely damage to the _____. We have now validated this damage and recommend payment to the Insured as outlined below. NOTE - If previously closed following a repair, there may be an additional fee to include on the Supp, check with PS/BH.'},
+        {label:'Addition · Desktop negotiations and attendance',value:'Our fee has been calculated at the fixed rate of £XXX.XX + VAT for desktop negotiations, along with £XXX.XX + VAT in respect of our contractor’s attendance.'},
+        {label:'Addition · VAT registered',value:'As the Insured is VAT registered, the VAT element will not form part of the claim settlement.'},
+        {label:'Addition · Net payment',value:'The Insured is responsible for the VAT element of the claim, the below amount is the gross figure, please pay the net value of £XXX.XX.'}
+      ]
+    }
+  ];
   let record=DATA.find(item=>item.title===TITLE);
 
   if(!record){
@@ -8068,6 +8121,20 @@ function renderEntryBadgeRows(badges){
     record.category='Processes';
     record.html='';
     record.executiveSummaryTemplates=true;
+  }
+
+  function seedInsuredCards(){
+    if(localStorage.getItem(INSURED_SEED_KEY)==='complete')return;
+    let cards=[];
+    try{
+      const saved=JSON.parse(localStorage.getItem(INSURED_STORAGE_KEY)||'[]');
+      if(Array.isArray(saved))cards=saved;
+    }catch(error){}
+    INSURED_CARDS.forEach(template=>{
+      if(!cards.some(card=>card?.id===template.id))cards.push(JSON.parse(JSON.stringify(template)));
+    });
+    localStorage.setItem(INSURED_STORAGE_KEY,JSON.stringify(cards));
+    localStorage.setItem(INSURED_SEED_KEY,'complete');
   }
 
   function renderChoices(){
@@ -8100,6 +8167,7 @@ function renderEntryBadgeRows(badges){
       html:''
     };
     const storageKey='tbrn-resource-cards-v13-'+encodeURIComponent(groupRecord.title);
+    if(group==='Insured')seedInsuredCards();
     if(localStorage.getItem(storageKey)===null)localStorage.setItem(storageKey,'[]');
 
     $('docTitle').textContent=groupRecord.title;
