@@ -1,0 +1,45 @@
+name: Apply team and welcome wording
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/apply-team-welcome-wording.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply approved wording updates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          replacements = {
+              '<p class="tbrn-welcome-subtitle">Your Staff Intranet</p>':
+                  '<p class="tbrn-welcome-subtitle">Your Local Intranet</p>',
+              '<div class="ptxt"><b id="tbrnProfileRole">TBRN Staff</b></div>':
+                  '<div class="ptxt"><b id="tbrnProfileRole">TBRN Team</b></div>',
+              "role.textContent=isAdmin?'TBRN Admin':'TBRN Staff';":
+                  "role.textContent=isAdmin?'TBRN Admin':'TBRN Team';",
+              "const role=document.getElementById('tbrnProfileRole');if(role)role.textContent='TBRN Staff';":
+                  "const role=document.getElementById('tbrnProfileRole');if(role)role.textContent='TBRN Team';",
+          }
+          for old, new in replacements.items():
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one occurrence of {old!r}, found {count}")
+              text = text.replace(old, new)
+          path.write_text(text, encoding="utf-8")
+          PY
+          rm -f '.github/workflows/apply-team-welcome-wording.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html '.github/workflows/apply-team-welcome-wording.yml'
+          git commit -m 'Update team and welcome wording'
+          git push origin main
