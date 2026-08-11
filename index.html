@@ -8056,21 +8056,51 @@ function renderEntryBadgeRows(badges){
 <script id="tbrn-executive-summary-templates-resource">
 (function(){
   const TITLE='Executive Summary Templates';
+  const DEFAULT_HTML='<table><tr><td>Template library</td><td>Add and maintain executive summary templates in admin mode.</td></tr><tr><td>Third Party</td><td>Add and maintain Third Party executive summary templates in admin mode.</td></tr><tr><td>Insured</td><td>Add and maintain Insured executive summary templates in admin mode.</td></tr></table>';
   let record=DATA.find(item=>item.title===TITLE);
 
   if(!record){
     record={
       title:TITLE,
       category:'Processes',
-      html:'<table><tr><td>Template library</td><td>Add and maintain executive summary templates in admin mode.</td></tr></table>',
+      html:DEFAULT_HTML,
       executiveSummaryTemplates:true
     };
     DATA.push(record);
   }else{
     record.category='Processes';
+    if(!record.html)record.html=DEFAULT_HTML;
     record.executiveSummaryTemplates=true;
   }
 
+  function ensureSeparatedCards(){
+    const storageKey='tbrn-resource-cards-v13-'+encodeURIComponent(TITLE);
+    let cards;
+    try{cards=JSON.parse(localStorage.getItem(storageKey)||'null')}catch(error){return}
+    if(!Array.isArray(cards))return;
+
+    const additions=[
+      ['Third Party','Add and maintain Third Party executive summary templates in admin mode.'],
+      ['Insured','Add and maintain Insured executive summary templates in admin mode.']
+    ];
+    let changed=false;
+    additions.forEach(([title,guidance])=>{
+      if(cards.some(card=>String(card?.title||'').trim().toLowerCase()===title.toLowerCase()))return;
+      cards.push({
+        id:'executive-summary-'+title.toLowerCase().replace(/\s+/g,'-'),
+        title,
+        subtitle:'Processes',
+        fields:[{label:'Information',value:guidance}]
+      });
+      changed=true;
+    });
+    if(changed)localStorage.setItem(storageKey,JSON.stringify(cards));
+  }
+
+  ensureSeparatedCards();
+  setTimeout(ensureSeparatedCards,500);
+  setTimeout(ensureSeparatedCards,1500);
+  window.addEventListener('tbrn:cloud-data-updated',ensureSeparatedCards);
   window.tbrnReconcileResourceCounts?.();
 })();
 </script>
