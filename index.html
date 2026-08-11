@@ -8053,54 +8053,83 @@ function renderEntryBadgeRows(badges){
 })();
 </script>
 
+<style id="tbrn-executive-summary-template-styles">
+.executive-template-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.executive-template-choice{display:flex;flex-direction:column;min-height:190px;padding:22px;border:1px solid #d7e6df;border-radius:18px;background:#fff;color:#15372d;text-align:left;cursor:pointer;box-shadow:0 8px 24px rgba(7,81,63,.06);transition:.2s ease}.executive-template-choice:hover{transform:translateY(-3px);border-color:#79c9a7;box-shadow:0 14px 32px rgba(7,81,63,.12)}.executive-template-choice-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:#e8f7f1;color:#087252;font-size:19px;font-weight:800}.executive-template-choice h3{margin:18px 0 7px;font-size:20px}.executive-template-choice p{margin:0;color:#647a73;font-size:13px;line-height:1.5}.executive-template-choice-footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:20px;color:#087252;font-size:12px;font-weight:750}.executive-template-subnav{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 14px;border:1px solid #d7e6df;border-radius:13px;background:#f3f9f6}.executive-template-subnav button{border:1px solid #cdded5;border-radius:9px;padding:8px 11px;background:#fff;color:#285642;font:inherit;font-size:12px;font-weight:750;cursor:pointer}.executive-template-subnav strong{font-size:14px}@media(max-width:760px){.executive-template-choices{grid-template-columns:1fr}}
+</style>
 <script id="tbrn-executive-summary-templates-resource">
 (function(){
   const TITLE='Executive Summary Templates';
-  const DEFAULT_HTML='<table><tr><td>Template library</td><td>Add and maintain executive summary templates in admin mode.</td></tr><tr><td>Third Party</td><td>Add and maintain Third Party executive summary templates in admin mode.</td></tr><tr><td>Insured</td><td>Add and maintain Insured executive summary templates in admin mode.</td></tr></table>';
   let record=DATA.find(item=>item.title===TITLE);
 
   if(!record){
-    record={
-      title:TITLE,
-      category:'Processes',
-      html:DEFAULT_HTML,
-      executiveSummaryTemplates:true
-    };
+    record={title:TITLE,category:'Processes',html:'',executiveSummaryTemplates:true};
     DATA.push(record);
   }else{
     record.category='Processes';
-    if(!record.html)record.html=DEFAULT_HTML;
+    record.html='';
     record.executiveSummaryTemplates=true;
   }
 
-  function ensureSeparatedCards(){
-    const storageKey='tbrn-resource-cards-v13-'+encodeURIComponent(TITLE);
-    let cards;
-    try{cards=JSON.parse(localStorage.getItem(storageKey)||'null')}catch(error){return}
-    if(!Array.isArray(cards))return;
-
-    const additions=[
-      ['Third Party','Add and maintain Third Party executive summary templates in admin mode.'],
-      ['Insured','Add and maintain Insured executive summary templates in admin mode.']
-    ];
-    let changed=false;
-    additions.forEach(([title,guidance])=>{
-      if(cards.some(card=>String(card?.title||'').trim().toLowerCase()===title.toLowerCase()))return;
-      cards.push({
-        id:'executive-summary-'+title.toLowerCase().replace(/\s+/g,'-'),
-        title,
-        subtitle:'Processes',
-        fields:[{label:'Information',value:guidance}]
-      });
-      changed=true;
+  function renderChoices(){
+    $('docTitle').textContent=TITLE;
+    $('docMeta').textContent='Processes · Choose an executive summary template type';
+    $('canvas').innerHTML=`
+      <div class="executive-template-choices">
+        <button type="button" class="executive-template-choice" data-executive-template-group="Third Party">
+          <span class="executive-template-choice-icon">TP</span>
+          <h3>Third Party</h3>
+          <p>Open and maintain Third Party executive summary templates.</p>
+          <span class="executive-template-choice-footer"><span>Open templates</span><span>→</span></span>
+        </button>
+        <button type="button" class="executive-template-choice" data-executive-template-group="Insured">
+          <span class="executive-template-choice-icon">IN</span>
+          <h3>Insured</h3>
+          <p>Open and maintain Insured executive summary templates.</p>
+          <span class="executive-template-choice-footer"><span>Open templates</span><span>→</span></span>
+        </button>
+      </div>`;
+    $('canvas').querySelectorAll('[data-executive-template-group]').forEach(button=>{
+      button.addEventListener('click',()=>openGroup(button.dataset.executiveTemplateGroup));
     });
-    if(changed)localStorage.setItem(storageKey,JSON.stringify(cards));
   }
 
-  ensureSeparatedCards();
-  setTimeout(ensureSeparatedCards,500);
-  setTimeout(ensureSeparatedCards,1500);
-  window.addEventListener('tbrn:cloud-data-updated',ensureSeparatedCards);
+  function openGroup(group){
+    const groupRecord={
+      title:`${group} Executive Summary Templates`,
+      category:'Processes',
+      html:''
+    };
+    const storageKey='tbrn-resource-cards-v13-'+encodeURIComponent(groupRecord.title);
+    if(localStorage.getItem(storageKey)===null)localStorage.setItem(storageKey,'[]');
+
+    $('docTitle').textContent=groupRecord.title;
+    $('docMeta').textContent=`Processes · ${group} templates`;
+    window.renderResourceCards(groupRecord,false);
+    $('canvas').insertAdjacentHTML('afterbegin',`
+      <div class="executive-template-subnav">
+        <button type="button" id="backToExecutiveTemplateChoices">← Back to template types</button>
+        <strong>${esc(group)} templates</strong>
+      </div>`);
+    $('backToExecutiveTemplateChoices').addEventListener('click',renderChoices);
+  }
+
+  window.tbrnOpenExecutiveSummaryGroup=openGroup;
+  const previousOpenDoc=window.openDoc;
+  window.openDoc=function(index){
+    const item=DATA[index];
+    if(!item?.executiveSummaryTemplates&&item?.title!==TITLE)return previousOpenDoc(index);
+    currentCategory='Processes';
+    window.__tbrnCurrentCategory='Processes';
+    window.__tbrnCurrentPageTitle=TITLE;
+    if(typeof window.tbrnRecordId==='function')window.__tbrnCurrentPageId=window.tbrnRecordId(item);
+    hideAll();
+    $('documentView').classList.remove('hidden');
+    $('docIcon').textContent=ICONS.Processes||'✓';
+    renderChoices();
+    setNav('Processes');
+    window.scrollTo(0,0);
+  };
+
   window.tbrnReconcileResourceCounts?.();
 })();
 </script>
