@@ -1,0 +1,25 @@
+name: Add Executive Summary Templates
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-executive-summary-templates.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply resource
+        shell: bash
+        run: |
+          echo 'ZGlmZiAtLWdpdCBhL2luZGV4Lmh0bWwgYi9pbmRleC5odG1sCmluZGV4IDdiZGU0YWIuLjE5NzU3OGMgMTAwNjQ0Ci0tLSBhL2luZGV4Lmh0bWwKKysrIGIvaW5kZXguaHRtbApAQCAtODA1Myw2ICs4MDUzLDI4IEBAIGZ1bmN0aW9uIHJlbmRlckVudHJ5QmFkZ2VSb3dzKGJhZGdlcyl7CiB9KSgpOwogPC9zY3JpcHQ+CiAKKzxzY3JpcHQgaWQ9InRicm4tZXhlY3V0aXZlLXN1bW1hcnktdGVtcGxhdGVzLXJlc291cmNlIj4KKyhmdW5jdGlvbigpeworICBjb25zdCBUSVRMRT0nRXhlY3V0aXZlIFN1bW1hcnkgVGVtcGxhdGVzJzsKKyAgbGV0IHJlY29yZD1EQVRBLmZpbmQoaXRlbT0+aXRlbS50aXRsZT09PVRJVExFKTsKKworICBpZighcmVjb3JkKXsKKyAgICByZWNvcmQ9eworICAgICAgdGl0bGU6VElUTEUsCisgICAgICBjYXRlZ29yeTonUHJvY2Vzc2VzJywKKyAgICAgIGh0bWw6Jzx0YWJsZT48dHI+PHRkPlRlbXBsYXRlIGxpYnJhcnk8L3RkPjx0ZD5BZGQgYW5kIG1haW50YWluIGV4ZWN1dGl2ZSBzdW1tYXJ5IHRlbXBsYXRlcyBpbiBhZG1pbiBtb2RlLjwvdGQ+PC90cj48L3RhYmxlPicsCisgICAgICBleGVjdXRpdmVTdW1tYXJ5VGVtcGxhdGVzOnRydWUKKyAgICB9OworICAgIERBVEEucHVzaChyZWNvcmQpOworICB9ZWxzZXsKKyAgICByZWNvcmQuY2F0ZWdvcnk9J1Byb2Nlc3Nlcyc7CisgICAgcmVjb3JkLmV4ZWN1dGl2ZVN1bW1hcnlUZW1wbGF0ZXM9dHJ1ZTsKKyAgfQorCisgIHdpbmRvdy50YnJuUmVjb25jaWxlUmVzb3VyY2VDb3VudHM/LigpOworfSkoKTsKKzwvc2NyaXB0PgorCiA8c2NyaXB0IGlkPSJ0YnJuLXJlc291cmNlLWNvdW50LXJlY29uY2lsaWF0aW9uIj4KIChmdW5jdGlvbigpewogICAndXNlIHN0cmljdCc7Cg==' | base64 --decode > /tmp/executive-summary-templates.patch
+          git apply /tmp/executive-summary-templates.patch
+          git rm '.github/workflows/apply-executive-summary-templates.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Add Executive Summary Templates resource'
+          git push origin main
