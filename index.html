@@ -8053,6 +8053,28 @@ function renderEntryBadgeRows(badges){
 })();
 </script>
 
+<script id="tbrn-executive-summary-templates-resource">
+(function(){
+  const TITLE='Executive Summary Templates';
+  let record=DATA.find(item=>item.title===TITLE);
+
+  if(!record){
+    record={
+      title:TITLE,
+      category:'Processes',
+      html:'<table><tr><td>Template library</td><td>Add and maintain executive summary templates in admin mode.</td></tr></table>',
+      executiveSummaryTemplates:true
+    };
+    DATA.push(record);
+  }else{
+    record.category='Processes';
+    record.executiveSummaryTemplates=true;
+  }
+
+  window.tbrnReconcileResourceCounts?.();
+})();
+</script>
+
 <script id="tbrn-resource-count-reconciliation">
 (function(){
   'use strict';
