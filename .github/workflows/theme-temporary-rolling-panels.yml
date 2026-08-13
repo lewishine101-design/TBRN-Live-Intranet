@@ -1,0 +1,52 @@
+name: Theme temporary rolling panels
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/theme-temporary-rolling-panels.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add approved temporary panel themes
+        shell: bash
+        env:
+          STYLE_B64: PHN0eWxlIGlkPSJ0YnJuLXRlbXBvcmFyeS1yb2xsaW5nLXBhbmVsLXRoZW1lcyI+Ci50ZW1wb3Jhcnktcm9sbGluZy1zbGlkZXsKICBvdmVyZmxvdzpoaWRkZW47CiAgaXNvbGF0aW9uOmlzb2xhdGU7CiAgYm9yZGVyLXJhZGl1czoyNXB4Owp9Ci50ZW1wb3Jhcnktcm9sbGluZy1zbGlkZTo6YmVmb3JlLC50ZW1wb3Jhcnktcm9sbGluZy1zbGlkZTo6YWZ0ZXJ7CiAgY29udGVudDoiIjsKICBwb3NpdGlvbjphYnNvbHV0ZTsKICBwb2ludGVyLWV2ZW50czpub25lOwogIHotaW5kZXg6MDsKfQoudGVtcG9yYXJ5LXJvbGxpbmctc2xpZGUgLnJvbGxpbmctaGVyby1jb3B5LAoudGVtcG9yYXJ5LXJvbGxpbmctc2xpZGUgLnRlbXBvcmFyeS1yb2xsaW5nLXBhbmVse3Bvc2l0aW9uOnJlbGF0aXZlO3otaW5kZXg6Mn0KLnRlbXBvcmFyeS1yb2xsaW5nLXNsaWRlIC50ZW1wb3Jhcnktcm9sbGluZy1wYW5lbHsKICBib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjU1LDI1NSwyNTUsLjI4KTsKICBib3gtc2hhZG93OjAgMThweCA0NXB4IHJnYmEoMCwwLDAsLjEzKTsKICBiYWNrZHJvcC1maWx0ZXI6Ymx1cigxMHB4KTsKfQoKLnRlbXBvcmFyeS1yb2xsaW5nLXNsaWRlLnRlbXBvcmFyeS10aGVtZS1iaXJ0aGRheXsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxMjVkZWcsIzc2MjA2ZiAwJSwjYzQzZDdkIDQ4JSwjZWY4YjRiIDEwMCUpOwp9Ci50ZW1wb3JhcnktdGhlbWUtYmlydGhkYXk6OmJlZm9yZXsKICB3aWR0aDoyNjBweDtoZWlnaHQ6MjYwcHg7Ym9yZGVyLXJhZGl1czo1MCU7cmlnaHQ6LTcwcHg7dG9wOi0xMjBweDsKICBiYWNrZ3JvdW5kOnJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgMzUlIDM1JSxyZ2JhKDI1NSwyNTUsMjU1LC40MikgMCA0JSx0cmFuc3BhcmVudCA1JSkscmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA2MiUgNTIlLCNmZmQ3NjggMCAzJSx0cmFuc3BhcmVudCA0JSkscmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA0MCUgNzIlLCM3OGUzZTAgMCAzJSx0cmFuc3BhcmVudCA0JSkscmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA3OCUgNzIlLCNmZmYgMCAyJSx0cmFuc3BhcmVudCAzJSk7CiAgYW5pbWF0aW9uOnRicm5CaXJ0aGRheUZsb2F0IDVzIGVhc2UtaW4tb3V0IGluZmluaXRlOwp9Ci50ZW1wb3JhcnktdGhlbWUtYmlydGhkYXk6OmFmdGVyewogIGluc2V0OjA7CiAgYmFja2dyb3VuZDpyYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IDklIDIwJSwjZmZkOTY2IDAgM3B4LHRyYW5zcGFyZW50IDRweCkscmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCAxOSUgNzIlLCM3ZWU0ZGMgMCAzcHgsdHJhbnNwYXJlbnQgNHB4KSxyYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IDQ1JSAxNCUsI2ZmZiAwIDJweCx0cmFuc3BhcmVudCAzcHgpLHJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgNzIlIDM1JSwjZmZkOTY2IDAgM3B4LHRyYW5zcGFyZW50IDRweCkscmFkaWFsLWdyYWRpZW50KGNpcmNsZSBhdCA4NyUgNzglLCNmZmYgMCAycHgsdHJhbnNwYXJlbnQgM3B4KTsKICBvcGFjaXR5Oi43NTsKICBhbmltYXRpb246dGJybkJpcnRoZGF5U3BhcmtsZSAyLjdzIGVhc2UtaW4tb3V0IGluZmluaXRlIGFsdGVybmF0ZTsKfQoudGVtcG9yYXJ5LXRoZW1lLWJpcnRoZGF5IC5leWVicm93e2NvbG9yOiNmZmU0OGN9Ci50ZW1wb3JhcnktdGhlbWUtYmlydGhkYXkgLnRlbXBvcmFyeS1yb2xsaW5nLXBhbmVse2JhY2tncm91bmQ6cmdiYSg5MSwxNyw4MiwuMjgpfQoKLnRlbXBvcmFyeS1yb2xsaW5nLXNsaWRlLnRlbXBvcmFyeS10aGVtZS1hbm5pdmVyc2FyeXsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxMzBkZWcsIzA2M2QzMSAwJSwjMGM3NjU1IDU0JSwjYjQ4NzJkIDE0NSUpOwp9Ci50ZW1wb3JhcnktdGhlbWUtYW5uaXZlcnNhcnk6OmJlZm9yZXsKICB3aWR0aDozMTBweDtoZWlnaHQ6MzEwcHg7Ym9yZGVyLXJhZGl1czo1MCU7cmlnaHQ6LTk1cHg7dG9wOi0xNDVweDsKICBib3JkZXI6NDJweCBzb2xpZCByZ2JhKDI1NSwyMTUsMTE3LC4xNyk7CiAgYm94LXNoYWRvdzowIDAgMCAyMnB4IHJnYmEoMjU1LDI1NSwyNTUsLjA1KTsKfQoudGVtcG9yYXJ5LXRoZW1lLWFubml2ZXJzYXJ5OjphZnRlcnsKICB3aWR0aDoxNDVweDtoZWlnaHQ6MTQ1cHg7cmlnaHQ6MTclO2JvdHRvbTotODhweDt0cmFuc2Zvcm06cm90YXRlKDQ1ZGVnKTsKICBib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjU1LDIxOCwxMjgsLjI0KTtiYWNrZ3JvdW5kOnJnYmEoMjU1LDIxMSwxMDQsLjA2KTsKfQoudGVtcG9yYXJ5LXRoZW1lLWFubml2ZXJzYXJ5IC5leWVicm93e2NvbG9yOiNmZmRiN2R9Ci50ZW1wb3JhcnktdGhlbWUtYW5uaXZlcnNhcnkgLnRlbXBvcmFyeS1yb2xsaW5nLXBhbmVse2JhY2tncm91bmQ6bGluZWFyLWdyYWRpZW50KDE0NWRlZyxyZ2JhKDI1NSwyMTUsMTIxLC4xNykscmdiYSgyNTUsMjU1LDI1NSwuMDgpKTtib3JkZXItY29sb3I6cmdiYSgyNTUsMjIwLDEzNiwuMzgpfQoudGVtcG9yYXJ5LXRoZW1lLWFubml2ZXJzYXJ5IC5yb2xsaW5nLXVwZGF0ZS1pY29ue2JhY2tncm91bmQ6cmdiYSgyNTUsMjE0LDExMCwuMik7Y29sb3I6I2ZmZTM5Y30KCi50ZW1wb3Jhcnktcm9sbGluZy1zbGlkZS50ZW1wb3JhcnktdGhlbWUtYW5ub3VuY2VtZW50ewogIGJhY2tncm91bmQ6bGluZWFyLWdyYWRpZW50KDEzMGRlZywjMGQ0MDUwIDAlLCMxMjZiNzIgNTUlLCMyNzhjNzIgMTAwJSk7Cn0KLnRlbXBvcmFyeS10aGVtZS1hbm5vdW5jZW1lbnQ6OmJlZm9yZXsKICB3aWR0aDozNjBweDtoZWlnaHQ6MzYwcHg7Ym9yZGVyLXJhZGl1czo1MCU7cmlnaHQ6LTE2NXB4O3RvcDotMTgwcHg7CiAgYm9yZGVyOjU1cHggc29saWQgcmdiYSgxMjAsMjI4LDIxNywuMSk7Cn0KLnRlbXBvcmFyeS10aGVtZS1hbm5vdW5jZW1lbnQ6OmFmdGVyewogIHdpZHRoOjE4MHB4O2hlaWdodDo1cHg7bGVmdDozMnB4O3RvcDoyMnB4O2JvcmRlci1yYWRpdXM6OTlweDsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCg5MGRlZywjNzRlMGQxLHRyYW5zcGFyZW50KTsKfQoudGVtcG9yYXJ5LXRoZW1lLWFubm91bmNlbWVudCAuZXllYnJvd3tjb2xvcjojOGVlN2RhfQoudGVtcG9yYXJ5LXRoZW1lLWFubm91bmNlbWVudCAudGVtcG9yYXJ5LXJvbGxpbmctcGFuZWx7YmFja2dyb3VuZDpyZ2JhKDUsNDgsNTgsLjMpfQoKQGtleWZyYW1lcyB0YnJuQmlydGhkYXlGbG9hdHswJSwxMDAle3RyYW5zZm9ybTp0cmFuc2xhdGVZKDApIHJvdGF0ZSgwKX01MCV7dHJhbnNmb3JtOnRyYW5zbGF0ZVkoMTBweCkgcm90YXRlKDRkZWcpfX0KQGtleWZyYW1lcyB0YnJuQmlydGhkYXlTcGFya2xle2Zyb217b3BhY2l0eTouNDJ9dG97b3BhY2l0eTouODh9fQpAbWVkaWEocHJlZmVycy1yZWR1Y2VkLW1vdGlvbjpyZWR1Y2Upey50ZW1wb3JhcnktdGhlbWUtYmlydGhkYXk6OmJlZm9yZSwudGVtcG9yYXJ5LXRoZW1lLWJpcnRoZGF5OjphZnRlcnthbmltYXRpb246bm9uZX19CkBtZWRpYShtYXgtd2lkdGg6NzYwcHgpey50ZW1wb3Jhcnktcm9sbGluZy1zbGlkZXtib3JkZXItcmFkaXVzOjE5cHh9fQo8L3N0eWxlPgoK
+        run: |
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          style_marker = 'id="tbrn-temporary-rolling-panel-themes"'
+          bootstrap_marker = '<script id="tbrn-temporary-rolling-panels-bootstrap">'
+          old = "    slide.className='rolling-hero-slide temporary-rolling-slide';"
+          new = """    const type=['birthday','anniversary','announcement'].includes(panel.type)?panel.type:'announcement';
+              slide.className='rolling-hero-slide temporary-rolling-slide temporary-theme-'+type;
+              slide.dataset.temporaryPanelType=type;"""
+
+          if style_marker in text:
+              raise SystemExit("Temporary panel themes already exist")
+          if text.count(bootstrap_marker) != 1:
+              raise SystemExit("Expected one temporary panel bootstrap marker")
+          if text.count(old) != 1:
+              raise SystemExit("Expected one temporary slide class assignment")
+
+          styles = base64.b64decode(os.environ["STYLE_B64"]).decode("utf-8")
+          text = text.replace(bootstrap_marker, styles + bootstrap_marker, 1)
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+          rm -f '.github/workflows/theme-temporary-rolling-panels.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html '.github/workflows/theme-temporary-rolling-panels.yml'
+          git commit -m 'Theme temporary rolling panels'
+          git push origin main
