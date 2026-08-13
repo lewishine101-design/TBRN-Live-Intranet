@@ -7179,6 +7179,78 @@ function renderEntryBadgeRows(badges){
 
 
 
+<script id="tbrn-temporary-rolling-panels-bootstrap">
+(function(){
+  'use strict';
+  const STORAGE_KEY='tbrnTemporaryRollingPanelsV1';
+  const track=document.getElementById('rollingHeroTrack');
+  if(!track)return;
+
+  function readPanels(){
+    try{
+      const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){return []}
+  }
+
+  function activePanels(){
+    const now=Date.now();
+    return readPanels().filter(panel=>panel&&Number(panel.expiresAt)>now);
+  }
+
+  function signature(){
+    return activePanels().map(panel=>String(panel.id)+':'+String(panel.updatedAt||panel.createdAt||'')).join('|');
+  }
+
+  const initialSignature=signature();
+  const panels=activePanels();
+  const weekend=document.getElementById('weekendMoraleSlide');
+
+  panels.forEach(panel=>{
+    const slide=document.createElement('article');
+    slide.className='rolling-hero-slide temporary-rolling-slide';
+    slide.dataset.temporaryPanelId=String(panel.id||'');
+
+    const copy=document.createElement('div');
+    copy.className='rolling-hero-copy';
+    const eyebrow=document.createElement('div');
+    eyebrow.className='eyebrow';
+    eyebrow.textContent=String(panel.eyebrow||'Team announcement');
+    const title=document.createElement('h2');
+    title.textContent=String(panel.title||'Team update');
+    const body=document.createElement('p');
+    body.textContent=String(panel.body||'');
+    copy.append(eyebrow,title,body);
+
+    const side=document.createElement('div');
+    side.className='rolling-update-panel temporary-rolling-panel';
+    const icon=document.createElement('span');
+    icon.className='rolling-update-icon';
+    icon.textContent=String(panel.icon||'📣');
+    const sideTitle=document.createElement('strong');
+    sideTitle.textContent=String(panel.panelTitle||'Temporary announcement');
+    const sideBody=document.createElement('p');
+    sideBody.textContent=String(panel.panelBody||'');
+    side.append(icon,sideTitle,sideBody);
+    slide.append(copy,side);
+    track.insertBefore(slide,weekend||null);
+  });
+
+  const nextExpiry=panels.reduce((minimum,panel)=>Math.min(minimum,Number(panel.expiresAt)),Infinity);
+  if(Number.isFinite(nextExpiry)){
+    setTimeout(()=>location.reload(),Math.max(1000,nextExpiry-Date.now()+500));
+  }
+
+  function reloadIfChanged(){
+    window.setTimeout(()=>{
+      if(signature()!==initialSignature)location.reload();
+    },250);
+  }
+  window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY)reloadIfChanged()});
+  window.addEventListener('tbrn:cloud-data-updated',reloadIfChanged);
+})();
+</script>
+
 <script id="tbrn-rolling-dashboard-script">
 (function(){
   const hero=document.getElementById('rollingHero');
@@ -9008,6 +9080,152 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   window.addEventListener('tbrn:cloud-data-updated',applySlides);
 })();
 </script>
+<script id="tbrn-temporary-rolling-panels-admin">
+(function(){
+  'use strict';
+  const STORAGE_KEY='tbrnTemporaryRollingPanelsV1';
+  const hero=document.getElementById('rollingHero');
+  if(!hero)return;
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .rolling-temporary-admin{display:none;position:absolute;right:150px;bottom:14px;z-index:8;border:1px solid rgba(255,255,255,.45);background:rgba(5,58,47,.62);color:#fff;border-radius:10px;padding:7px 10px;font:700 11px Inter,Segoe UI,Arial,sans-serif;cursor:pointer;backdrop-filter:blur(8px)}
+    .rolling-temporary-admin:hover{background:rgba(5,58,47,.9)}
+    .rolling-temporary-admin.is-visible{display:block}
+    .temporary-panel-form{border:1px solid #d9e8e1;border-radius:15px;padding:15px;background:#f8fcfa;margin-bottom:16px}
+    .temporary-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .temporary-panel-grid .full{grid-column:1/-1}
+    .temporary-panel-grid label{display:grid;gap:5px;font-size:11px;font-weight:750;color:#4c625a}
+    .temporary-panel-grid input,.temporary-panel-grid select,.temporary-panel-grid textarea{width:100%;border:1px solid #cedbd6;border-radius:9px;padding:9px 10px;font:12px Inter,Segoe UI,Arial,sans-serif;color:#173b31;background:#fff}
+    .temporary-panel-grid textarea{min-height:68px;resize:vertical}
+    .temporary-panel-create{display:flex;justify-content:flex-end;margin-top:12px}
+    .temporary-panel-list{display:grid;gap:10px}
+    .temporary-panel-item{display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;border:1px solid #dfe8e4;border-radius:13px;padding:12px;background:#fff}
+    .temporary-panel-item-icon{width:42px;height:42px;border-radius:12px;background:#e9f8f0;display:grid;place-items:center;font-size:21px}
+    .temporary-panel-item strong{display:block;color:#123f33;font-size:13px}
+    .temporary-panel-item small{display:block;color:#6b7f76;margin-top:4px}
+    .temporary-panel-empty{padding:18px;text-align:center;border:1px dashed #cddbd5;border-radius:13px;color:#71847b;font-size:12px}
+    @media(max-width:700px){.rolling-temporary-admin{right:142px;bottom:10px}.temporary-panel-grid{grid-template-columns:1fr}.temporary-panel-grid .full{grid-column:auto}.temporary-panel-item{grid-template-columns:40px 1fr}.temporary-panel-item button{grid-column:1/-1}}
+  `;
+  document.head.appendChild(style);
+
+  function readPanels(){
+    try{
+      const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+      return Array.isArray(value)?value:[];
+    }catch(error){return []}
+  }
+
+  function writePanels(items){
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(items));
+  }
+
+  function cleanPanels(){
+    const items=readPanels();
+    const active=items.filter(panel=>panel&&Number(panel.expiresAt)>Date.now());
+    if(active.length!==items.length&&sessionStorage.getItem('tbrnAdminMode')==='true')writePanels(active);
+    return active;
+  }
+
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>\"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function remaining(expiresAt){
+    const milliseconds=Math.max(0,Number(expiresAt)-Date.now());
+    const hours=Math.floor(milliseconds/3600000);
+    const minutes=Math.ceil((milliseconds%3600000)/60000);
+    return hours>0?hours+'h '+minutes+'m remaining':minutes+'m remaining';
+  }
+
+  const presets={
+    birthday:{eyebrow:'Team Birthday',icon:'🎂',panelTitle:'Birthday celebration',panelBody:'Join us in wishing them a brilliant day.'},
+    anniversary:{eyebrow:'Work Anniversary',icon:'🎉',panelTitle:'Team milestone',panelBody:'Thank you for everything you bring to TBRN.'},
+    announcement:{eyebrow:'Team Announcement',icon:'📣',panelTitle:'Temporary update',panelBody:'Please take a moment to read this team update.'}
+  };
+
+  function applyPreset(){
+    const preset=presets[document.getElementById('temporaryPanelType')?.value]||presets.announcement;
+    const eyebrow=document.getElementById('temporaryPanelEyebrow');
+    const icon=document.getElementById('temporaryPanelIcon');
+    const panelTitle=document.getElementById('temporaryPanelSideTitle');
+    const panelBody=document.getElementById('temporaryPanelSideBody');
+    if(eyebrow)eyebrow.value=preset.eyebrow;
+    if(icon)icon.value=preset.icon;
+    if(panelTitle)panelTitle.value=preset.panelTitle;
+    if(panelBody)panelBody.value=preset.panelBody;
+  }
+
+  async function persistThenReload(message){
+    if(typeof window.tbrnFlushAdminChanges==='function'){
+      try{await window.tbrnFlushAdminChanges()}catch(error){}
+    }
+    if(typeof holdToast==='function')holdToast(message);
+    window.setTimeout(()=>location.reload(),350);
+  }
+
+  function openManager(){
+    if(sessionStorage.getItem('tbrnAdminMode')!=='true')return;
+    const modal=document.getElementById('adminModal');
+    const body=document.getElementById('adminModalBody');
+    const foot=document.getElementById('adminModalFoot');
+    document.getElementById('adminModalTitle').textContent='Temporary rolling panels';
+    modal.querySelector('.admin-modal-card')?.classList.add('rolling-editor-wide');
+    const items=cleanPanels();
+    const list=items.length?items.map(panel=>`<div class="temporary-panel-item"><div class="temporary-panel-item-icon">${escapeHtml(panel.icon||'📣')}</div><div><strong>${escapeHtml(panel.title)}</strong><small>${escapeHtml(panel.eyebrow)} · ${escapeHtml(remaining(panel.expiresAt))}</small></div><button class="action" type="button" data-remove-temporary-panel="${escapeHtml(panel.id)}">Remove now</button></div>`).join(''):'<div class="temporary-panel-empty">There are no temporary panels currently running.</div>';
+    body.innerHTML=`<p class="rolling-editor-intro">Add a panel to the home-page rolling display for 24, 48 or 72 hours. It will disappear automatically when its time expires.</p><section class="temporary-panel-form"><div class="temporary-panel-grid"><label>Panel type<select id="temporaryPanelType"><option value="birthday">Birthday</option><option value="anniversary">Work anniversary</option><option value="announcement">General announcement</option></select></label><label>Display time<select id="temporaryPanelDuration"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72">72 hours</option></select></label><label>Small heading<input id="temporaryPanelEyebrow" maxlength="70"></label><label>Icon or emoji<input id="temporaryPanelIcon" maxlength="12"></label><label class="full">Main heading<input id="temporaryPanelTitle" maxlength="120" placeholder="For example: Happy Birthday, Sarah!"></label><label class="full">Main message<textarea id="temporaryPanelBody" maxlength="500" placeholder="Enter the message shown on the left of the panel."></textarea></label><label>Side-panel heading<input id="temporaryPanelSideTitle" maxlength="100"></label><label>Side-panel message<textarea id="temporaryPanelSideBody" maxlength="240"></textarea></label></div><div class="temporary-panel-create"><button class="action primary" type="button" id="temporaryPanelCreate">Add temporary panel</button></div></section><h4 style="margin:0 0 10px;color:#123f33">Currently active</h4><div class="temporary-panel-list">${list}</div>`;
+    foot.innerHTML='<button class="action" id="temporaryPanelClose" type="button">Close</button>';
+    applyPreset();
+    document.getElementById('temporaryPanelType').onchange=applyPreset;
+    document.getElementById('temporaryPanelClose').onclick=()=>{modal.classList.remove('open');modal.querySelector('.admin-modal-card')?.classList.remove('rolling-editor-wide')};
+    document.getElementById('temporaryPanelCreate').onclick=async()=>{
+      const title=document.getElementById('temporaryPanelTitle').value.trim();
+      const bodyText=document.getElementById('temporaryPanelBody').value.trim();
+      if(!title||!bodyText){alert('Please enter both a main heading and a main message.');return}
+      const hours=Number(document.getElementById('temporaryPanelDuration').value);
+      const now=Date.now();
+      const panel={
+        id:(crypto.randomUUID?crypto.randomUUID():'temporary-'+now+'-'+Math.random().toString(16).slice(2)),
+        type:document.getElementById('temporaryPanelType').value,
+        eyebrow:document.getElementById('temporaryPanelEyebrow').value.trim(),
+        title,
+        body:bodyText,
+        icon:document.getElementById('temporaryPanelIcon').value.trim()||'📣',
+        panelTitle:document.getElementById('temporaryPanelSideTitle').value.trim(),
+        panelBody:document.getElementById('temporaryPanelSideBody').value.trim(),
+        durationHours:hours,
+        createdAt:now,
+        updatedAt:now,
+        expiresAt:now+(hours*3600000)
+      };
+      writePanels(cleanPanels().concat(panel));
+      await persistThenReload('Temporary panel added for '+hours+' hours');
+    };
+    body.querySelectorAll('[data-remove-temporary-panel]').forEach(button=>{
+      button.onclick=async()=>{
+        if(!confirm('Remove this temporary panel now?'))return;
+        writePanels(cleanPanels().filter(panel=>String(panel.id)!==button.dataset.removeTemporaryPanel));
+        await persistThenReload('Temporary panel removed');
+      };
+    });
+    modal.classList.add('open');
+  }
+
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='rolling-temporary-admin';
+  button.textContent='Temporary panels';
+  button.onclick=openManager;
+  hero.appendChild(button);
+
+  function syncButton(){
+    button.classList.toggle('is-visible',sessionStorage.getItem('tbrnAdminMode')==='true');
+  }
+  syncButton();
+  setInterval(syncButton,300);
+})();
+</script>
+
 <script id="tbrn-refresh-view-persistence">
 (function(){
   'use strict';
