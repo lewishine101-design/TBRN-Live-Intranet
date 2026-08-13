@@ -9382,4 +9382,186 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
 })();
 </script>
 
+<script id="tbrn-team-frequently-used">
+(function(){
+  'use strict';
+  const USAGE_DOC='teamResourceUsageV1';
+  const PINS_KEY='tbrnFrequentlyUsedPinsV1';
+  const CLICK_COOLDOWN=10*60*1000;
+  const WINDOW_DAYS=30;
+  const MAX_CARDS=6;
+  const FALLBACK=['2. General','Emergency & Specialist','3. Surveyors','4. Useful Contacts','7. Task Process','5. VAT Invoicing - Normal & DRV'];
+  let usageRef=null;
+  let latestUsage={};
+  let unsubscribe=null;
+
+  function dayKey(time=Date.now()){
+    const date=new Date(time);
+    return date.getUTCFullYear()+'-'+String(date.getUTCMonth()+1).padStart(2,'0')+'-'+String(date.getUTCDate()).padStart(2,'0');
+  }
+
+  function validDays(){
+    const keys=new Set();
+    const today=new Date();
+    today.setUTCHours(0,0,0,0);
+    for(let offset=0;offset<WINDOW_DAYS;offset++)keys.add(dayKey(today.getTime()-(offset*86400000)));
+    return keys;
+  }
+
+  function resourceKey(item){
+    return encodeURIComponent(String(item?.category||'')+'|'+String(item?.title||''));
+  }
+
+  function eligible(item){
+    return !!item&&item.category!=='Home'&&!item.externalOnly;
+  }
+
+  function readPins(){
+    try{
+      const pins=JSON.parse(localStorage.getItem(PINS_KEY)||'[]');
+      return Array.isArray(pins)?pins.map(value=>{
+        if(DATA.some(item=>resourceKey(item)===value&&eligible(item)))return value;
+        const legacy=DATA.find(item=>item.title===value&&eligible(item));
+        return legacy?resourceKey(legacy):null;
+      }).filter(Boolean).slice(0,MAX_CARDS):[];
+    }catch(error){return []}
+  }
+
+  function score(item){
+    const days=validDays();
+    const buckets=latestUsage[resourceKey(item)]||{};
+    return Object.entries(buckets).reduce((total,[day,count])=>total+(days.has(day)?Number(count)||0:0),0);
+  }
+
+  function rankedItems(){
+    const pins=readPins();
+    const pinned=pins.map(key=>DATA.find(item=>resourceKey(item)===key&&eligible(item))).filter(Boolean);
+    const pinnedSet=new Set(pinned);
+    const measured=DATA.filter(item=>eligible(item)&&!pinnedSet.has(item)&&score(item)>0)
+      .sort((a,b)=>score(b)-score(a)||a.title.localeCompare(b.title));
+    const fallback=FALLBACK.map(title=>DATA.find(item=>item.title===title&&eligible(item)))
+      .filter(item=>item&&!pinnedSet.has(item)&&!measured.includes(item));
+    const remaining=DATA.filter(item=>eligible(item)&&!pinnedSet.has(item)&&!measured.includes(item)&&!fallback.includes(item));
+    return pinned.concat(measured,fallback,remaining).slice(0,MAX_CARDS);
+  }
+
+  function renderQuick(){
+    const host=document.getElementById('quick');
+    if(!host||typeof renderDocs!=='function')return;
+    renderDocs(rankedItems(),host);
+    host.querySelectorAll('.doccard').forEach((card,index)=>{
+      const item=rankedItems()[index];
+      if(!item)return;
+      const count=score(item);
+      card.dataset.resourceTitle=item.title;
+      if(count>0){
+        const pill=card.querySelector('.smallpill');
+        if(pill)pill.title=count+' team open'+(count===1?'':'s')+' in the last 30 days';
+      }
+    });
+  }
+
+  async function connect(){
+    if(!window.firebase||!firebase.firestore||!firebase.auth)return false;
+    try{
+      if(!firebase.apps.length)return false;
+      if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();
+      usageRef=firebase.firestore().collection('tbrnLiveMetrics').doc(USAGE_DOC);
+      if(unsubscribe)unsubscribe();
+      unsubscribe=usageRef.onSnapshot(snapshot=>{
+        latestUsage=snapshot.exists&&snapshot.data()?.resources||{};
+        renderQuick();
+      },error=>console.warn('Frequently used live ranking unavailable',error));
+      return true;
+    }catch(error){console.warn('Frequently used connection failed',error);return false}
+  }
+
+  async function recordOpen(item){
+    if(!eligible(item))return;
+    const key=resourceKey(item);
+    const cooldownKey='tbrnUsageCooldown:'+key;
+    const last=Number(sessionStorage.getItem(cooldownKey)||0);
+    if(Date.now()-last<CLICK_COOLDOWN)return;
+    sessionStorage.setItem(cooldownKey,String(Date.now()));
+    if(!usageRef&&!(await connect()))return;
+    const today=dayKey();
+    const allowed=validDays();
+    try{
+      await firebase.firestore().runTransaction(async transaction=>{
+        const snapshot=await transaction.get(usageRef);
+        const data=snapshot.exists?snapshot.data():{};
+        const resources=Object.assign({},data.resources||{});
+        const buckets=Object.assign({},resources[key]||{});
+        Object.keys(buckets).forEach(day=>{if(!allowed.has(day))delete buckets[day]});
+        buckets[today]=(Number(buckets[today])||0)+1;
+        resources[key]=buckets;
+        transaction.set(usageRef,{resources,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      });
+    }catch(error){
+      sessionStorage.removeItem(cooldownKey);
+      console.warn('Resource usage could not be recorded',error);
+    }
+  }
+
+  const originalOpenDoc=window.openDoc;
+  if(typeof originalOpenDoc==='function'){
+    window.openDoc=function(index){
+      const item=DATA[index];
+      recordOpen(item);
+      return originalOpenDoc.apply(this,arguments);
+    };
+  }
+
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>\"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char]));
+  }
+
+  function openPinManager(){
+    if(sessionStorage.getItem('tbrnAdminMode')!=='true')return;
+    const modal=document.getElementById('adminModal');
+    const body=document.getElementById('adminModalBody');
+    const foot=document.getElementById('adminModalFoot');
+    const selected=new Set(readPins());
+    document.getElementById('adminModalTitle').textContent='Frequently used resources';
+    body.innerHTML='<p class="rolling-editor-intro">Pin essential resources so they remain in Frequently used. Unpinned spaces are ranked automatically using anonymous team opens from the last 30 days. Select up to six.</p><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px">'+DATA.filter(eligible).map(item=>'<label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #dce8e2;border-radius:10px;background:#fff;font-size:12px"><input type="checkbox" data-frequency-pin="'+escapeHtml(resourceKey(item))+'" '+(selected.has(resourceKey(item))?'checked':'')+'><span><b>'+escapeHtml(item.title)+'</b><br><small style="color:#718078">'+escapeHtml(item.category)+'</small></span></label>').join('')+'</div>';
+    foot.innerHTML='<button class="action" id="frequencyPinCancel">Cancel</button><button class="action primary" id="frequencyPinSave">Save pins</button>';
+    document.getElementById('frequencyPinCancel').onclick=()=>modal.classList.remove('open');
+    body.querySelectorAll('[data-frequency-pin]').forEach(input=>input.onchange=()=>{
+      const checked=body.querySelectorAll('[data-frequency-pin]:checked');
+      if(checked.length>MAX_CARDS){input.checked=false;alert('You can pin up to six resources.');}
+    });
+    document.getElementById('frequencyPinSave').onclick=()=>{
+      const pins=[...body.querySelectorAll('[data-frequency-pin]:checked')].map(input=>input.dataset.frequencyPin);
+      localStorage.setItem(PINS_KEY,JSON.stringify(pins));
+      renderQuick();
+      modal.classList.remove('open');
+      if(typeof holdToast==='function')holdToast('Frequently used pins saved live');
+    };
+    modal.classList.add('open');
+  }
+
+  const quick=document.getElementById('quick');
+  const heading=quick?.previousElementSibling;
+  if(heading?.classList.contains('section-head')){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='action';
+    button.textContent='Manage pins';
+    button.style.display='none';
+    button.onclick=openPinManager;
+    heading.appendChild(button);
+    setInterval(()=>{button.style.display=sessionStorage.getItem('tbrnAdminMode')==='true'?'inline-flex':'none'},400);
+  }
+
+  renderQuick();
+  let attempts=0;
+  const timer=setInterval(async()=>{
+    attempts++;
+    if(await connect()||attempts>=30)clearInterval(timer);
+  },500);
+  window.addEventListener('storage',event=>{if(event.key===PINS_KEY)renderQuick()});
+  window.addEventListener('tbrn:cloud-data-updated',renderQuick);
+})();
+</script>
+
 </body></html>
