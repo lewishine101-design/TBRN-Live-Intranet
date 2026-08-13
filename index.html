@@ -7179,6 +7179,79 @@ function renderEntryBadgeRows(badges){
 
 
 
+<style id="tbrn-temporary-rolling-panel-themes">
+.temporary-rolling-slide{
+  overflow:hidden;
+  isolation:isolate;
+  border-radius:25px;
+}
+.temporary-rolling-slide::before,.temporary-rolling-slide::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  z-index:0;
+}
+.temporary-rolling-slide .rolling-hero-copy,
+.temporary-rolling-slide .temporary-rolling-panel{position:relative;z-index:2}
+.temporary-rolling-slide .temporary-rolling-panel{
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:0 18px 45px rgba(0,0,0,.13);
+  backdrop-filter:blur(10px);
+}
+
+.temporary-rolling-slide.temporary-theme-birthday{
+  background:linear-gradient(125deg,#76206f 0%,#c43d7d 48%,#ef8b4b 100%);
+}
+.temporary-theme-birthday::before{
+  width:260px;height:260px;border-radius:50%;right:-70px;top:-120px;
+  background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.42) 0 4%,transparent 5%),radial-gradient(circle at 62% 52%,#ffd768 0 3%,transparent 4%),radial-gradient(circle at 40% 72%,#78e3e0 0 3%,transparent 4%),radial-gradient(circle at 78% 72%,#fff 0 2%,transparent 3%);
+  animation:tbrnBirthdayFloat 5s ease-in-out infinite;
+}
+.temporary-theme-birthday::after{
+  inset:0;
+  background:radial-gradient(circle at 9% 20%,#ffd966 0 3px,transparent 4px),radial-gradient(circle at 19% 72%,#7ee4dc 0 3px,transparent 4px),radial-gradient(circle at 45% 14%,#fff 0 2px,transparent 3px),radial-gradient(circle at 72% 35%,#ffd966 0 3px,transparent 4px),radial-gradient(circle at 87% 78%,#fff 0 2px,transparent 3px);
+  opacity:.75;
+  animation:tbrnBirthdaySparkle 2.7s ease-in-out infinite alternate;
+}
+.temporary-theme-birthday .eyebrow{color:#ffe48c}
+.temporary-theme-birthday .temporary-rolling-panel{background:rgba(91,17,82,.28)}
+
+.temporary-rolling-slide.temporary-theme-anniversary{
+  background:linear-gradient(130deg,#063d31 0%,#0c7655 54%,#b4872d 145%);
+}
+.temporary-theme-anniversary::before{
+  width:310px;height:310px;border-radius:50%;right:-95px;top:-145px;
+  border:42px solid rgba(255,215,117,.17);
+  box-shadow:0 0 0 22px rgba(255,255,255,.05);
+}
+.temporary-theme-anniversary::after{
+  width:145px;height:145px;right:17%;bottom:-88px;transform:rotate(45deg);
+  border:1px solid rgba(255,218,128,.24);background:rgba(255,211,104,.06);
+}
+.temporary-theme-anniversary .eyebrow{color:#ffdb7d}
+.temporary-theme-anniversary .temporary-rolling-panel{background:linear-gradient(145deg,rgba(255,215,121,.17),rgba(255,255,255,.08));border-color:rgba(255,220,136,.38)}
+.temporary-theme-anniversary .rolling-update-icon{background:rgba(255,214,110,.2);color:#ffe39c}
+
+.temporary-rolling-slide.temporary-theme-announcement{
+  background:linear-gradient(130deg,#0d4050 0%,#126b72 55%,#278c72 100%);
+}
+.temporary-theme-announcement::before{
+  width:360px;height:360px;border-radius:50%;right:-165px;top:-180px;
+  border:55px solid rgba(120,228,217,.1);
+}
+.temporary-theme-announcement::after{
+  width:180px;height:5px;left:32px;top:22px;border-radius:99px;
+  background:linear-gradient(90deg,#74e0d1,transparent);
+}
+.temporary-theme-announcement .eyebrow{color:#8ee7da}
+.temporary-theme-announcement .temporary-rolling-panel{background:rgba(5,48,58,.3)}
+
+@keyframes tbrnBirthdayFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(10px) rotate(4deg)}}
+@keyframes tbrnBirthdaySparkle{from{opacity:.42}to{opacity:.88}}
+@media(prefers-reduced-motion:reduce){.temporary-theme-birthday::before,.temporary-theme-birthday::after{animation:none}}
+@media(max-width:760px){.temporary-rolling-slide{border-radius:19px}}
+</style>
+
 <script id="tbrn-temporary-rolling-panels-bootstrap">
 (function(){
   'use strict';
@@ -7208,7 +7281,9 @@ function renderEntryBadgeRows(badges){
 
   panels.forEach(panel=>{
     const slide=document.createElement('article');
-    slide.className='rolling-hero-slide temporary-rolling-slide';
+    const type=['birthday','anniversary','announcement'].includes(panel.type)?panel.type:'announcement';
+    slide.className='rolling-hero-slide temporary-rolling-slide temporary-theme-'+type;
+    slide.dataset.temporaryPanelType=type;
     slide.dataset.temporaryPanelId=String(panel.id||'');
 
     const copy=document.createElement('div');
