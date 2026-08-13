@@ -9667,4 +9667,135 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
 })();
 </script>
 
+<script id="tbrn-published-version-update-check">
+(function(){
+  'use strict';
+  const VERSION_KEY='tbrnPublishedVersion';
+  const UPDATED_KEY='tbrnUpdatedAfterReload';
+  const CHECK_INTERVAL=15*60*1000;
+  const DEFER_INTERVAL=60*1000;
+  let checking=false;
+  let pendingVersion='';
+  let deferTimer=null;
+  let lastFocusCheck=0;
+
+  function updateUrl(){
+    const url=new URL(window.location.href);
+    url.hash='';
+    url.search='';
+    url.searchParams.set('_tbrn_version_check',Date.now().toString());
+    return url.toString();
+  }
+
+  async function publishedVersion(){
+    const response=await fetch(updateUrl(),{
+      method:'HEAD',
+      cache:'no-store',
+      credentials:'same-origin',
+      headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
+    });
+    if(!response.ok)throw new Error('Update check failed');
+    const etag=response.headers.get('etag')||'';
+    const modified=response.headers.get('last-modified')||'';
+    const length=response.headers.get('content-length')||'';
+    const version=[etag,modified,length].filter(Boolean).join('|');
+    if(version)return version;
+
+    const fullResponse=await fetch(updateUrl(),{cache:'no-store',credentials:'same-origin'});
+    if(!fullResponse.ok)throw new Error('Update check failed');
+    const content=await fullResponse.arrayBuffer();
+    const hash=await crypto.subtle.digest('SHA-256',content);
+    return Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join('');
+  }
+
+  function editingIsActive(){
+    if(document.body.classList.contains('tbrn-dev-editing'))return true;
+    const adminActive=sessionStorage.getItem('tbrnAdminMode')==='true';
+    const devActive=sessionStorage.getItem('tbrnDevMode')==='true';
+    const focused=document.activeElement;
+    const typing=focused&&(
+      focused.matches?.('input,textarea,select')||
+      focused.isContentEditable
+    );
+    const openEditor=document.querySelector(
+      '#adminModal.open,#universalCardModal.open,.modal.open,[role="dialog"].open'
+    );
+    return !!((adminActive||devActive)&&(typing||openEditor));
+  }
+
+  function notify(message){
+    if(typeof window.holdToast==='function')window.holdToast(message);
+    else if(typeof window.portalToast==='function')window.portalToast(message);
+  }
+
+  function reloadForUpdate(version){
+    if(editingIsActive()){
+      pendingVersion=version;
+      notify('System update ready — refresh will happen when editing is finished');
+      clearTimeout(deferTimer);
+      deferTimer=setTimeout(applyPendingUpdate,DEFER_INTERVAL);
+      return;
+    }
+    sessionStorage.setItem(VERSION_KEY,version);
+    sessionStorage.setItem(UPDATED_KEY,'true');
+    const url=new URL(window.location.href);
+    url.searchParams.set('_tbrn_update',Date.now().toString());
+    window.location.replace(url.toString());
+  }
+
+  function applyPendingUpdate(){
+    if(!pendingVersion)return;
+    if(editingIsActive()){
+      clearTimeout(deferTimer);
+      deferTimer=setTimeout(applyPendingUpdate,DEFER_INTERVAL);
+      return;
+    }
+    const version=pendingVersion;
+    pendingVersion='';
+    reloadForUpdate(version);
+  }
+
+  async function checkForUpdate(){
+    if(checking||!navigator.onLine)return;
+    checking=true;
+    try{
+      const current=await publishedVersion();
+      const previous=sessionStorage.getItem(VERSION_KEY);
+      if(!previous){
+        sessionStorage.setItem(VERSION_KEY,current);
+      }else if(current!==previous){
+        reloadForUpdate(current);
+      }
+    }catch(error){
+      console.warn('TBRN update check unavailable',error);
+    }finally{
+      checking=false;
+    }
+  }
+
+  if(new URL(window.location.href).searchParams.has('_tbrn_update')){
+    const clean=new URL(window.location.href);
+    clean.searchParams.delete('_tbrn_update');
+    history.replaceState(history.state,'',clean.toString());
+  }
+  if(sessionStorage.getItem(UPDATED_KEY)==='true'){
+    sessionStorage.removeItem(UPDATED_KEY);
+    window.addEventListener('load',()=>setTimeout(()=>notify('System updated'),900),{once:true});
+  }
+
+  setTimeout(checkForUpdate,1500);
+  setInterval(checkForUpdate,CHECK_INTERVAL);
+  window.addEventListener('online',checkForUpdate);
+  window.addEventListener('focus',()=>{
+    const now=Date.now();
+    if(now-lastFocusCheck<5000)return;
+    lastFocusCheck=now;
+    checkForUpdate();
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')checkForUpdate();
+  });
+})();
+</script>
+
 </body></html>
