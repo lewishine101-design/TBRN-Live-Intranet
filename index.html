@@ -3402,6 +3402,15 @@ renderResponsibilities=function(){
 
 
 
+<style id="tbrn-contractor-client-filter-styles">
+.direct-map-client-filters{margin:2px 0 0;padding:0;border:0;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.direct-map-client-filters legend{grid-column:1/-1;padding:0;margin:0 0 2px;font-size:10px;font-weight:800;color:#435e52}
+.direct-map-client-filters label{display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px;border:1px solid #cfe1d8;border-radius:9px;background:#fff;color:#244a3b;font-size:11px;font-weight:800;cursor:pointer;transition:.15s ease}
+.direct-map-client-filters label:has(input:checked){background:#0d8653;border-color:#0d8653;color:#fff;box-shadow:0 4px 12px rgba(13,134,83,.18)}
+.direct-map-client-filters input{width:14px;height:14px;margin:0;accent-color:#0d8653}
+.direct-map-badge.client{background:#e7f7ef;border-color:#bfe6d1;color:#087044;font-weight:800}
+</style>
+
 <script id="tbrn-map-integration-script">
 (function(){
   const MAP_TITLE='Contractor Coverage & Route Map';
@@ -3414,6 +3423,18 @@ renderResponsibilities=function(){
   function dmArea(v){const m=dmNorm(v).match(/^[A-Z]{1,2}/);return m?m[0]:''}
   function dmCoverage(v){return String(v||'').toUpperCase().split(/[,;/\n]+|\s{2,}/).map(x=>x.trim()).filter(Boolean)}
   function dmStatus(text,type=''){const el=$('directMapStatus');if(el){el.className='direct-map-status '+type;el.textContent=text}}
+  function dmFlagEnabled(value){return /✔|✅|yes|true/i.test(String(value||''))}
+  function dmCapabilities(entry){
+    const flags={lbg:false,ins:false,tp:false};
+    (Array.isArray(entry?.badges)?entry.badges:[]).forEach(pair=>{
+      const key=String(pair?.[0]||'').trim().toLowerCase();
+      if(Object.prototype.hasOwnProperty.call(flags,key))flags[key]=dmFlagEnabled(pair?.[1]);
+    });
+    ['lbg','ins','tp'].forEach(key=>{
+      if(Object.prototype.hasOwnProperty.call(entry||{},key))flags[key]=dmFlagEnabled(entry[key]);
+    });
+    return flags;
+  }
 
   function collectContractors(){
     const items=[];
@@ -3504,6 +3525,7 @@ renderResponsibilities=function(){
         secondary:x.secondary||'',
         phone:x.phone||'',
         email:x.email||'',
+        capabilities:dmCapabilities(x),
         status:x.status==='taking'?'taking':(x.status==='hold'||x.hold?'hold':'active'),
         hold:x.status==='hold'||!!x.hold,
         lat:isNationalSpecialist?54.35:(Number.isFinite(pegnumiLat)?pegnumiLat:(Number.isFinite(Number(x.lat))?Number(x.lat):null)),
@@ -3515,7 +3537,8 @@ renderResponsibilities=function(){
   function filteredContractors(){
     const selector=$('directMapType');
     const type=selector?selector.value:'contractor';
-    return dmContractors.filter(c=>!type||c.kind===type);
+    const selected=[...document.querySelectorAll('[data-direct-client-filter]:checked')].map(input=>input.value);
+    return dmContractors.filter(c=>(!type||c.kind===type)&&selected.every(key=>c.capabilities?.[key]===true));
   }
 
   function contractorCard(c,show=true){
@@ -3529,6 +3552,9 @@ renderResponsibilities=function(){
         ${status==='hold'?'<span class="direct-map-badge full-hold">On hold</span>':status==='taking'?'<span class="direct-map-badge taking">Taking instructions</span>':''}
         ${c.primary?'<span class="direct-map-badge primary">Primary: '+dmEsc(c.primary)+'</span>':''}
         ${c.secondary?'<span class="direct-map-badge secondary">Secondary: '+dmEsc(c.secondary)+'</span>':''}
+        ${c.capabilities?.lbg?'<span class="direct-map-badge client">LBG</span>':''}
+        ${c.capabilities?.ins?'<span class="direct-map-badge client">INS</span>':''}
+        ${c.capabilities?.tp?'<span class="direct-map-badge client">TP</span>':''}
       </div>
       ${show&&Number.isFinite(c.lat)?'<button type="button" data-map-focus="'+dmEsc(c.id)+'">Show on map</button>':''}
     </article>`;
@@ -3732,8 +3758,9 @@ renderResponsibilities=function(){
     updateDirectory();drawMarkers();mapContractors();
     $('directMapFind').onclick=findNearest;
     $('directMapPostcode').addEventListener('keydown',e=>{if(e.key==='Enter')findNearest()});
-    $('directMapReset').onclick=()=>{dmRoutes.clearLayers();dmSearch.clearLayers();$('directMapResults').innerHTML='';dmMap.setView([54.3,-3.5],6);dmStatus('Map reset.','success')};
+    $('directMapReset').onclick=()=>{dmRoutes.clearLayers();dmSearch.clearLayers();$('directMapResults').innerHTML='';document.querySelectorAll('[data-direct-client-filter]').forEach(input=>input.checked=false);updateDirectory();drawMarkers();dmMap.setView([54.3,-3.5],6);dmStatus('Map and client filters reset.','success')};
     $('directMapType').onchange=()=>{updateDirectory();drawMarkers()};
+    document.querySelectorAll('[data-direct-client-filter]').forEach(input=>input.onchange=()=>{dmRoutes.clearLayers();$('directMapResults').innerHTML='';updateDirectory();drawMarkers();const selected=[...document.querySelectorAll('[data-direct-client-filter]:checked')].map(item=>item.value.toUpperCase());dmStatus(selected.length?'Showing contractors supporting '+selected.join(' + ')+'.':'Showing all client types.','success')});
     $('directMapList').onclick=e=>{const b=e.target.closest('[data-map-focus]');if(!b)return;const c=dmContractors.find(x=>x.id===b.dataset.mapFocus);if(c?.marker){dmMap.setView([c.lat,c.lng],12);c.marker.openPopup()}};
     setTimeout(()=>dmMap.invalidateSize(),200);
   }
@@ -3755,6 +3782,7 @@ renderResponsibilities=function(){
             <div class="direct-map-search">
               <label for="directMapPostcode">Search postcode</label><input id="directMapPostcode" placeholder="Example: SW1A 1AA">
               <label for="directMapType">Contractor type</label><select id="directMapType"><option value="contractor" selected>General contractors</option><option value="specialist">Specialists & emergency</option><option value="">All contractors</option></select>
+              <fieldset class="direct-map-client-filters"><legend>Client type</legend><label><input type="checkbox" value="lbg" data-direct-client-filter> <span>LBG</span></label><label><input type="checkbox" value="ins" data-direct-client-filter> <span>INS</span></label><label><input type="checkbox" value="tp" data-direct-client-filter> <span>TP</span></label></fieldset>
               <div class="direct-map-buttons"><button id="directMapFind">Find nearest three</button><button class="secondary" id="directMapReset">Reset map</button></div>
             </div>
             <div id="directMapStatus" class="direct-map-status">Loading contractor directory…</div>
