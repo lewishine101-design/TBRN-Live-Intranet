@@ -6406,6 +6406,40 @@ function renderEntryBadgeRows(badges){
     {id:'weekend-survivor',icon:'🗓️',title:'Weekend Survivor',desc:'Click the Weekend Morale Bulletin five times.'}
   ];
 
+  const ACHIEVEMENT_CLUES={
+    'contractor-explorer':'Every good expedition starts by entering the network.',
+    'map-master':'Only the most dedicated cartographer would investigate twenty-five locations.',
+    'power-user':'One hundred opened doors separate the casual visitor from the expert.',
+    'admin-apprentice':'With the correct credentials comes great administrative responsibility.',
+    'legend':'An old gaming sequence begins with two steps upwards and ends with two letters.',
+    'uncharted-territory':'Search beyond the boundaries of the contractor kingdom.',
+    'rubber-duck':'When technology fails, repeatedly consult the face of the hub.',
+    'atlantis':'A mythical destination may be hiding behind an equally mythical postcode.',
+    'batman':'Search for the nocturnal protector of a city that never sleeps.',
+    'where-jeff':'Ask the question everyone has considered—but the intranet cannot properly answer.',
+    'coffee-connoisseur':'Perhaps the search bar can prepare something stronger than information.',
+    'biscuit-bandit':'Stay around long enough and the daily welfare allocation may arrive.',
+    'walking-encyclopaedia':'Return to the Knowledge Base until you practically become part of it.',
+    'water-sentient':'Encounter enough leaks in one sitting and they may start looking deliberate.',
+    'hold-holiday':'When three contractors stop accepting work, check whether anyone is still available.',
+    'tree-hugger':'The planet is quietly counting every document you send towards the printer.',
+    'printer-whisperer':'Keep asking the printer nicely. Eventually, it might acknowledge you.',
+    'fee-persistent':'Check the fees repeatedly—the numbers might eventually reward your optimism.',
+    'developer-console':'The version number contains more than information. Persistence opens the door.',
+    'pin-persistence':'One wrong PIN is a mistake. Three is commitment.',
+    'sharepoint-survivor':'Sometimes patience during a suspiciously long load deserves recognition.',
+    'search-detective':'One strange search could be luck. Five makes you a detective.',
+    'seasonal-special':'Visit when the calendar brings tricks, presents or questionable announcements.',
+    'zero-hero':'What happens when every dashboard counter agrees there is absolutely nothing to do?',
+    'full-house':'A rare moment occurs when every mapped contractor is ready for action.',
+    'version-veteran':'Find the classified history hidden behind the hub’s version.',
+    'biscuit-inspector':'On the most suspicious day of April, a specialist receives a promotion.',
+    'five-searches':'Five locations should be enough to help you find your way.',
+    'ten-resources':'Ten useful discoveries will make the intranet feel like home.',
+    'cabinet-curious':'Sometimes the easiest achievement is simply checking what achievements exist.',
+    'weekend-survivor':'Show the morale bulletin enough enthusiasm and it may reward your survival.'
+  };
+
   function state(){
     try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}
     catch(error){return {}}
@@ -6475,8 +6509,8 @@ function renderEntryBadgeRows(badges){
         const found=!!current[item.id];
         return '<div class="tbrn-achievement-card '+(found?'':'locked')+'">'+
           '<div class="icon">'+(found?item.icon:'❓')+'</div>'+
-          '<strong>'+(found?item.title:'Hidden Achievement')+'</strong>'+
-          '<span>'+(found?item.desc:'Keep exploring TBRN Live to discover this achievement.')+'</span>'+
+          '<strong>'+(found?item.title:'Clue')+'</strong>'+
+          '<span>'+(found?item.desc:ACHIEVEMENT_CLUES[item.id])+'</span>'+
         '</div>';
       }).join('');
     }
