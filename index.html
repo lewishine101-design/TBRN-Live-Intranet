@@ -1679,7 +1679,11 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
 }
 .tbrn-search-joke strong{display:block;color:#176b49;font-size:18px;margin-bottom:7px}
 .tbrn-dev-footer{
-  margin:35px auto 12px;
+  position:fixed;
+  right:18px;
+  bottom:8px;
+  z-index:900;
+  margin:0;
   text-align:center;
   color:#82938b;
   font-size:10px;
@@ -2444,6 +2448,7 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
 </style>
 
 </head><body>
+<footer class="tbrn-dev-footer" aria-label="TBRN Live version"><span class="tbrn-dev-version" role="button" tabindex="0" title="TBRN Live version">TBRN Live • v3.0</span></footer>
 <button type="button" class="tbrn-achievement-button" id="tbrnAchievementButton">
   🏆 Achievements <span class="count" id="tbrnAchievementCount">0</span>
 </button>
