@@ -3782,6 +3782,10 @@ renderResponsibilities=function(){
     dmSearch=L.layerGroup().addTo(dmMap);
     $('directMapLoading').style.display='none';
     dmContractors=collectContractors();
+    window.DIRECT_MAP_CONTRACTORS=dmContractors;
+    if(dmContractors.length&&dmContractors.every(item=>!item.hold)){
+      window.setTimeout(()=>window.tbrnUnlockAchievement?.('full-house'),0);
+    }
     updateDirectory();drawMarkers();mapContractors();
     $('directMapFind').onclick=findNearest;
     $('directMapPostcode').addEventListener('keydown',e=>{if(e.key==='Enter')findNearest()});
@@ -6052,10 +6056,12 @@ function renderEntryBadgeRows(badges){
 
   function unlock(id,title,message){
     const achievements=readObject(ACHIEVEMENT_KEY);
-    if(achievements[id])return;
-    achievements[id]=Date.now();
-    localStorage.setItem(ACHIEVEMENT_KEY,JSON.stringify(achievements));
-    toast('🏆 Achievement Unlocked — '+title,message,5200);
+    if(!achievements[id]){
+      achievements[id]=Date.now();
+      localStorage.setItem(ACHIEVEMENT_KEY,JSON.stringify(achievements));
+      toast('🏆 Achievement Unlocked — '+title,message,5200);
+    }
+    if(typeof window.tbrnUnlockAchievement==='function')window.tbrnUnlockAchievement(id);
   }
 
   window.tbrnEggToast=toast;
@@ -6434,6 +6440,22 @@ function renderEntryBadgeRows(badges){
 
   window.tbrnUnlockAchievement=unlock;
 
+  /* Carry achievements earned by the original Easter-egg engine into the cabinet. */
+  try{
+    const legacy=JSON.parse(localStorage.getItem('tbrnAchievementsV2')||'{}')||{};
+    const current=state();
+    let changed=false;
+    ACHIEVEMENTS.forEach(item=>{
+      if(legacy[item.id]&&!current[item.id]){
+        current[item.id]=legacy[item.id];
+        changed=true;
+      }
+    });
+    if(changed)localStorage.setItem(KEY,JSON.stringify(current));
+  }catch(error){
+    console.warn('Unable to migrate legacy achievements',error);
+  }
+
   function renderCabinet(){
     const current=state();
     const unlocked=ACHIEVEMENTS.filter(item=>current[item.id]).length;
@@ -6536,6 +6558,8 @@ function renderEntryBadgeRows(badges){
         unlock('coffee-connoisseur');
         document.getElementById('tbrnBrewOverlay')?.classList.add('open');
       }
+
+      if(['coffee','tea','holiday','pay rise','friday'].includes(value))rememberSearch(value);
     });
   }
 
@@ -6612,11 +6636,9 @@ function renderEntryBadgeRows(badges){
   window.print=function(){
     printCount++;
     localStorage.setItem('tbrnPrintCount',String(printCount));
-
-    if(Math.random()<.08){
-      toast('🖨️ Printer Update','Printer successfully ignored your first request.');
-      unlock('printer-whisperer');
-    }
+    const printerRequests=Number(localStorage.getItem('tbrnPrinterRequests')||0)+1;
+    localStorage.setItem('tbrnPrinterRequests',String(printerRequests));
+    if(printerRequests>=2)unlock('printer-whisperer');
 
     if(printCount>=50)unlock('tree-hugger');
     return originalPrint();
@@ -6686,7 +6708,7 @@ function renderEntryBadgeRows(badges){
   /* Dashboard states */
   setTimeout(()=>{
     const contractorData=Array.isArray(window.DIRECT_MAP_CONTRACTORS)?window.DIRECT_MAP_CONTRACTORS:[];
-    if(contractorData.length&&contractorData.every(item=>item.status==='active')){
+    if(contractorData.length&&contractorData.every(item=>!item.hold)){
       unlock('full-house');
       toast('🟢 Miracles do happen','Every mapped contractor is currently available.');
     }
