@@ -1,25 +1,32 @@
-# Nova — TBRN AI v0.1
+# Nova — TBRN AI v0.2
 
-Standalone test interface. It deliberately does not modify or depend on the live TBRN Hub.
+Standalone test interface plus protected Firebase Functions AI backend.
 
-## Current milestone
-- TBRN-branded chat UI
-- Quick actions for claim review, correspondence, cost assessment, contractor search and Hub search
-- Multi-file attachment UI
-- Knowledge/status panel
-- Safe disconnected state when no backend is configured
+## Implemented
+- TBRN-branded chat UI and quick actions
+- Protected server-side OpenAI call (API key is a Firebase secret, never browser code)
+- GPT-5.6 Terra Responses API
+- Optional OpenAI file-search grounding via TBRN_VECTOR_STORE_ID
+- Source filename extraction from file-search annotations
+- Firebase Hosting /api rewrite to the europe-west2 function
+- Health endpoint and knowledge connection status
+- Explicit Nova claims-assessment guardrails
 
-## Next backend contract
-POST /api/tbrn-ai (multipart/form-data)
-- message: string
-- files: optional attachments
-Returns: { "answer": "...", "sources": ["..."] }
+## Before deployment
+From the Firebase project CLI:
+1. cd functions && npm install
+2. firebase functions:secrets:set OPENAI_API_KEY
+3. Set TBRN_VECTOR_STORE_ID to the approved OpenAI vector store ID when the knowledge index exists.
+4. firebase deploy --only functions,hosting
+
+Do not upload live sensitive claim data until authentication, access controls, retention and audit controls are implemented.
+
+## API
+POST /api/tbrn-ai
+Content-Type: application/json
+{ "message": "..." }
 
 GET /api/health
-Returns HTTP 200 when the protected AI service is available.
 
-## Security
-Never place an OpenAI API key in this static repository or browser JavaScript. The model call must run server-side. Do not upload live sensitive claim material until authentication, access control, retention and audit controls are implemented.
-
-## Planned grounding
-Approved TBRN procedures/templates -> protected file-search/vector index -> model response with source names. Dynamic contractor coverage should be queried from the authoritative Hub/Firebase data rather than embedded in the model prompt.
+## Next milestone
+Authentication/role controls, approved knowledge ingestion tooling, conversation persistence, then controlled claim-file attachments.
