@@ -1,12 +1,12 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json","**/.*","**/node_modules/**","functions/**"],
     "cleanUrls": true,
-    "trailingSlash": false
-  }
+    "trailingSlash": false,
+    "rewrites": [
+      { "source": "/api/**", "function": { "functionId": "api", "region": "europe-west2" } }
+    ]
+  },
+  "functions": { "source": "functions" }
 }
