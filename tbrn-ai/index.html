@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nova | TBRN AI</title><link rel="stylesheet" href="./styles.css"></head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div><div class="brand"><span class="mark">N</span><div><strong>Nova</strong><small>TBRN AI • v0.1</small></div></div>
+<button id="newChat" class="primary">＋ New chat</button>
+<nav><button data-prompt="Review the attached claim evidence and identify supported costs, unsupported costs, missing evidence and recommended next steps.">Review claim</button><button data-prompt="Draft professional correspondence based on the information I provide.">Draft correspondence</button><button data-prompt="Assess the costs I provide for reasonableness, necessity and evidential support.">Assess costs</button><button data-prompt="Find the appropriate contractor for the postcode and claim type I provide.">Find contractor</button><button data-prompt="Search the TBRN knowledge base for the following query: ">Search TBRN</button></nav>
+<div class="status"><span></span>Standalone test build</div>
+</aside>
+<main>
+<header><div><h1>Ask Nova</h1><p>TBRN knowledge & claims assistant</p></div><button id="knowledgeBtn">Knowledge</button></header>
+<section id="chat" class="chat"><div class="welcome"><div class="nova">N</div><h2>What can I help with?</h2><p>Ask a TBRN process question, review claim evidence, assess costs or draft correspondence.</p><div class="suggestions"><button>What evidence should support a third-party recovery?</button><button>Help me assess a contractor estimate</button><button>Draft a request for an itemised breakdown</button></div></div></section>
+<form id="composer"><label id="attachLabel" title="Attach files">＋<input id="files" type="file" multiple hidden accept=".pdf,.doc,.docx,.txt,.md,.csv,image/*"></label><textarea id="prompt" rows="1" placeholder="Message Nova..."></textarea><button id="send" type="submit">Send</button></form>
+<div id="attachments"></div><footer>Nova can make mistakes. Verify claim decisions against the evidence and TBRN procedures.</footer>
+</main>
+</div>
+<dialog id="knowledge"><button class="close" aria-label="Close">×</button><h2>Knowledge base</h2><p>V0.1 is isolated from the live Hub. Approved TBRN material can be indexed here once the secure backend is connected.</p><div class="kb"><strong>Backend status</strong><span id="backendStatus">Checking…</span></div><div class="kb"><strong>Live Hub data</strong><span>Not connected</span></div><div class="kb"><strong>Claim data</strong><span>Not stored</span></div></dialog>
+<script src="./app.js"></script></body></html>
