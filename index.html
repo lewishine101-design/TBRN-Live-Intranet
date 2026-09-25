@@ -33,8 +33,7 @@
 @media(max-width:900px){.resp-grid{grid-template-columns:1fr}.resp-card.wide{grid-column:auto}.resp-matrix{grid-template-columns:1fr}}@media(max-width:560px){.resp-card{padding:15px}.resp-row{grid-template-columns:1fr;gap:5px}.resp-label{padding-top:0}.resp-toolbar{align-items:stretch}.resp-toolbar input{min-width:0;width:100%}}
 
 /* Editable responsibility cards */
-.resp-admin-edit{margin-left:auto;border:1px solid #c9d8e8;background:#fff;color:#24435f;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;display:none}
-.admin-active .resp-admin-edit{display:inline-flex}.resp-admin-edit:hover{background:#eef5ff;border-color:#91b8e8}.resp-head>div:nth-child(2){min-width:0;flex:1}.resp-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.resp-edit-field{display:grid;gap:6px}.resp-edit-field.full{grid-column:1/-1}.resp-edit-field label{font-size:12px;font-weight:700;color:#526476}.resp-edit-field input,.resp-edit-field textarea,.resp-edit-field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--text);font:inherit}.resp-edit-field textarea{min-height:100px;resize:vertical}.resp-edit-help{font-size:11px;color:var(--muted);line-height:1.45}.resp-unsaved-note{font-size:12px;color:#8a5b00;background:#fff7df;border:1px solid #ecd89d;border-radius:11px;padding:9px 11px;margin-bottom:14px}
+.resp-admin-actions{margin-left:auto;display:none;gap:7px;flex-wrap:wrap;justify-content:flex-end}.resp-admin-edit{border:1px solid #c9d8e8;background:#fff;color:#24435f;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}.admin-active .resp-admin-actions{display:flex}.resp-admin-edit.danger{color:#b42318;border-color:#f0c4c0}.resp-admin-edit:hover{background:#eef5ff;border-color:#91b8e8}.resp-head>div:nth-child(2){min-width:0;flex:1}.resp-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.resp-edit-field{display:grid;gap:6px}.resp-edit-field.full{grid-column:1/-1}.resp-edit-field label{font-size:12px;font-weight:700;color:#526476}.resp-edit-field input,.resp-edit-field textarea,.resp-edit-field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--text);font:inherit}.resp-edit-field textarea{min-height:100px;resize:vertical}.resp-edit-help{font-size:11px;color:var(--muted);line-height:1.45}.resp-unsaved-note{font-size:12px;color:#8a5b00;background:#fff7df;border:1px solid #ecd89d;border-radius:11px;padding:9px 11px;margin-bottom:14px}
 @media(max-width:650px){.resp-edit-grid{grid-template-columns:1fr}.resp-edit-field.full{grid-column:auto}.resp-admin-edit{padding:7px 9px}}
 
 </style>
@@ -2969,9 +2968,16 @@ function closeSide(){$('sidebar').classList.remove('open');$('overlay').classLis
 <script>
 (function(){
  const PORTAL_OVERRIDE_KEY='tbrn-portal-access-overrides-v1';
+ const PORTAL_CUSTOM_KEY='tbrn-portal-custom-cards-v1';
+ const PORTAL_HIDDEN_KEY='tbrn-portal-hidden-cards-v1';
  function normalisePortalName(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ')}
  function readPortalOverrides(){try{return JSON.parse(localStorage.getItem(PORTAL_OVERRIDE_KEY)||'{}')||{}}catch(e){return {}}}
  function writePortalOverrides(v){localStorage.setItem(PORTAL_OVERRIDE_KEY,JSON.stringify(v))}
+ function readPortalCustom(){try{const v=JSON.parse(localStorage.getItem(PORTAL_CUSTOM_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+ function writePortalCustom(v){localStorage.setItem(PORTAL_CUSTOM_KEY,JSON.stringify(v))}
+ function readPortalHidden(){try{const v=JSON.parse(localStorage.getItem(PORTAL_HIDDEN_KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+ function writePortalHidden(v){localStorage.setItem(PORTAL_HIDDEN_KEY,JSON.stringify(v))}
+ function portalItemKey(group,name){return `${group}|${normalisePortalName(name)}`}
  function getPortalOverride(group,name){const all=readPortalOverrides();const key=group+'|'+normalisePortalName(name);return Object.prototype.hasOwnProperty.call(all,key)?!!all[key]:null}
  function setPortalOverride(group,name,value){const all=readPortalOverrides();all[group+'|'+normalisePortalName(name)]=!!value;writePortalOverrides(all)}
  function livePortalEntries(title,group){
@@ -2993,10 +2999,17 @@ function closeSide(){$('sidebar').classList.remove('open');$('overlay').classLis
    primary.forEach(v=>{const k=normalisePortalName(v.name),old=map.get(k)||{};map.set(k,{...old,...v,notes:v.notes||old.notes||'',group})});
    return [...map.values()].filter(v=>v.name).map(v=>{const o=getPortalOverride(group,v.name);return {...v,access:o===null?!!v.access:o}}).sort((a,b)=>a.name.localeCompare(b.name));
  }
- function portalData(x){const old=originalPortalEntries(x);return {
-   general:mergePortalItems(livePortalEntries('2. General','general'),old.general,'general'),
-   specialists:mergePortalItems(livePortalEntries('Emergency & Specialist','specialist'),old.specialists,'specialist')
- }}
+ function portalData(x){
+   const old=originalPortalEntries(x),hidden=new Set(readPortalHidden()),custom=readPortalCustom();
+   const combine=(items,group)=>[...items,...custom.filter(v=>v.group===group).map(v=>({...v,custom:true}))]
+     .filter(v=>!hidden.has(portalItemKey(group,v.name)))
+     .map(v=>{const o=getPortalOverride(group,v.name);return {...v,group,access:o===null?!!v.access:o}})
+     .sort((a,b)=>a.name.localeCompare(b.name));
+   return {
+     general:combine(mergePortalItems(livePortalEntries('2. General','general'),old.general,'general'),'general'),
+     specialists:combine(mergePortalItems(livePortalEntries('Emergency & Specialist','specialist'),old.specialists,'specialist'),'specialist')
+   }
+ }
  function portalInitials2(name){return String(name||'').split(/\s+/).filter(Boolean).slice(0,2).map(v=>v[0]).join('').toUpperCase()||'•'}
  function updateDirectoryPortal(group,name,value){
    const title=group==='general'?'2. General':'Emergency & Specialist';const x=DATA.find(d=>d.title===title);if(!x)return;
@@ -3005,16 +3018,31 @@ function closeSide(){$('sidebar').classList.remove('open');$('overlay').classLis
  }
  let toastTimer;
  function portalToast(message){let t=document.getElementById('portalToast');if(!t){t=document.createElement('div');t.id='portalToast';t.className='portal-toast';document.body.appendChild(t)}t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1900)}
+ function ensurePortalCardModal(){
+   if(document.getElementById('portalCardModal'))return;
+   const modal=document.createElement('div');modal.id='portalCardModal';modal.className='admin-modal';modal.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><div><h3>Add portal card</h3><p>The new card will be shared live with everyone.</p></div><button class="admin-close" id="portalCardClose">×</button></div><div class="admin-modal-body"><form id="portalCardForm" class="generic-edit-grid"><div><label>Contractor group</label><select id="portalCardGroup"><option value="general">General contractor</option><option value="specialist">Specialist contractor</option></select></div><div><label>Portal access</label><select id="portalCardAccess"><option value="true">Portal access</option><option value="false">No access</option></select></div><div class="full"><label>Contractor name</label><input id="portalCardName" required></div><div class="full"><label>Portal notes</label><textarea id="portalCardNotes"></textarea></div></form></div><div class="admin-modal-foot"><button class="action" id="portalCardCancel">Cancel</button><button class="action primary" id="portalCardSave">Add card</button></div></div>';document.body.appendChild(modal);const close=()=>modal.classList.remove('open');document.getElementById('portalCardClose').onclick=close;document.getElementById('portalCardCancel').onclick=close;modal.addEventListener('click',e=>{if(e.target===modal)close()})
+ }
+ function openPortalCardCreator(x){
+   if(!adminMode)return;ensurePortalCardModal();const form=document.getElementById('portalCardForm');form.reset();
+   document.getElementById('portalCardSave').onclick=()=>{if(!form.reportValidity())return;const group=document.getElementById('portalCardGroup').value,name=document.getElementById('portalCardName').value.trim(),notes=document.getElementById('portalCardNotes').value.trim(),access=document.getElementById('portalCardAccess').value==='true';const custom=readPortalCustom();const duplicate=[...portalData(x).general,...portalData(x).specialists].some(v=>v.group===group&&normalisePortalName(v.name)===normalisePortalName(name));if(duplicate){alert('A portal card with this contractor name already exists in that group.');return}custom.push({id:'portal-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),group,name,notes,access});writePortalCustom(custom);document.getElementById('portalCardModal').classList.remove('open');window.renderPortalAccessCards(x);portalToast('Portal card added and shared live')};document.getElementById('portalCardModal').classList.add('open');setTimeout(()=>document.getElementById('portalCardName')?.focus(),0)
+ }
+ function removePortalCard(x,item){
+   if(!adminMode||!item||!confirm(`Remove ${item.name} from Portal Access?`))return;
+   if(item.custom)writePortalCustom(readPortalCustom().filter(v=>v.id!==item.id));
+   else{const hidden=new Set(readPortalHidden());hidden.add(portalItemKey(item.group,item.name));writePortalHidden([...hidden])}
+   window.renderPortalAccessCards(x);portalToast('Portal card removed and shared live')
+ }
  function groupMarkup(title,subtitle,items,icon,q){
    const filtered=items.filter(v=>!q||(`${v.name} ${v.notes}`).toLowerCase().includes(q));const enabled=filtered.filter(v=>v.access).length;
-   return `<section class="portal-group-card"><div class="portal-group-head"><div class="entry-avatar">${icon}</div><div class="grow"><h3>${esc(title)}</h3><p>${esc(subtitle)}</p></div><div class="portal-metrics"><span class="mini-chip">${filtered.length} contractors</span><span class="mini-chip yes">${enabled} portal enabled</span></div></div><div class="portal-list">${filtered.map(v=>`<article class="portal-entry"><div class="portal-entry-avatar">${esc(portalInitials2(v.name))}</div><div class="portal-entry-main"><strong>${esc(v.name)}</strong>${v.notes?`<small>${esc(v.notes)}</small>`:''}</div><button type="button" class="portal-access-badge ${v.access?'':'no'} ${adminMode?'admin-editable':''}" data-portal-group="${v.group}" data-portal-name="${esc(v.name)}" aria-label="${adminMode?'Change ':''}portal access for ${esc(v.name)}" title="${adminMode?'Click to change portal access':'Portal access status'}">${v.access?'Portal access':'No access'}</button></article>`).join('')||'<div class="portal-empty">No matching contractors found.</div>'}</div></section>`;
+   return `<section class="portal-group-card"><div class="portal-group-head"><div class="entry-avatar">${icon}</div><div class="grow"><h3>${esc(title)}</h3><p>${esc(subtitle)}</p></div><div class="portal-metrics"><span class="mini-chip">${filtered.length} contractors</span><span class="mini-chip yes">${enabled} portal enabled</span></div></div><div class="portal-list">${filtered.map(v=>`<article class="portal-entry" data-portal-custom-id="${esc(v.id||'')}"><div class="portal-entry-avatar">${esc(portalInitials2(v.name))}</div><div class="portal-entry-main"><strong>${esc(v.name)}</strong>${v.notes?`<small>${esc(v.notes)}</small>`:''}</div>${adminMode?`<button type="button" class="portal-card-remove" data-portal-remove="${esc(portalItemKey(v.group,v.name))}" aria-label="Remove ${esc(v.name)}">Remove</button>`:''}<button type="button" class="portal-access-badge ${v.access?'':'no'} ${adminMode?'admin-editable':''}" data-portal-group="${v.group}" data-portal-name="${esc(v.name)}" aria-label="${adminMode?'Change ':''}portal access for ${esc(v.name)}" title="${adminMode?'Click to change portal access':'Portal access status'}">${v.access?'Portal access':'No access'}</button></article>`).join('')||'<div class="portal-empty">No matching contractors found.</div>'}</div></section>`;
  }
  window.renderPortalAccessCards=function(x){
    const data=portalData(x);
-   $('canvas').innerHTML=`<div class="portal-access-shell">${adminMode?'<div class="portal-admin-hint">Admin mode is active. Click any access badge to change it instantly.</div>':''}<div class="portal-note-banner"><strong>Portal access directory.</strong> Contractors are separated into general and specialist groups. Notes shown beneath a contractor name must still be followed when submitting portal updates.</div><div class="portal-access-tools"><input id="portalAccessSearch" type="search" placeholder="Search general and specialist contractors..."><span class="portal-access-summary" id="portalAccessSummary"></span></div><div class="portal-card-grid" id="portalCardGrid"></div></div>`;
+   $('canvas').innerHTML=`<div class="portal-access-shell">${adminMode?'<div class="portal-admin-hint">Admin mode is active. Add, edit or remove portal cards, or click an access badge to change its status.</div>':''}<div class="portal-note-banner"><strong>Portal access directory.</strong> Contractors are separated into general and specialist groups. Notes shown beneath a contractor name must still be followed when submitting portal updates.</div><div class="portal-access-tools"><input id="portalAccessSearch" type="search" placeholder="Search general and specialist contractors..."><span class="portal-access-summary" id="portalAccessSummary"></span>${adminMode?'<button type="button" class="admin-add" id="portalAddCard">+ Add portal card</button>':''}</div><div class="portal-card-grid" id="portalCardGrid"></div></div>`;
    const draw=()=>{const q=$('portalAccessSearch').value.trim().toLowerCase();$('portalCardGrid').innerHTML=groupMarkup('General Contractors','Portal access status for the general repair network.',data.general,'G',q)+groupMarkup('Specialist Contractors','Portal access status for specialist and emergency services.',data.specialists,'S',q);const shown=[...data.general,...data.specialists].filter(v=>!q||(`${v.name} ${v.notes}`).toLowerCase().includes(q)).length;$('portalAccessSummary').textContent=`${shown} contractor${shown===1?'':'s'} shown`};
    $('portalAccessSearch').addEventListener('input',draw);
-   $('portalCardGrid').addEventListener('click',e=>{const btn=e.target.closest('.portal-access-badge');if(!btn||!adminMode)return;const group=btn.dataset.portalGroup,name=btn.dataset.portalName;const list=group==='general'?data.general:data.specialists;const item=list.find(v=>normalisePortalName(v.name)===normalisePortalName(name));if(!item)return;item.access=!item.access;setPortalOverride(group,item.name,item.access);updateDirectoryPortal(group,item.name,item.access);draw();portalToast(`${item.name}: ${item.access?'portal access enabled':'portal access removed'}`)});
+   $('portalAddCard')?.addEventListener('click',()=>openPortalCardCreator(x));
+   $('portalCardGrid').addEventListener('click',e=>{if(!adminMode)return;const remove=e.target.closest('[data-portal-remove]');if(remove){const key=remove.dataset.portalRemove,item=[...data.general,...data.specialists].find(v=>portalItemKey(v.group,v.name)===key);removePortalCard(x,item);return}const btn=e.target.closest('.portal-access-badge');if(!btn)return;const group=btn.dataset.portalGroup,name=btn.dataset.portalName;const list=group==='general'?data.general:data.specialists;const item=list.find(v=>normalisePortalName(v.name)===normalisePortalName(name));if(!item)return;item.access=!item.access;setPortalOverride(group,item.name,item.access);updateDirectoryPortal(group,item.name,item.access);draw();portalToast(`${item.name}: ${item.access?'portal access enabled':'portal access removed'}`)});
    draw();
  }
 })();
@@ -3128,15 +3156,15 @@ const RESP_DEFAULTS=[
  {title:'TBRN Intranet Admin',icon:'⚙',main:'Process & Performance Lead',absence:'Kyle',action:'Email the Process & Performance Lead confirming the required change. If they are absent, copy in Kyle. For contractor-related changes, also copy in Contractor Feedback.'},
  {title:'Reopening a Claim',icon:'↗',action:'Email the MI Analyst, Office Manager and Director – Client Services.'}
 ];
-function getResponsibilities(){try{const saved=JSON.parse(localStorage.getItem(RESP_STORAGE_KEY)||'null');return Array.isArray(saved)&&saved.length?saved:JSON.parse(JSON.stringify(RESP_DEFAULTS))}catch(e){return JSON.parse(JSON.stringify(RESP_DEFAULTS))}}
+function getResponsibilities(){try{const saved=JSON.parse(localStorage.getItem(RESP_STORAGE_KEY)||'null');return Array.isArray(saved)?saved:JSON.parse(JSON.stringify(RESP_DEFAULTS))}catch(e){return JSON.parse(JSON.stringify(RESP_DEFAULTS))}}
 function saveResponsibilities(items){localStorage.setItem(RESP_STORAGE_KEY,JSON.stringify(items))}
 function respLinesToMatrix(value){return String(value||'').split(/\n+/).map(v=>v.trim()).filter(Boolean).map(line=>{const p=line.split('|');return {owner:(p.shift()||'').trim(),clients:p.join('|').split(';').map(v=>v.trim()).filter(Boolean)}}).filter(x=>x.owner||x.clients.length)}
 function respLinesToTiers(value){return String(value||'').split(/\n+/).map(v=>v.trim()).filter(Boolean).map(line=>{const p=line.split('|');return {owner:(p.shift()||'').trim(),rule:p.join('|').trim()}}).filter(x=>x.owner||x.rule)}
 function matrixToLines(m){return (m||[]).map(x=>`${x.owner||''} | ${(x.clients||[]).join('; ')}`).join('\n')}
 function tiersToLines(t){return (t||[]).map(x=>`${x.owner||''} | ${x.rule||''}`).join('\n')}
-function ensureRespModal(){if(document.getElementById('respEditModal'))return;const modal=document.createElement('div');modal.className='admin-modal';modal.id='respEditModal';modal.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><div><h3 id="respEditTitle">Edit responsibility</h3><p>Changes are saved to this browser.</p></div><button class="admin-close" id="respEditClose">×</button></div><div class="admin-modal-body" id="respEditBody"></div><div class="admin-modal-foot" id="respEditFoot"></div></div>';document.body.appendChild(modal);document.getElementById('respEditClose').onclick=closeRespEditor;modal.addEventListener('click',e=>{if(e.target===modal)closeRespEditor()})}
+function ensureRespModal(){if(document.getElementById('respEditModal'))return;const modal=document.createElement('div');modal.className='admin-modal';modal.id='respEditModal';modal.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><div><h3 id="respEditTitle">Edit responsibility</h3><p>Changes save live and are shared with everyone.</p></div><button class="admin-close" id="respEditClose">×</button></div><div class="admin-modal-body" id="respEditBody"></div><div class="admin-modal-foot" id="respEditFoot"></div></div>';document.body.appendChild(modal);document.getElementById('respEditClose').onclick=closeRespEditor;modal.addEventListener('click',e=>{if(e.target===modal)closeRespEditor()})}
 function closeRespEditor(){const m=document.getElementById('respEditModal');if(m)m.classList.remove('open')}
-function openRespEditor(index){if(!adminMode){openAdminPin();return}ensureRespModal();const items=getResponsibilities(),x=items[index];if(!x)return;document.getElementById('respEditTitle').textContent=`Edit: ${x.title}`;document.getElementById('respEditBody').innerHTML=`<div class="resp-unsaved-note">All fields on this card can be amended. Leave a field blank to hide that section.</div><div class="resp-edit-grid">
+function openRespEditor(index=null){if(!adminMode){openAdminPin();return}ensureRespModal();const items=getResponsibilities(),isNew=index===null,x=isNew?{id:uid(),title:'',icon:'•',wide:false}:items[index];if(!x)return;document.getElementById('respEditTitle').textContent=isNew?'Add responsibility card':`Edit: ${x.title}`;document.getElementById('respEditBody').innerHTML=`<div class="resp-unsaved-note">All fields on this card can be amended. Leave a field blank to hide that section.</div><div class="resp-edit-grid">
 <div class="resp-edit-field full"><label>Card title</label><input id="reTitle" value="${esc(x.title||'')}"></div>
 <div class="resp-edit-field"><label>Icon / symbol</label><input id="reIcon" value="${esc(x.icon||'')}"></div>
 <div class="resp-edit-field"><label>Card width</label><select id="reWide"><option value="false" ${!x.wide?'selected':''}>Standard</option><option value="true" ${x.wide?'selected':''}>Full width</option></select></div>
@@ -3148,19 +3176,20 @@ function openRespEditor(index){if(!adminMode){openAdminPin();return}ensureRespMo
 <div class="resp-edit-field full"><label>Examples</label><textarea id="reExamples">${esc((x.examples||[]).join('\n'))}</textarea><div class="resp-edit-help">Enter one example per line.</div></div>
 <div class="resp-edit-field full"><label>Responsibility columns</label><textarea id="reMatrix">${esc(matrixToLines(x.matrix))}</textarea><div class="resp-edit-help">For cards such as Report Checking. One column per line: Owner | Client 1; Client 2; Client 3</div></div>
 <div class="resp-edit-field full"><label>Approval tiers</label><textarea id="reTiers">${esc(tiersToLines(x.tiers))}</textarea><div class="resp-edit-help">For cards such as DA Approval. One tier per line: Owner | Approval rule</div></div>
-</div>`;document.getElementById('respEditFoot').innerHTML='<button class="action" id="respEditCancel">Cancel</button><button class="action primary" id="respEditSave">Save changes</button>';document.getElementById('respEditCancel').onclick=closeRespEditor;document.getElementById('respEditSave').onclick=()=>saveRespEditor(index);document.getElementById('respEditModal').classList.add('open')}
-function saveRespEditor(index){const items=getResponsibilities(),old=items[index]||{};const val=id=>document.getElementById(id).value.trim();const updated={title:val('reTitle')||'Untitled responsibility',icon:val('reIcon')||'•',wide:document.getElementById('reWide').value==='true'};['subtitle','main','absence','extra','action'].forEach(k=>{const v=val('re'+k[0].toUpperCase()+k.slice(1));if(v)updated[k]=v});const examples=val('reExamples').split(/\n+/).map(v=>v.trim()).filter(Boolean);if(examples.length)updated.examples=examples;const matrix=respLinesToMatrix(val('reMatrix'));if(matrix.length)updated.matrix=matrix;const tiers=respLinesToTiers(val('reTiers'));if(tiers.length)updated.tiers=tiers;items[index]=updated;saveResponsibilities(items);closeRespEditor();renderResponsibilities();if(typeof showToast==='function')showToast('Responsibility card updated')}
+</div>`;document.getElementById('respEditFoot').innerHTML=`<button class="action" id="respEditCancel">Cancel</button><button class="action primary" id="respEditSave">${isNew?'Add card':'Save changes'}</button>`;document.getElementById('respEditCancel').onclick=closeRespEditor;document.getElementById('respEditSave').onclick=()=>saveRespEditor(index);document.getElementById('respEditModal').classList.add('open')}
+function saveRespEditor(index){const items=getResponsibilities(),old=index===null?{}:(items[index]||{});const val=id=>document.getElementById(id).value.trim();const updated={id:old.id||uid(),title:val('reTitle')||'Untitled responsibility',icon:val('reIcon')||'•',wide:document.getElementById('reWide').value==='true'};['subtitle','main','absence','extra','action'].forEach(k=>{const v=val('re'+k[0].toUpperCase()+k.slice(1));if(v)updated[k]=v});const examples=val('reExamples').split(/\n+/).map(v=>v.trim()).filter(Boolean);if(examples.length)updated.examples=examples;const matrix=respLinesToMatrix(val('reMatrix'));if(matrix.length)updated.matrix=matrix;const tiers=respLinesToTiers(val('reTiers'));if(tiers.length)updated.tiers=tiers;if(index===null)items.push(updated);else items[index]=updated;saveResponsibilities(items);closeRespEditor();renderResponsibilities();if(typeof showToast==='function')showToast(index===null?'Responsibility card added':'Responsibility card updated')}
+function removeRespCard(index){if(!adminMode)return;const items=getResponsibilities(),item=items[index];if(!item||!confirm(`Remove ${item.title||'this responsibility card'}?`))return;items.splice(index,1);saveResponsibilities(items);renderResponsibilities();if(typeof showToast==='function')showToast('Responsibility card removed')}
 renderResponsibilities=function(){
  const items=getResponsibilities();
- document.getElementById('canvas').innerHTML=`<div class="resp-shell ${adminMode?'admin-active':''}"><div class="resp-toolbar"><input id="respSearch" placeholder="Search responsibilities, owners or actions..."><div class="resp-count" id="respCount"></div></div><div class="resp-grid" id="respGrid"></div></div>`;
+ document.getElementById('canvas').innerHTML=`<div class="resp-shell ${adminMode?'admin-active':''}">${adminMode?'<div class="admin-page-hint">Admin mode is active. Responsibility cards can be added, edited or removed and changes are shared live.</div>':''}<div class="resp-toolbar"><input id="respSearch" placeholder="Search responsibilities, owners or actions..."><div class="resp-count" id="respCount"></div>${adminMode?'<button type="button" class="admin-add" id="respAddCard">+ Add responsibility card</button>':''}</div><div class="resp-grid" id="respGrid"></div></div>`;
  const card=(x,index)=>{let body='';
   if(x.matrix&&x.matrix.length)body=`<div class="resp-matrix">${x.matrix.map(c=>`<div class="resp-column"><h4>${esc(c.owner)}</h4><ul>${(c.clients||[]).map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div>`).join('')}</div>`;
   else if(x.tiers&&x.tiers.length)body=`<div class="resp-matrix">${x.tiers.map(t=>`<div class="resp-tier"><strong>${esc(t.owner)}</strong><span>${esc(t.rule)}</span></div>`).join('')}</div>`;
   else body=`<div class="resp-body">${x.main?`<div class="resp-row"><div class="resp-label">Main</div><div class="resp-owner"><span class="resp-chip">${esc(x.main)}</span></div></div>`:''}${x.absence?`<div class="resp-row"><div class="resp-label">Absence</div><div class="resp-owner"><span class="resp-chip alt">${esc(x.absence)}</span></div></div>`:''}${x.extra?`<div class="resp-action">${esc(x.extra)}</div>`:''}${x.action?`<div><div class="resp-label" style="margin-bottom:7px">Action</div><div class="resp-action">${esc(x.action)}</div></div>`:''}${x.examples&&x.examples.length?`<div><div class="resp-label" style="margin-bottom:7px">Example${x.examples.length>1?'s':''}</div>${x.examples.map(e=>`<div class="resp-example" style="margin-bottom:7px">${esc(e)}</div>`).join('')}</div>`:''}</div>`;
-  return `<article class="resp-card ${x.wide?'wide':''}"><div class="resp-head"><div class="resp-icon">${esc(x.icon||'•')}</div><div><h3>${esc(x.title)}</h3>${x.subtitle?`<p>${esc(x.subtitle)}</p>`:''}</div>${adminMode?`<button type="button" class="resp-admin-edit" data-resp-edit="${index}">Edit card</button>`:''}</div><div style="margin-top:14px">${body}</div></article>`;
+  return `<article class="resp-card ${x.wide?'wide':''}"><div class="resp-head"><div class="resp-icon">${esc(x.icon||'•')}</div><div><h3>${esc(x.title)}</h3>${x.subtitle?`<p>${esc(x.subtitle)}</p>`:''}</div>${adminMode?`<div class="resp-admin-actions"><button type="button" class="resp-admin-edit" data-resp-edit="${index}">Edit</button><button type="button" class="danger resp-admin-edit" data-resp-remove="${index}">Remove</button></div>`:''}</div><div style="margin-top:14px">${body}</div></article>`;
  };
  const draw=()=>{const q=document.getElementById('respSearch').value.trim().toLowerCase();const shown=items.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));document.getElementById('respCount').textContent=`${shown.length} section${shown.length===1?'':'s'}${adminMode?' · Admin editing enabled':''}`;document.getElementById('respGrid').innerHTML=shown.map(o=>card(o.x,o.i)).join('')||'<div class="resp-empty">No matching responsibility found.</div>'};
- document.getElementById('respSearch').addEventListener('input',draw);document.getElementById('respGrid').addEventListener('click',e=>{const b=e.target.closest('[data-resp-edit]');if(b)openRespEditor(Number(b.dataset.respEdit))});draw();
+ document.getElementById('respSearch').addEventListener('input',draw);document.getElementById('respAddCard')?.addEventListener('click',()=>openRespEditor(null));document.getElementById('respGrid').addEventListener('click',e=>{const edit=e.target.closest('[data-resp-edit]'),remove=e.target.closest('[data-resp-remove]');if(edit)openRespEditor(Number(edit.dataset.respEdit));if(remove)removeRespCard(Number(remove.dataset.respRemove))});draw();
 };
 </script>
 
@@ -3184,7 +3213,7 @@ renderResponsibilities=function(){
  function getCards(x){try{const v=JSON.parse(localStorage.getItem(resourceKey(x.title))||'null');if(Array.isArray(v))return v}catch(e){}const d=x.title===CONTACT_TITLE?defaultContacts(x):defaultGenericCards(x);localStorage.setItem(resourceKey(x.title),JSON.stringify(d));return d}
  function saveCards(x,cards){localStorage.setItem(resourceKey(x.title),JSON.stringify(cards))}
  function toast(msg){if(typeof portalToast==='function')return portalToast(msg);if(typeof showToast==='function')return showToast(msg)}
- function ensureModal(){if(document.getElementById('universalCardModal'))return;const m=document.createElement('div');m.id='universalCardModal';m.className='admin-modal';m.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><div><h3 id="ucmTitle">Edit card</h3><p>Changes are saved to this browser.</p></div><button class="admin-close" id="ucmClose">×</button></div><div class="admin-modal-body" id="ucmBody"></div><div class="admin-modal-foot" id="ucmFoot"></div></div>';document.body.appendChild(m);document.getElementById('ucmClose').onclick=()=>m.classList.remove('open');m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})}
+ function ensureModal(){if(document.getElementById('universalCardModal'))return;const m=document.createElement('div');m.id='universalCardModal';m.className='admin-modal';m.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><div><h3 id="ucmTitle">Edit card</h3><p>Changes save live and are shared with everyone.</p></div><button class="admin-close" id="ucmClose">×</button></div><div class="admin-modal-body" id="ucmBody"></div><div class="admin-modal-foot" id="ucmFoot"></div></div>';document.body.appendChild(m);document.getElementById('ucmClose').onclick=()=>m.classList.remove('open');m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})}
  function fieldsToLines(fields){return (fields||[]).map(f=>`${f.label||'Information'} | ${f.value||''}`).join('\n')}
  function linesToFields(v){return String(v||'').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(line=>{const p=line.split('|');return {label:(p.shift()||'Information').trim(),value:p.join('|').trim()}}).filter(f=>f.value)}
  function openEditor(x,index,isContact){if(!adminMode){openAdminPin();return}ensureModal();const cards=getCards(x),item=index===null?(isContact?{id:uid(),name:'',area:'',phone:'',email:'',notes:''}:{id:uid(),title:'',subtitle:x.category,fields:[]}):cards[index];document.getElementById('ucmTitle').textContent=index===null?'Add new card':'Edit card';document.getElementById('ucmBody').innerHTML=isContact?`<div class="generic-edit-grid"><div class="full"><label>Contact name</label><input id="ucName" value="${esc(item.name||'')}"></div><div><label>Area / department</label><input id="ucArea" value="${esc(item.area||'')}"></div><div><label>Telephone</label><input id="ucPhone" value="${esc(item.phone||'')}"></div><div class="full"><label>Email</label><input id="ucEmail" value="${esc(item.email||'')}"></div><div class="full"><label>Notes</label><textarea id="ucNotes">${esc(item.notes||'')}</textarea></div></div>`:`<div class="generic-edit-grid"><div class="full"><label>Card title</label><input id="ucTitle" value="${esc(item.title||'')}"></div><div class="full"><label>Subtitle</label><input id="ucSubtitle" value="${esc(item.subtitle||'')}"></div><div class="full"><label>Card information</label><textarea id="ucFields">${esc(fieldsToLines(item.fields))}</textarea><div class="edit-help">Enter one item per line using: Label | Information</div></div></div>`;document.getElementById('ucmFoot').innerHTML='<button class="action" id="ucCancel">Cancel</button><button class="action primary" id="ucSave">Save card</button>';document.getElementById('ucCancel').onclick=()=>document.getElementById('universalCardModal').classList.remove('open');document.getElementById('ucSave').onclick=()=>{let updated;if(isContact)updated={id:item.id||uid(),name:text(document.getElementById('ucName').value)||'Unnamed contact',area:text(document.getElementById('ucArea').value),phone:text(document.getElementById('ucPhone').value),email:text(document.getElementById('ucEmail').value),notes:document.getElementById('ucNotes').value.trim()};else updated={id:item.id||uid(),title:text(document.getElementById('ucTitle').value)||'Untitled card',subtitle:text(document.getElementById('ucSubtitle').value),fields:linesToFields(document.getElementById('ucFields').value),image:item.image||''};if(index===null)cards.push(updated);else cards[index]=updated;saveCards(x,cards);document.getElementById('universalCardModal').classList.remove('open');renderResourceCards(x,isContact);toast(index===null?'Card added':'Card updated')};document.getElementById('universalCardModal').classList.add('open')}
@@ -3198,7 +3227,7 @@ renderResponsibilities=function(){
 </script>
 
 <style>
-.portal-entry .portal-card-edit{display:none;border:1px solid #cdd9e5;background:#fff;border-radius:8px;padding:6px 9px;font-size:11px;cursor:pointer}.portal-entry.admin-card-editable .portal-card-edit{display:inline-flex}.portal-entry-main{min-width:0}.portal-entry-main strong,.portal-entry-main small{overflow-wrap:anywhere}
+.portal-entry .portal-card-edit{display:none;border:1px solid #cdd9e5;background:#fff;border-radius:8px;padding:6px 9px;font-size:11px;cursor:pointer}.portal-entry.admin-card-editable .portal-card-edit{display:inline-flex}.portal-entry-main{min-width:0}.portal-entry-main strong,.portal-entry-main small{overflow-wrap:anywhere}.portal-card-remove{border:1px solid #f0c4c0;background:#fff;color:#b42318;border-radius:8px;padding:6px 9px;font-size:11px;cursor:pointer}.portal-entry.admin-card-editable{grid-template-columns:40px minmax(0,1fr) auto auto auto}@media(max-width:650px){.portal-entry.admin-card-editable{grid-template-columns:36px minmax(0,1fr);align-items:start}.portal-entry.admin-card-editable .portal-card-edit,.portal-entry.admin-card-editable .portal-card-remove,.portal-entry.admin-card-editable .portal-access-badge{grid-column:2;justify-self:start}}
 </style>
 <script>
 (function(){
@@ -9750,6 +9779,66 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
 })();
 </script>
 
+<style id="tbrn-admin-card-manager-styles">
+.card-manager-intro{margin:0 0 14px;color:#657487;font-size:12px;line-height:1.55}.card-manager-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card-manager-item{display:flex;align-items:center;gap:11px;width:100%;padding:13px;border:1px solid #dce5ed;border-radius:13px;background:#fff;color:#1d3348;text-align:left;cursor:pointer;transition:.15s ease}.card-manager-item:hover{border-color:#96b9e2;background:#f7fbff;transform:translateY(-1px)}.card-manager-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:11px;background:#edf4ff;color:#245a97;font-weight:800}.card-manager-copy{min-width:0}.card-manager-copy strong{display:block;font-size:13px}.card-manager-copy small{display:block;margin-top:3px;color:#738193;font-size:11px}.card-manager-arrow{margin-left:auto;color:#64809c}@media(max-width:650px){.card-manager-grid{grid-template-columns:1fr}}
+</style>
+<script id="tbrn-admin-card-manager">
+(function(){
+  'use strict';
+  const WORKSPACES=[
+    {title:'2. General',label:'General contractors',type:'Contractor cards',icon:'G'},
+    {title:'Emergency & Specialist',label:'Emergency & specialists',type:'Specialist cards',icon:'E'},
+    {title:'Specialists Work Type',label:'Specialist work types',type:'Contractor cards',icon:'S'},
+    {title:'Specialist Price Lists',label:'Specialist price lists',type:'Information cards',icon:'£'},
+    {title:'Contractor Support',label:'Contractor support',type:'Allocation cards',icon:'C'},
+    {title:'Contractor Portal Access',label:'Portal access',type:'Portal cards',icon:'P'},
+    {title:'3. Surveyors',label:'Surveyors',type:'Surveyor cards',icon:'S'},
+    {title:'4. Useful Contacts',label:'Useful contacts',type:'Contact cards',icon:'@'},
+    {title:'7. Task Process',label:'Task process',type:'Process cards',icon:'T'},
+    {title:'Responsibilities',label:'Responsibilities',type:'Responsibility cards',icon:'R'},
+    {title:'Executive Summary Templates',label:'Executive summary templates',type:'Template cards',icon:'X'}
+  ];
+
+  function availableWorkspaces(){return WORKSPACES.filter(item=>DATA.some(record=>record.title===item.title))}
+
+  function openWorkspace(title){
+    if(!adminMode)return;
+    const index=DATA.findIndex(record=>record.title===title);
+    if(index<0)return;
+    closeAdminModal();
+    openDoc(index);
+  }
+
+  function openAdminCardManager(){
+    if(!adminMode){openAdminPin();return}
+    const modal=document.getElementById('adminModal'),body=document.getElementById('adminModalBody'),foot=document.getElementById('adminModalFoot');
+    document.getElementById('adminModalTitle').textContent='Manage Hub cards';
+    body.innerHTML=`<p class="card-manager-intro">Choose a card workspace. Each page will show its own <b>Add card</b> control plus Edit and Remove actions while Admin Mode is active. Saved changes sync to all Hub users.</p><div class="card-manager-grid">${availableWorkspaces().map(item=>`<button type="button" class="card-manager-item" data-card-workspace="${esc(item.title)}"><span class="card-manager-icon">${esc(item.icon)}</span><span class="card-manager-copy"><strong>${esc(item.label)}</strong><small>${esc(item.type)}</small></span><span class="card-manager-arrow">→</span></button>`).join('')}</div>`;
+    foot.innerHTML='<button class="action" id="cardManagerClose">Close</button>';
+    document.getElementById('cardManagerClose').onclick=closeAdminModal;
+    body.querySelectorAll('[data-card-workspace]').forEach(button=>button.onclick=()=>openWorkspace(button.dataset.cardWorkspace));
+    modal.classList.add('open');
+  }
+
+  window.openAdminCardManager=openAdminCardManager;
+  const previousRenderAdminDashboard=window.renderAdminDashboard;
+  window.renderAdminDashboard=function(){
+    previousRenderAdminDashboard();
+    if(!adminMode)return;
+    const grid=document.querySelector('#adminContent .admin-grid');
+    if(!grid||grid.querySelector('[data-card-manager-card]'))return;
+    grid.insertAdjacentHTML('afterbegin',`
+      <div class="admin-card" data-card-manager-card>
+        <div class="resource-type">Content management</div>
+        <div class="cat-icon">+</div>
+        <h3>Hub cards</h3>
+        <p>Add, edit or remove cards across every card-based Hub section.</p>
+        <button class="action primary" type="button" onclick="openAdminCardManager()">Manage all cards</button>
+      </div>`);
+  };
+})();
+</script>
+
 <script id="tbrn-published-version-update-check">
 (function(){
   'use strict';
@@ -9801,7 +9890,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
       focused.isContentEditable
     );
     const openEditor=document.querySelector(
-      '#adminModal.open,#universalCardModal.open,.modal.open,[role="dialog"].open'
+      '.admin-modal.open,.modal.open,[role="dialog"].open'
     );
     return !!((adminActive||devActive)&&(typing||openEditor));
   }
