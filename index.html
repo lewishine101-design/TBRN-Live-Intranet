@@ -2924,7 +2924,7 @@ function saveSupportCards(v){localStorage.setItem(supportKey(),JSON.stringify(v)
 const supportAreaOrder=['Obtain Contractor Invoices','Prelim Contractor Tasks','Start Date Tasks'];
 function renderSupportCards(x){
  let cards=getSupportCards(x);$('canvas').innerHTML=`<div class="directory-shell"><div class="directory-tools"><input id="supportSearch" placeholder="Search support owner or contractor..."><select id="supportArea"><option value="">All support areas</option>${supportAreaOrder.map(a=>`<option>${esc(a)}</option>`).join('')}</select><div class="directory-count" id="supportCount"></div>${adminMode?'<button class="admin-add" id="addSupportCard">+ Add support card</button>':''}</div><div class="grouped-directory" id="supportGrid"></div></div>`;
- const draw=()=>{cards=getSupportCards(x);const q=$('supportSearch').value.toLowerCase(),area=$('supportArea').value;const shown=cards.filter(c=>(!area||c.area===area)&&(c.area+' '+c.owner+' '+c.contractors.join(' ')).toLowerCase().includes(q));$('supportCount').textContent=`${shown.length} support card${shown.length===1?'':'s'}`;$('supportGrid').innerHTML=supportAreaOrder.map(a=>{const arr=shown.filter(c=>c.area===a);if(!arr.length)return'';const first=arr[0];return `<section class="group-section"><div class="group-section-head support-area-head"><div><h3>${esc(a)}</h3><p>${esc(first.description||'')}</p><div class="support-meta">${first.updated?`<span>Last updated ${esc(first.updated)}</span>`:''}<span>${arr.length} allocated area${arr.length===1?'':'s'}</span></div></div></div><div class="group-card-grid">${arr.map(c=>{const initials=c.owner.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="support-card"><div class="support-card-head"><div class="entry-avatar">${esc(initials||'CS')}</div><div class="grow"><h4>${esc(c.owner)}</h4><p>${c.contractors.length} assigned contractor${c.contractors.length===1?'':'s'}</p></div>${adminMode?`<div class="resource-admin-actions"><button onclick="openSupportEditor('${c.id}')">Edit</button><button class="danger" onclick="removeSupportCard('${c.id}')">Remove</button></div>`:''}</div><div class="contractor-chip-list">${c.contractors.map(v=>`<span class="contractor-chip">${esc(v)}</span>`).join('')}</div></article>`}).join('')}</div></section>`}).join('')||'<div class="directory-empty">No matching support allocations found.</div>'};
+ const draw=()=>{cards=getSupportCards(x);const q=$('supportSearch').value.toLowerCase(),area=$('supportArea').value;const shown=cards.filter(c=>(!area||c.area===area)&&(c.area+' '+c.owner+' '+c.contractors.join(' ')).toLowerCase().includes(q));$('supportCount').textContent=`${shown.length} support card${shown.length===1?'':'s'}`;$('supportGrid').innerHTML=supportAreaOrder.map(a=>{const arr=shown.filter(c=>c.area===a);if(!arr.length)return'';const first=arr[0];return `<section class="group-section"><div class="group-section-head support-area-head"><div><h3>${esc(a)}</h3><p>${esc(first.description||'')}</p><div class="support-meta">${first.updated?`<span>Last updated ${esc(first.updated)}</span>`:''}<span>${arr.length} allocated area${arr.length===1?'':'s'}</span></div></div></div><div class="group-card-grid">${arr.map(c=>{const initials=c.owner.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();return `<article class="support-card" data-tbrn-card-id="${esc(c.id||c.owner)}"><div class="support-card-head"><div class="entry-avatar">${esc(initials||'CS')}</div><div class="grow"><h4>${esc(c.owner)}</h4><p>${c.contractors.length} assigned contractor${c.contractors.length===1?'':'s'}</p></div>${adminMode?`<div class="resource-admin-actions"><button onclick="openSupportEditor('${c.id}')">Edit</button><button class="danger" onclick="removeSupportCard('${c.id}')">Remove</button></div>`:''}</div><div class="contractor-chip-list">${c.contractors.map(v=>`<span class="contractor-chip">${esc(v)}</span>`).join('')}</div></article>`}).join('')}</div></section>`}).join('')||'<div class="directory-empty">No matching support allocations found.</div>'};
  $('supportSearch').addEventListener('input',draw);$('supportArea').addEventListener('change',draw);if($('addSupportCard'))$('addSupportCard').onclick=()=>openSupportEditor();draw();
 }
 function supportForm(c){c=c||{id:uid(),area:supportAreaOrder[0],description:'',updated:'',owner:'',contractors:[]};return `<form id="supportForm" class="form-grid"><input type="hidden" name="id" value="${esc(c.id)}"><div class="form-field"><label>Support area</label><select name="area">${supportAreaOrder.map(a=>`<option ${c.area===a?'selected':''}>${esc(a)}</option>`).join('')}</select></div><div class="form-field"><label>Last updated</label><input name="updated" value="${esc(c.updated||'')}" placeholder="DD.MM.YYYY"></div><div class="form-field full"><label>Support owner</label><input name="owner" required value="${esc(c.owner||'')}"></div><div class="form-field full"><label>Area guidance</label><textarea name="description">${esc(c.description||'')}</textarea></div><div class="form-field full"><label>Assigned contractors</label><textarea class="wide-textarea" name="contractors" required>${esc((c.contractors||[]).join('\n'))}</textarea><div class="form-help">Enter one contractor per line. The contractors remain grouped under this support owner and task area.</div></div></form>`}
@@ -3186,7 +3186,7 @@ renderResponsibilities=function(){
   if(x.matrix&&x.matrix.length)body=`<div class="resp-matrix">${x.matrix.map(c=>`<div class="resp-column"><h4>${esc(c.owner)}</h4><ul>${(c.clients||[]).map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div>`).join('')}</div>`;
   else if(x.tiers&&x.tiers.length)body=`<div class="resp-matrix">${x.tiers.map(t=>`<div class="resp-tier"><strong>${esc(t.owner)}</strong><span>${esc(t.rule)}</span></div>`).join('')}</div>`;
   else body=`<div class="resp-body">${x.main?`<div class="resp-row"><div class="resp-label">Main</div><div class="resp-owner"><span class="resp-chip">${esc(x.main)}</span></div></div>`:''}${x.absence?`<div class="resp-row"><div class="resp-label">Absence</div><div class="resp-owner"><span class="resp-chip alt">${esc(x.absence)}</span></div></div>`:''}${x.extra?`<div class="resp-action">${esc(x.extra)}</div>`:''}${x.action?`<div><div class="resp-label" style="margin-bottom:7px">Action</div><div class="resp-action">${esc(x.action)}</div></div>`:''}${x.examples&&x.examples.length?`<div><div class="resp-label" style="margin-bottom:7px">Example${x.examples.length>1?'s':''}</div>${x.examples.map(e=>`<div class="resp-example" style="margin-bottom:7px">${esc(e)}</div>`).join('')}</div>`:''}</div>`;
-  return `<article class="resp-card ${x.wide?'wide':''}"><div class="resp-head"><div class="resp-icon">${esc(x.icon||'•')}</div><div><h3>${esc(x.title)}</h3>${x.subtitle?`<p>${esc(x.subtitle)}</p>`:''}</div>${adminMode?`<div class="resp-admin-actions"><button type="button" class="resp-admin-edit" data-resp-edit="${index}">Edit</button><button type="button" class="danger resp-admin-edit" data-resp-remove="${index}">Remove</button></div>`:''}</div><div style="margin-top:14px">${body}</div></article>`;
+  return `<article class="resp-card ${x.wide?'wide':''}" data-tbrn-card-id="${esc(x.id||x.title)}"><div class="resp-head"><div class="resp-icon">${esc(x.icon||'•')}</div><div><h3>${esc(x.title)}</h3>${x.subtitle?`<p>${esc(x.subtitle)}</p>`:''}</div>${adminMode?`<div class="resp-admin-actions"><button type="button" class="resp-admin-edit" data-resp-edit="${index}">Edit</button><button type="button" class="danger resp-admin-edit" data-resp-remove="${index}">Remove</button></div>`:''}</div><div style="margin-top:14px">${body}</div></article>`;
  };
  const draw=()=>{const q=document.getElementById('respSearch').value.trim().toLowerCase();const shown=items.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));document.getElementById('respCount').textContent=`${shown.length} section${shown.length===1?'':'s'}${adminMode?' · Admin editing enabled':''}`;document.getElementById('respGrid').innerHTML=shown.map(o=>card(o.x,o.i)).join('')||'<div class="resp-empty">No matching responsibility found.</div>'};
  document.getElementById('respSearch').addEventListener('input',draw);document.getElementById('respAddCard')?.addEventListener('click',()=>openRespEditor(null));document.getElementById('respGrid').addEventListener('click',e=>{const edit=e.target.closest('[data-resp-edit]'),remove=e.target.closest('[data-resp-remove]');if(edit)openRespEditor(Number(edit.dataset.respEdit));if(remove)removeRespCard(Number(remove.dataset.respRemove))});draw();
@@ -3218,8 +3218,8 @@ renderResponsibilities=function(){
  function linesToFields(v){return String(v||'').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(line=>{const p=line.split('|');return {label:(p.shift()||'Information').trim(),value:p.join('|').trim()}}).filter(f=>f.value)}
  function openEditor(x,index,isContact){if(!adminMode){openAdminPin();return}ensureModal();const cards=getCards(x),item=index===null?(isContact?{id:uid(),name:'',area:'',phone:'',email:'',notes:''}:{id:uid(),title:'',subtitle:x.category,fields:[]}):cards[index];document.getElementById('ucmTitle').textContent=index===null?'Add new card':'Edit card';document.getElementById('ucmBody').innerHTML=isContact?`<div class="generic-edit-grid"><div class="full"><label>Contact name</label><input id="ucName" value="${esc(item.name||'')}"></div><div><label>Area / department</label><input id="ucArea" value="${esc(item.area||'')}"></div><div><label>Telephone</label><input id="ucPhone" value="${esc(item.phone||'')}"></div><div class="full"><label>Email</label><input id="ucEmail" value="${esc(item.email||'')}"></div><div class="full"><label>Notes</label><textarea id="ucNotes">${esc(item.notes||'')}</textarea></div></div>`:`<div class="generic-edit-grid"><div class="full"><label>Card title</label><input id="ucTitle" value="${esc(item.title||'')}"></div><div class="full"><label>Subtitle</label><input id="ucSubtitle" value="${esc(item.subtitle||'')}"></div><div class="full"><label>Card information</label><textarea id="ucFields">${esc(fieldsToLines(item.fields))}</textarea><div class="edit-help">Enter one item per line using: Label | Information</div></div></div>`;document.getElementById('ucmFoot').innerHTML='<button class="action" id="ucCancel">Cancel</button><button class="action primary" id="ucSave">Save card</button>';document.getElementById('ucCancel').onclick=()=>document.getElementById('universalCardModal').classList.remove('open');document.getElementById('ucSave').onclick=()=>{let updated;if(isContact)updated={id:item.id||uid(),name:text(document.getElementById('ucName').value)||'Unnamed contact',area:text(document.getElementById('ucArea').value),phone:text(document.getElementById('ucPhone').value),email:text(document.getElementById('ucEmail').value),notes:document.getElementById('ucNotes').value.trim()};else updated={id:item.id||uid(),title:text(document.getElementById('ucTitle').value)||'Untitled card',subtitle:text(document.getElementById('ucSubtitle').value),fields:linesToFields(document.getElementById('ucFields').value),image:item.image||''};if(index===null)cards.push(updated);else cards[index]=updated;saveCards(x,cards);document.getElementById('universalCardModal').classList.remove('open');renderResourceCards(x,isContact);toast(index===null?'Card added':'Card updated')};document.getElementById('universalCardModal').classList.add('open')}
  function removeCard(x,index,isContact){if(!adminMode)return;const cards=getCards(x),label=isContact?(cards[index]?.name||'contact'):(cards[index]?.title||'card');if(!confirm(`Remove ${label}?`))return;cards.splice(index,1);saveCards(x,cards);renderResourceCards(x,isContact);toast('Card removed')}
- function contactMarkup(c,i){const initials=(c.name||'C').split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase();return `<article class="resource-card contact-card"><div class="resource-card-head"><div class="entry-avatar">${esc(initials)}</div><div class="grow"><h3 class="contact-name">${esc(c.name)}</h3>${c.area?`<p>${esc(c.area)}</p>`:''}</div></div><div class="resource-card-fields">${c.phone?`<div class="resource-field"><b>Telephone</b><span>${esc(c.phone)}</span></div>`:''}${c.email?`<div class="resource-field"><b>Email</b><span>${esc(c.email)}</span></div>`:''}${c.notes?`<div class="resource-field"><b>Notes</b><span>${esc(c.notes)}</span></div>`:''}</div><div class="contact-actions">${c.phone?`<a href="tel:${esc(c.phone.replace(/\s/g,''))}">Call</a>`:''}${c.email?`<a href="mailto:${esc(c.email)}">Email</a>`:''}</div>${adminMode?`<div class="resource-card-actions"><button data-uc-edit="${i}">Edit</button><button class="danger" data-uc-remove="${i}">Remove</button></div>`:''}</article>`}
- function genericMarkup(c,i){return `<article class="resource-card ${c.image?'resource-media':''}"><div class="resource-card-head"><div class="entry-avatar">${esc((c.title||'I').charAt(0).toUpperCase())}</div><div class="grow"><h3>${esc(c.title)}</h3>${c.subtitle?`<p>${esc(c.subtitle)}</p>`:''}</div></div>${c.image?`<div style="margin-top:14px"><img src="${c.image}" alt="${esc(c.title)}"></div>`:`<div class="resource-card-fields">${(c.fields||[]).map(f=>`<div class="resource-field"><b>${esc(f.label)}</b><span>${esc(f.value)}</span></div>`).join('')}</div>`}${adminMode?`<div class="resource-card-actions"><button data-uc-edit="${i}">Edit</button><button class="danger" data-uc-remove="${i}">Remove</button></div>`:''}</article>`}
+ function contactMarkup(c,i){const initials=(c.name||'C').split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase();return `<article class="resource-card contact-card" data-tbrn-card-id="${esc(c.id||c.name)}"><div class="resource-card-head"><div class="entry-avatar">${esc(initials)}</div><div class="grow"><h3 class="contact-name">${esc(c.name)}</h3>${c.area?`<p>${esc(c.area)}</p>`:''}</div></div><div class="resource-card-fields">${c.phone?`<div class="resource-field"><b>Telephone</b><span>${esc(c.phone)}</span></div>`:''}${c.email?`<div class="resource-field"><b>Email</b><span>${esc(c.email)}</span></div>`:''}${c.notes?`<div class="resource-field"><b>Notes</b><span>${esc(c.notes)}</span></div>`:''}</div><div class="contact-actions">${c.phone?`<a href="tel:${esc(c.phone.replace(/\s/g,''))}">Call</a>`:''}${c.email?`<a href="mailto:${esc(c.email)}">Email</a>`:''}</div>${adminMode?`<div class="resource-card-actions"><button data-uc-edit="${i}">Edit</button><button class="danger" data-uc-remove="${i}">Remove</button></div>`:''}</article>`}
+ function genericMarkup(c,i){return `<article class="resource-card ${c.image?'resource-media':''}" data-tbrn-card-id="${esc(c.id||c.title)}"><div class="resource-card-head"><div class="entry-avatar">${esc((c.title||'I').charAt(0).toUpperCase())}</div><div class="grow"><h3>${esc(c.title)}</h3>${c.subtitle?`<p>${esc(c.subtitle)}</p>`:''}</div></div>${c.image?`<div style="margin-top:14px"><img src="${c.image}" alt="${esc(c.title)}"></div>`:`<div class="resource-card-fields">${(c.fields||[]).map(f=>`<div class="resource-field"><b>${esc(f.label)}</b><span>${esc(f.value)}</span></div>`).join('')}</div>`}${adminMode?`<div class="resource-card-actions"><button data-uc-edit="${i}">Edit</button><button class="danger" data-uc-remove="${i}">Remove</button></div>`:''}</article>`}
  window.renderResourceCards=function(x,isContact=x.title===CONTACT_TITLE){let cards=getCards(x);document.getElementById('canvas').innerHTML=`<div class="resource-card-shell">${adminMode?'<div class="admin-page-hint">Admin mode is active. Every card on this page can be added, edited or removed.</div>':''}<div class="resource-card-toolbar"><input id="ucSearch" placeholder="Search this page..."><div class="resource-card-count" id="ucCount"></div>${adminMode?`<button class="admin-add" id="ucAdd">+ Add ${isContact?'useful contact':'card'}</button>`:''}</div><div class="resource-card-grid" id="ucGrid"></div></div>`;const draw=()=>{cards=getCards(x);const q=document.getElementById('ucSearch').value.trim().toLowerCase();const shown=cards.map((c,i)=>({c,i})).filter(o=>JSON.stringify(o.c).toLowerCase().includes(q));document.getElementById('ucCount').textContent=`${shown.length} card${shown.length===1?'':'s'}`;document.getElementById('ucGrid').innerHTML=shown.map(o=>isContact?contactMarkup(o.c,o.i):genericMarkup(o.c,o.i)).join('')||'<div class="directory-empty">No matching cards found.</div>'};document.getElementById('ucSearch').addEventListener('input',draw);if(adminMode)document.getElementById('ucAdd').onclick=()=>openEditor(x,null,isContact);document.getElementById('ucGrid').addEventListener('click',e=>{const eb=e.target.closest('[data-uc-edit]'),rb=e.target.closest('[data-uc-remove]');if(eb)openEditor(x,Number(eb.dataset.ucEdit),isContact);if(rb)removeCard(x,Number(rb.dataset.ucRemove),isContact)});draw()}
  const oldOpenDoc=window.openDoc||openDoc;
  window.openDoc=openDoc=function(i){const x=DATA[i];if(!x)return;if(SPECIAL_TITLES.has(x.title)||x.category==='Pricing & Finance'){return oldOpenDoc(i)}currentCategory=x.category;hideAll();$('documentView').classList.remove('hidden');$('docTitle').textContent=x.title;$('docMeta').textContent=`${x.category} · Live editable card workspace`;$('docIcon').textContent=ICONS[x.category]||'•';renderResourceCards(x,x.title===CONTACT_TITLE);setNav(x.category);window.scrollTo(0,0)};
@@ -3942,7 +3942,7 @@ renderResponsibilities=function(){
           :status==='taking'
           ?'<div class="hold-banner taking">This entry is on hold but may still receive new instructions.</div>'
           :'';
-        return `<article class="entry-card ${cardClass}"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${chipClass}">${chipText}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${banner}${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><div class="status-actions"><select class="status-select" data-admin-action="change-entry-status" data-entry-id="${esc(e.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-entry" data-entry-id="${esc(e.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-entry" data-entry-id="${esc(e.id)}">Remove</button></div>`:''}</div></article>`;
+        return `<article class="entry-card ${cardClass}" data-tbrn-card-id="${esc(e.id||e.name)}"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${chipClass}">${chipText}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${banner}${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><div class="status-actions"><select class="status-select" data-admin-action="change-entry-status" data-entry-id="${esc(e.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-entry" data-entry-id="${esc(e.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-entry" data-entry-id="${esc(e.id)}">Remove</button></div>`:''}</div></article>`;
       }).join('')||'<div class="directory-empty">No matching entries found.</div>';
     };
 
@@ -3971,7 +3971,7 @@ renderResponsibilities=function(){
           :status==='taking'
           ?'<div class="hold-banner taking">This specialist is on hold but may still receive new instructions.</div>'
           :'';
-        return `<article class="specialist-card ${cardClass}"><div class="specialist-card-head"><div class="entry-avatar">${esc(initials||'SC')}</div><div class="grow"><h4>${esc(c.contractor)}</h4><p>${c.services.length} specialist work type${c.services.length===1?'':'s'}</p></div><span class="status-chip ${chipClass}">${chipText}</span>${adminMode?`<div class="resource-admin-actions"><div class="status-actions"><select class="status-select" data-admin-action="change-specialist-status" data-card-id="${esc(c.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-specialist" data-card-id="${esc(c.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-specialist" data-card-id="${esc(c.id)}">Remove</button></div>`:''}</div>${banner}<div class="service-list">${c.services.map(s=>`<div class="service-item"><strong>${esc(s.workType)}</strong>${s.guidance?`<p>${esc(s.guidance)}</p>`:''}</div>`).join('')}</div></article>`;
+        return `<article class="specialist-card ${cardClass}" data-tbrn-card-id="${esc(c.id||c.contractor)}"><div class="specialist-card-head"><div class="entry-avatar">${esc(initials||'SC')}</div><div class="grow"><h4>${esc(c.contractor)}</h4><p>${c.services.length} specialist work type${c.services.length===1?'':'s'}</p></div><span class="status-chip ${chipClass}">${chipText}</span>${adminMode?`<div class="resource-admin-actions"><div class="status-actions"><select class="status-select" data-admin-action="change-specialist-status" data-card-id="${esc(c.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-specialist" data-card-id="${esc(c.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-specialist" data-card-id="${esc(c.id)}">Remove</button></div>`:''}</div>${banner}<div class="service-list">${c.services.map(s=>`<div class="service-item"><strong>${esc(s.workType)}</strong>${s.guidance?`<p>${esc(s.guidance)}</p>`:''}</div>`).join('')}</div></article>`;
       }).join('')||'<div class="directory-empty">No matching contractor cards found.</div>';
     };
     $('specialistSearch').addEventListener('input',draw);
@@ -8621,7 +8621,18 @@ body.tbrn-dev-mode #tbrnDevToolbar{display:flex}
 body.tbrn-dev-editing [data-tbrn-dev-editable="true"]{outline:1px dashed rgba(124,58,237,.45);outline-offset:2px;cursor:crosshair}
 body.tbrn-dev-editing [data-tbrn-dev-editable="true"]:hover{outline:2px solid #7c3aed;background:rgba(124,58,237,.08)!important}
 #tbrnDevNotice{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100051;display:none;padding:9px 14px;border-radius:10px;background:#5b21b6;color:#fff;font:700 12px Inter,Segoe UI,Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.22)}
-body.tbrn-dev-editing #tbrnDevNotice{display:block}
+body.tbrn-dev-editing #tbrnDevNotice,body.tbrn-dev-reordering #tbrnDevNotice{display:block}
+body.tbrn-dev-reordering [data-tbrn-sort-card="true"]{position:relative;outline:2px dashed rgba(124,58,237,.55);outline-offset:3px;cursor:grab;transition:transform .14s ease,box-shadow .14s ease,opacity .14s ease}
+body.tbrn-dev-reordering [data-tbrn-sort-card="true"]:hover{outline-color:#7c3aed;box-shadow:0 14px 34px rgba(91,33,182,.18)!important}
+body.tbrn-dev-reordering [data-tbrn-sort-card="true"].tbrn-sort-dragging{opacity:.5;transform:scale(.985);cursor:grabbing}
+.tbrn-sort-controls{display:none;position:absolute;top:8px;right:8px;z-index:20;align-items:center;gap:4px;padding:4px;border:1px solid rgba(124,58,237,.25);border-radius:10px;background:rgba(30,15,54,.94);box-shadow:0 8px 22px rgba(0,0,0,.22)}
+body.tbrn-dev-reordering .tbrn-sort-controls{display:flex}
+.tbrn-sort-controls [role="button"]{width:28px;height:28px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:rgba(255,255,255,.1);color:#fff;font:800 13px Inter,Segoe UI,Arial,sans-serif;cursor:pointer;user-select:none}
+.tbrn-sort-controls [role="button"]:hover{background:#7c3aed}.tbrn-sort-controls [role="button"][aria-disabled="true"]{opacity:.35;cursor:not-allowed}
+.tbrn-sort-controls [role="button"]:focus-visible{outline:2px solid #ddd6fe;outline-offset:1px}
+.tbrn-sort-handle{cursor:grab!important;font-size:15px!important}.tbrn-sort-handle:active{cursor:grabbing!important}
+body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resource-card-actions,body.tbrn-dev-reordering .entry-admin,body.tbrn-dev-reordering .resp-admin-actions,body.tbrn-dev-reordering .portal-card-edit,body.tbrn-dev-reordering .portal-card-remove{pointer-events:none;opacity:.42}
+@media(max-width:700px){#tbrnDevToolbar{max-width:calc(100vw - 18px);overflow-x:auto}.tbrn-sort-controls{top:6px;right:6px}}
 </style>
 <script id="tbrn-dev-mode-script">
 (function(){
@@ -8776,7 +8787,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   }
 
   function validTarget(el){
-    if(!el||!devActive()||el.closest('#tbrnDevToolbar,#tbrnDevNotice,.tbrn-access-pin-overlay,.tbrn-welcome'))return false;
+    if(!el||!devActive()||el.closest('#tbrnDevToolbar,#tbrnDevNotice,.tbrn-sort-controls,.tbrn-access-pin-overlay,.tbrn-welcome'))return false;
     if(nameManagedTarget(el))return false;
     if(el.matches('html,body,script,style,link,meta,svg,path,canvas,img,video,audio,input,textarea,select,option,iframe'))return false;
     if(el.isContentEditable)return false;
@@ -8805,7 +8816,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
         // Ignore them rather than applying a single value across multiple boxes.
         if(matches.length!==1)return;
         const el=matches[0];
-        if(el.closest('#tbrnDevToolbar,#tbrnDevNotice'))return;
+        if(el.closest('#tbrnDevToolbar,#tbrnDevNotice,.tbrn-sort-controls'))return;
         if(nameManagedTarget(el))return;
         if(!record||typeof record!=='object'||!record.context)return;
         if(elementContext(el)!==record.context)return;
@@ -8860,6 +8871,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
     sessionStorage.removeItem(DEV_SESSION_KEY);
     sessionStorage.removeItem('tbrnAdminMode');
     try{adminMode=false}catch(e){}
+    window.tbrnSetCardReorder?.(false);
     editing=false;
     document.body.classList.remove('tbrn-dev-mode','tbrn-dev-editing');
     document.querySelectorAll('[data-tbrn-dev-editable]').forEach(el=>delete el.dataset.tbrnDevEditable);
@@ -8871,6 +8883,10 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   }
 
   function toggleEditing(){
+    if(!editing&&document.body.classList.contains('tbrn-dev-reordering')){
+      notify('Finish reorganising cards before editing text');
+      return;
+    }
     editing=!editing;
     document.body.classList.toggle('tbrn-dev-editing',editing);
     const button=document.getElementById('tbrnDevEditToggle');
@@ -8882,10 +8898,11 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
     if(document.getElementById('tbrnDevToolbar'))return;
     const bar=document.createElement('div');
     bar.id='tbrnDevToolbar';
-    bar.innerHTML='<span class="dev-label"><span class="dev-dot"></span>DEV MODE</span><button id="tbrnDevEditToggle" type="button">Edit Selected Text</button><button id="tbrnDevAdminOpen" type="button">Admin Directory</button><button id="tbrnDevExit" class="danger" type="button">Exit Dev Mode</button>';
+    bar.innerHTML='<span class="dev-label"><span class="dev-dot"></span>DEV MODE</span><button id="tbrnDevEditToggle" type="button">Edit Selected Text</button><button id="tbrnDevReorderToggle" type="button">Reorganise Cards</button><button id="tbrnDevAdminOpen" type="button">Admin Directory</button><button id="tbrnDevExit" class="danger" type="button">Exit Dev Mode</button>';
     document.body.appendChild(bar);
     const notice=document.createElement('div');notice.id='tbrnDevNotice';notice.textContent='DEV EDITING: click one outlined item — only that exact box on this page will change';document.body.appendChild(notice);
     document.getElementById('tbrnDevEditToggle').onclick=toggleEditing;
+    document.getElementById('tbrnDevReorderToggle').onclick=()=>window.tbrnToggleCardReorder?.();
     document.getElementById('tbrnDevAdminOpen').onclick=()=>{try{if(typeof showAdmin==='function')showAdmin()}catch(e){}};
     document.getElementById('tbrnDevExit').onclick=()=>{if(confirm('Exit Dev Mode and return to staff access?'))disableDev()};
   }
@@ -8968,6 +8985,264 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   window.tbrnApplyDevOverrides=applyOverrides;
 })();
 </script>
+<script id="tbrn-dev-card-reordering">
+(function(){
+  'use strict';
+
+  const ORDER_KEY='tbrn-dev-card-order-v1';
+  const CONTAINER_SELECTOR='#categories,#quick,#categoryDocs,.resource-card-grid,.resp-grid,.entry-grid,.group-card-grid,.portal-list,.executive-template-choices';
+  const CARD_SELECTOR='.catcard,.doccard,.resource-card,.resp-card,.entry-card,.specialist-card,.support-card,.portal-entry,.executive-template-choice';
+  const FILTER_SELECTOR='#search,#ucSearch,#respSearch,#entrySearch,#specialistSearch,#supportSearch,#portalAccessSearch,#regionFilter,#supportArea';
+  let reordering=false;
+  let applying=false;
+  let observerTimer=null;
+  let draggedCard=null;
+  let savedOnDrop=false;
+
+  function devActive(){return sessionStorage.getItem('tbrnDevMode')==='true'}
+  function notify(message){
+    if(typeof window.holdToast==='function')window.holdToast(message);
+    else if(typeof window.toast==='function')window.toast('Dev Mode',message);
+    else if(typeof window.showToast==='function')window.showToast(message);
+  }
+  function readOrders(){
+    try{const value=JSON.parse(localStorage.getItem(ORDER_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}
+    catch(error){return {}}
+  }
+  function writeOrders(value){localStorage.setItem(ORDER_KEY,JSON.stringify(value))}
+  function visibleSection(){
+    return [...document.querySelectorAll('main section[id]')].find(section=>!section.classList.contains('hidden'))||document.body;
+  }
+  function clean(value){return String(value||'').replace(/\s+/g,' ').trim()}
+  function token(value){return clean(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,100)||'untitled'}
+  function viewKey(container){
+    const section=container?.closest?.('main section[id]')||visibleSection();
+    const base=section.id||'hub';
+    if(base==='documentView'){
+      const pageId=window.__tbrnCurrentPageId||'';
+      const pageTitle=window.__tbrnCurrentPageTitle||document.getElementById('docTitle')?.textContent||'';
+      const category=window.__tbrnCurrentCategory||'';
+      return ['document',pageId,category,pageTitle].map(token).join('|');
+    }
+    if(base==='categoryView'){
+      const category=window.__tbrnCurrentCategory||document.getElementById('catTitle')?.textContent||'';
+      return ['category',category].map(token).join('|');
+    }
+    return token(base);
+  }
+  function directCards(container){
+    return [...container.children].filter(child=>child.matches?.(CARD_SELECTOR));
+  }
+  function sortableContainers(){
+    return [...document.querySelectorAll(CONTAINER_SELECTOR)].filter(container=>directCards(container).length>1);
+  }
+  function containerKey(container){
+    const id=container.id?`id:${token(container.id)}`:'';
+    const group=clean(container.closest('.group-section,.portal-group-card')?.querySelector('h3,h4')?.textContent);
+    const kind=[...container.classList].find(name=>/grid|list|docs|categories|choices/.test(name))||container.tagName.toLowerCase();
+    let identity=id||`${token(kind)}:${token(group)}`;
+    if(!id&&!group){
+      const peers=sortableContainers().filter(item=>{
+        const peerKind=[...item.classList].find(name=>/grid|list|docs|categories|choices/.test(name))||item.tagName.toLowerCase();
+        return peerKind===kind;
+      });
+      identity+=`:instance-${Math.max(0,peers.indexOf(container))+1}`;
+    }
+    return `${viewKey(container)}|${identity}`;
+  }
+  function cardKind(card){
+    return [...card.classList].find(name=>CARD_SELECTOR.includes('.'+name))||card.tagName.toLowerCase();
+  }
+  function cardIdentity(card,index){
+    const own=card.dataset.tbrnCardId||card.dataset.portalCustomId||card.dataset.executiveTemplateGroup||card.dataset.renameCategory||card.dataset.cat||'';
+    if(own)return `${cardKind(card)}:${token(own)}`;
+    const heading=clean(card.querySelector('h2,h3,h4,strong,.contact-name')?.textContent);
+    if(heading)return `${cardKind(card)}:${token(heading)}`;
+    const linked=card.querySelector('[data-entry-id],[data-card-id],[data-portal-name],[data-card-workspace]');
+    if(linked){
+      const value=linked.dataset.entryId||linked.dataset.cardId||linked.dataset.portalName||linked.dataset.cardWorkspace;
+      if(value)return `${cardKind(card)}:${token(value)}`;
+    }
+    const action=card.getAttribute('onclick')||'';
+    const actionMatch=action.match(/(?:openDoc|showCategory)\(([^)]+)\)/);
+    const value=actionMatch?.[1]||`position-${index+1}`;
+    return `${cardKind(card)}:${token(value)}`;
+  }
+  function assignCardKeys(container){
+    const seen=new Map();
+    directCards(container).forEach((card,index)=>{
+      let base=card.dataset.tbrnSortKey||cardIdentity(card,index);
+      const count=(seen.get(base)||0)+1;
+      seen.set(base,count);
+      if(count>1)base+=`--${count}`;
+      card.dataset.tbrnSortKey=base;
+    });
+  }
+  function controls(){
+    const box=document.createElement('div');
+    box.className='tbrn-sort-controls';
+    box.dataset.tbrnSortControls='true';
+    box.innerHTML='<span class="tbrn-sort-handle" aria-hidden="true" title="Drag card to move">⋮⋮</span><span role="button" tabindex="0" data-tbrn-sort-move="-1" aria-label="Move card earlier" title="Move earlier">↑</span><span role="button" tabindex="0" data-tbrn-sort-move="1" aria-label="Move card later" title="Move later">↓</span>';
+    return box;
+  }
+  function refreshControls(container){
+    const cards=directCards(container);
+    cards.forEach((card,index)=>{
+      card.dataset.tbrnSortCard='true';
+      card.draggable=reordering;
+      let box=card.querySelector(':scope > [data-tbrn-sort-controls]');
+      if(reordering&&!box){box=controls();card.appendChild(box)}
+      if(!reordering&&box)box.remove();
+      if(box){
+        const earlier=box.querySelector('[data-tbrn-sort-move="-1"]');
+        const later=box.querySelector('[data-tbrn-sort-move="1"]');
+        earlier?.setAttribute('aria-disabled',String(index===0));
+        later?.setAttribute('aria-disabled',String(index===cards.length-1));
+      }
+    });
+  }
+  function sameOrder(left,right){return left.length===right.length&&left.every((value,index)=>value===right[index])}
+  function applyOrders(){
+    if(applying||draggedCard)return;
+    applying=true;
+    try{
+      const orders=readOrders();
+      sortableContainers().forEach(container=>{
+        assignCardKeys(container);
+        const cards=directCards(container);
+        const stored=orders[containerKey(container)]||[];
+        if(Array.isArray(stored)&&stored.length){
+          const rank=new Map(stored.map((key,index)=>[key,index]));
+          const desired=[...cards].sort((a,b)=>{
+            const ar=rank.has(a.dataset.tbrnSortKey)?rank.get(a.dataset.tbrnSortKey):Number.MAX_SAFE_INTEGER;
+            const br=rank.has(b.dataset.tbrnSortKey)?rank.get(b.dataset.tbrnSortKey):Number.MAX_SAFE_INTEGER;
+            return ar-br;
+          });
+          if(!sameOrder(cards,desired)){
+            const fragment=document.createDocumentFragment();
+            desired.forEach(card=>fragment.appendChild(card));
+            container.appendChild(fragment);
+          }
+        }
+        refreshControls(container);
+      });
+    }finally{applying=false}
+  }
+  function filtered(){
+    return [...document.querySelectorAll(FILTER_SELECTOR)].some(input=>{
+      if(input.disabled||input.closest('.hidden'))return false;
+      return clean(input.value)!=='';
+    });
+  }
+  function saveContainer(container,showNotice=true){
+    if(!container)return;
+    assignCardKeys(container);
+    const orders=readOrders();
+    orders[containerKey(container)]=directCards(container).map(card=>card.dataset.tbrnSortKey);
+    writeOrders(orders);
+    refreshControls(container);
+    if(showNotice)notify('Card order saved live for everyone');
+  }
+  function moveCard(card,direction){
+    if(!reordering||!card)return;
+    if(filtered()){notify('Clear the current search or filter before reorganising cards');return}
+    const container=card.parentElement;
+    const cards=directCards(container);
+    const index=cards.indexOf(card);
+    const target=cards[index+direction];
+    if(!target)return;
+    if(direction<0)container.insertBefore(card,target);
+    else container.insertBefore(target,card);
+    saveContainer(container);
+  }
+  function setReordering(enabled){
+    enabled=!!enabled&&devActive();
+    if(enabled&&document.body.classList.contains('tbrn-dev-editing')){
+      notify('Finish editing text before reorganising cards');
+      return false;
+    }
+    if(enabled&&filtered()){
+      notify('Clear the current search or filter before reorganising cards');
+      return false;
+    }
+    reordering=enabled;
+    document.body.classList.toggle('tbrn-dev-reordering',reordering);
+    const button=document.getElementById('tbrnDevReorderToggle');
+    if(button){button.textContent=reordering?'Finish Reordering':'Reorganise Cards';button.classList.toggle('primary',reordering)}
+    const notice=document.getElementById('tbrnDevNotice');
+    if(notice)notice.textContent=reordering?'DEV REORDERING: drag cards or use the arrows — every move saves live':'DEV EDITING: click one outlined item — only that exact box on this page will change';
+    applyOrders();
+    if(reordering&&sortableContainers().length===0)notify('There are no card groups to reorganise on this page');
+    return true;
+  }
+
+  document.addEventListener('click',event=>{
+    const move=event.target.closest('[data-tbrn-sort-move]');
+    if(move&&reordering){
+      event.preventDefault();event.stopImmediatePropagation();
+      if(move.getAttribute('aria-disabled')!=='true')moveCard(move.closest('[data-tbrn-sort-card]'),Number(move.dataset.tbrnSortMove));
+      return;
+    }
+    if(reordering&&event.target.closest('[data-tbrn-sort-controls]')){
+      event.preventDefault();event.stopImmediatePropagation();return;
+    }
+    if(reordering&&event.target.closest('[data-tbrn-sort-card]')&&!event.target.closest('[data-tbrn-sort-controls]')){
+      event.preventDefault();event.stopImmediatePropagation();
+    }
+  },true);
+  document.addEventListener('keydown',event=>{
+    const move=event.target.closest?.('[data-tbrn-sort-move]');
+    if(move&&reordering&&(event.key==='Enter'||event.key===' ')){
+      event.preventDefault();
+      if(move.getAttribute('aria-disabled')!=='true')moveCard(move.closest('[data-tbrn-sort-card]'),Number(move.dataset.tbrnSortMove));
+    }
+    if(devActive()&&reordering&&event.key==='Escape')setReordering(false);
+  },true);
+  document.addEventListener('dragstart',event=>{
+    const card=event.target.closest?.('[data-tbrn-sort-card]');
+    if(!reordering||!card){if(reordering)event.preventDefault();return}
+    if(filtered()){event.preventDefault();notify('Clear the current search or filter before reorganising cards');return}
+    draggedCard=card;savedOnDrop=false;card.classList.add('tbrn-sort-dragging');
+    if(event.dataTransfer){event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',card.dataset.tbrnSortKey||'card')}
+  },true);
+  document.addEventListener('dragover',event=>{
+    if(!reordering||!draggedCard)return;
+    const over=event.target.closest?.('[data-tbrn-sort-card]');
+    if(!over||over===draggedCard||over.parentElement!==draggedCard.parentElement)return;
+    event.preventDefault();
+    const box=over.getBoundingClientRect();
+    const middleY=box.top+box.height/2;
+    const sameRow=Math.abs(event.clientY-middleY)<box.height*.35;
+    const before=sameRow?event.clientX<box.left+box.width/2:event.clientY<middleY;
+    over.parentElement.insertBefore(draggedCard,before?over:over.nextSibling);
+  },true);
+  document.addEventListener('drop',event=>{
+    if(!reordering||!draggedCard)return;
+    event.preventDefault();
+    saveContainer(draggedCard.parentElement);savedOnDrop=true;
+  },true);
+  document.addEventListener('dragend',()=>{
+    if(!draggedCard)return;
+    const container=draggedCard.parentElement;
+    draggedCard.classList.remove('tbrn-sort-dragging');draggedCard=null;
+    if(!savedOnDrop)saveContainer(container);
+    savedOnDrop=false;
+    applyOrders();
+  },true);
+
+  const observer=new MutationObserver(()=>{
+    clearTimeout(observerTimer);
+    observerTimer=setTimeout(applyOrders,70);
+  });
+  function start(){observer.observe(document.body,{subtree:true,childList:true});applyOrders()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  window.addEventListener('storage',event=>{if(event.key===ORDER_KEY)applyOrders()});
+  window.addEventListener('tbrn:cloud-data-updated',applyOrders);
+  window.addEventListener('tbrn:dev-mode-enabled',applyOrders);
+  window.tbrnSetCardReorder=setReordering;
+  window.tbrnToggleCardReorder=()=>setReordering(!reordering);
+})();
+</script>
 <script id="tbrn-contractor-edit-fix">
 (function(){
   'use strict';
@@ -8990,7 +9265,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
 
   document.addEventListener('click',function(event){
     const button=event.target.closest('[data-admin-action="edit-entry"]');
-    if(!buton||sessionStorage.getItem('tbrnAdminMode')!=='true')return;
+    if(!button||sessionStorage.getItem('tbrnAdminMode')!=='true')return;
     const record=activeDirectory();
     if(!record||typeof openEntryEditor!=='function')return;
     event.preventDefault();
@@ -9881,7 +10156,7 @@ body.tbrn-dev-editing #tbrnDevNotice{display:block}
   }
 
   function editingIsActive(){
-    if(document.body.classList.contains('tbrn-dev-editing'))return true;
+    if(document.body.classList.contains('tbrn-dev-editing')||document.body.classList.contains('tbrn-dev-reordering'))return true;
     const adminActive=sessionStorage.getItem('tbrnAdminMode')==='true';
     const devActive=sessionStorage.getItem('tbrnDevMode')==='true';
     const focused=document.activeElement;
