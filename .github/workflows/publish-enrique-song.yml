@@ -49,7 +49,7 @@ jobs:
           git apply /tmp/enrique-release/enrique-song.patch
           cp /tmp/enrique-release/tbrn.mp3 tbrn.mp3
 
-          grep -q "enriqueSongIntent" index.html
+          grep -q "function songResult" index.html
           grep -q "tbrn.mp3" index.html
           grep -q "frame.allow='autoplay'" index.html
           git diff --check
