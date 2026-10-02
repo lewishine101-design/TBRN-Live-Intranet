@@ -1,0 +1,51 @@
+name: Publish Enrique hero response
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-enrique-hero.yml
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out live hub
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply and publish validated update
+        shell: bash
+        env:
+          UPLOAD_BRANCH: codex/enrique-hero-upload-20261002
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "+refs/heads/${UPLOAD_BRANCH}:refs/remotes/origin/${UPLOAD_BRANCH}"
+          git ls-tree -r --name-only "origin/${UPLOAD_BRANCH}" -- .codex-upload/enrique-hero |
+            sort |
+            while IFS= read -r path; do git show "origin/${UPLOAD_BRANCH}:${path}"; done |
+            base64 --decode > /tmp/enrique-hero.patch
+
+          echo "674d51dd1f4c9c8718a77cd1e2e09647693047ea56334412e748fc9129053e8a  /tmp/enrique-hero.patch" | sha256sum -c -
+          git apply --check /tmp/enrique-hero.patch
+          git apply /tmp/enrique-hero.patch
+
+          grep -q ">Sing to me</button>" index.html
+          grep -q "function heroResult(query)" index.html
+          grep -q "I can be your hero, baby<br>I can kiss away the pain<br>I will stand by you forever<br>You can take my very breath away" index.html
+          git diff --check
+
+          git add index.html
+          git rm .github/workflows/publish-enrique-hero.yml
+          git commit -m "Add Enrique hero response"
+          git push origin HEAD:main
+          git push origin --delete "${UPLOAD_BRANCH}"
