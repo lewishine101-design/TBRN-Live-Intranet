@@ -3793,18 +3793,16 @@ renderResponsibilities=function(){
         .bindPopup(`<strong>Searched postcode</strong><br>${dmEsc(origin.postcode)}`)
         .openPopup();
       const candidates=filteredContractors().filter(c=>c.status!=='hold'&&Number.isFinite(c.lat)&&Number.isFinite(c.lng));
-      if(!candidates.length)throw new Error('No active mapped contractors are available.');
+      if(!candidates.length)throw new Error('No eligible mapped contractors are available.');
       const pRank={primary:0,secondary:1,none:2};
-      const statusRank={active:0,limited:1,ins_lbg:1,hold:2};
       const shortlist=candidates.map(c=>({...c,prio:priority(c,origin.postcode),straight:Math.hypot(c.lat-origin.lat,c.lng-origin.lng)}))
-        .sort((a,b)=>statusRank[a.status||'active']-statusRank[b.status||'active']||pRank[a.prio]-pRank[b.prio]||a.straight-b.straight).slice(0,8);
+        .sort((a,b)=>pRank[a.prio]-pRank[b.prio]||a.straight-b.straight).slice(0,12);
       const routed=[];
       for(const c of shortlist){
         try{const r=await routeBetween(origin,c);routed.push({...c,...r})}catch(e){}
-        if(routed.length>=3)break;
       }
       if(!routed.length)throw new Error('No driving routes could be calculated.');
-      routed.sort((a,b)=>statusRank[a.status||'active']-statusRank[b.status||'active']||pRank[a.prio]-pRank[b.prio]||a.miles-b.miles);
+      routed.sort((a,b)=>pRank[a.prio]-pRank[b.prio]||a.miles-b.miles);
       const top=routed.slice(0,3), bounds=[[origin.lat,origin.lng]];
       $('directMapResults').innerHTML=top.map((c,i)=>`<article class="direct-map-card"><div class="direct-map-card-top"><div class="direct-map-initials">${i+1}</div><div class="direct-map-grow"><strong>${dmEsc(c.name)}</strong><small>${c.miles.toFixed(1)} miles · ${Math.round(c.minutes)} mins</small></div>${c.status==='limited'?'<span class="direct-map-availability limited">Available with limited services</span>':c.status==='ins_lbg'?'<span class="direct-map-availability ins-lbg">Available for TP claims only</span>':''}</div><div class="direct-map-badges"><span class="direct-map-badge ${c.prio==='primary'?'primary':c.prio==='secondary'?'secondary':''}">${dmEsc(c.prio==='none'?'Outside listed coverage':c.prio+' coverage')}</span></div></article>`).join('');
       const routeColours={
@@ -3828,7 +3826,7 @@ renderResponsibilities=function(){
         bounds.push([c.lat,c.lng]);
       });
       dmMap.fitBounds(bounds,{padding:[35,35]});
-      dmStatus('Nearest three contractors calculated by coverage priority and driving route.','success');
+      dmStatus('Nearest three contractors calculated by coverage priority and driving route, including restricted availability where eligible.','success');
     }catch(e){dmStatus(e.message||'Search failed.','error')}finally{btn.disabled=false}
   }
 
