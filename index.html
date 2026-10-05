@@ -574,13 +574,19 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
 
 
 <style id="tbrn-three-status-styles">
-.status-chip.taking{background:#fff0d8;color:#a55d00;border:1px solid #f0c477}
+.status-chip.taking,.status-chip.limited,.status-chip.ins-lbg{background:#fff0d8;color:#a55d00;border:1px solid #f0c477}
 .status-chip.hold{background:#eceff1;color:#5f6870;border:1px solid #cfd5d9}
-.entry-card.is-taking-instructions,.specialist-card.is-taking-instructions{
+.entry-card.is-taking-instructions,.specialist-card.is-taking-instructions,
+.entry-card.is-limited-services,.specialist-card.is-limited-services,
+.entry-card.is-ins-lbg-hold,.specialist-card.is-ins-lbg-hold{
   border-color:#efc36f;background:linear-gradient(180deg,#fffaf0,#fff)
 }
 .entry-card.is-taking-instructions .entry-avatar,
-.specialist-card.is-taking-instructions .entry-avatar{
+.specialist-card.is-taking-instructions .entry-avatar,
+.entry-card.is-limited-services .entry-avatar,
+.specialist-card.is-limited-services .entry-avatar,
+.entry-card.is-ins-lbg-hold .entry-avatar,
+.specialist-card.is-ins-lbg-hold .entry-avatar{
   background:#fff0d6;color:#a45d00
 }
 .entry-card.is-on-hold,.specialist-card.is-on-hold{
@@ -590,7 +596,7 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
 .specialist-card.is-on-hold .entry-avatar{
   background:#e9ecef;color:#667078
 }
-.hold-banner.taking{
+.hold-banner.taking,.hold-banner.limited,.hold-banner.ins-lbg{
   background:#fff3dc;border-color:#efc979;color:#8f5800
 }
 .hold-banner.full{
@@ -606,9 +612,11 @@ body{background:linear-gradient(180deg,#f7fbf8,#eef6f1);color:var(--ink)}
 .status-action.active-choice{background:#e4f7ec;border-color:#9ed6b8;color:#126f47}
 .status-action.taking-choice{background:#fff0d8;border-color:#efc477;color:#995800}
 .status-action.hold-choice{background:#eceff1;border-color:#cbd2d7;color:#59636b}
-.direct-map-badge.taking,.surveyor-map-badge.taking{background:#fff0d8;color:#9a5900}
+.direct-map-badge.taking,.direct-map-badge.limited,.direct-map-badge.ins-lbg,.surveyor-map-badge.taking{background:#fff0d8;color:#9a5900}
 .direct-map-badge.full-hold,.surveyor-map-badge.full-hold{background:#eceff1;color:#5f6870}
-.direct-map-card.taking-instructions,.surveyor-map-card.taking-instructions{border-color:#efc477;background:#fffaf1}
+.direct-map-card.taking-instructions,.direct-map-card.limited-services,.direct-map-card.ins-lbg-hold,.surveyor-map-card.taking-instructions{border-color:#efc477;background:#fffaf1}
+.direct-map-availability{max-width:142px;margin-left:auto;color:#d77700;font-size:10px;font-weight:850;line-height:1.25;text-align:right}
+.direct-map-availability.ins-lbg{color:#c76600}
 .direct-map-card.on-hold,.surveyor-map-card.on-hold{opacity:.72;background:#f3f4f5}
 .direct-map-metrics,.surveyor-map-metrics{grid-template-columns:repeat(4,1fr)}
 </style>
@@ -2841,7 +2849,9 @@ function entryForm(x,e){
     <div class="form-field"><label>Primary coverage</label><input name="primary" value="${esc(e.primary||'')}"></div>
     <div class="form-field"><label>Secondary coverage</label><input name="secondary" value="${esc(e.secondary||'')}"></div>
     <div class="form-field full"><label>Important notes</label><textarea name="notes">${esc(e.notes||'')}</textarea></div>
-    <div class="form-field full"><label>Status</label><select name="hold"><option value="false" ${!e.hold?'selected':''}>Available</option><option value="true" ${e.hold?'selected':''}>On hold / check status</option></select></div>
+    <div class="form-field full"><label>Status</label><select name="status">${['2. General','Emergency & Specialist'].includes(x.title)
+    ?`<option value="active" ${!e.hold&&!['hold','limited','ins_lbg','taking'].includes(e.status)?'selected':''}>Available</option><option value="hold" ${e.status==='hold'||(e.hold&&!e.status)?'selected':''}>On hold</option><option value="limited" ${e.status==='limited'||e.status==='taking'?'selected':''}>On hold (limited services)</option><option value="ins_lbg" ${e.status==='ins_lbg'?'selected':''}>On hold (INS &amp; LBG)</option>`
+    :`<option value="active" ${!e.hold&&e.status!=='taking'?'selected':''}>Available</option><option value="taking" ${e.status==='taking'?'selected':''}>Taking instructions</option><option value="hold" ${e.status==='hold'||e.hold?'selected':''}>On hold</option>`}</select></div>
     ${eligibility}
   </form>`;
 }
@@ -2851,7 +2861,8 @@ function saveEntryFromForm(x){
   if(!form.reportValidity())return;
   const fd=new FormData(form),entry={};
   for(const [k,v] of fd.entries())if(!k.startsWith('flag_'))entry[k]=v;
-  entry.hold=entry.hold==='true';
+  entry.status=entry.status||'active';
+ entry.hold=entry.status==='hold';
 
   const visibleFlags=x.title==='2. General'
     ?['Verisk','Portal','Drying','ACM','LBG','Ins','TP']
@@ -3060,6 +3071,7 @@ function closeSide(){$('sidebar').classList.remove('open');$('overlay').classLis
 <script>
 (function(){
  function holdToast(message){if(typeof portalToast==='function'){portalToast(message);return;}let t=document.getElementById('holdToast');if(!t){t=document.createElement('div');t.id='holdToast';t.className='portal-toast';document.body.appendChild(t)}t.textContent=message;t.classList.add('show');clearTimeout(window.__holdToastTimer);window.__holdToastTimer=setTimeout(()=>t.classList.remove('show'),1900)}
+ window.holdToast=holdToast;
  window.toggleDirectoryHold=function(title,id){if(!adminMode)return;const x=DATA.find(d=>d.title===title);if(!x)return;const entries=getEntries(x),entry=entries.find(e=>e.id===id);if(!entry)return;entry.hold=!entry.hold;saveEntries(x,entries);renderDirectory(x);holdToast(`${entry.name}: ${entry.hold?'placed on hold':'reactivated'}`)};
  window.toggleSpecialistHold=function(id){if(!adminMode)return;const x=DATA.find(d=>d.title==='Specialists Work Type');if(!x)return;const cards=getSpecialistCards(x),card=cards.find(c=>c.id===id);if(!card)return;card.hold=!card.hold;saveSpecialistCards(cards);renderSpecialistCards(x);holdToast(`${card.contractor}: ${card.hold?'placed on hold':'reactivated'}`)};
 
@@ -3570,6 +3582,10 @@ renderResponsibilities=function(){
           ?'B1'
           :(suppliedPostcode||coverageLookup||pegnumiPlaceholder));
 
+      const savedStatus=x.status==='ins_lbg'?'ins_lbg':
+        (x.status==='limited'||x.status==='taking'?'limited':
+          (x.status==='hold'||x.hold?'hold':'active'));
+
       return {
         id:String(x.id||'c'+i),
         kind:x.kind==='specialist'?'specialist':'contractor',
@@ -3584,30 +3600,45 @@ renderResponsibilities=function(){
         phone:x.phone||'',
         email:x.email||'',
         capabilities:dmCapabilities(x),
-        status:x.status==='taking'?'taking':(x.status==='hold'||x.hold?'hold':'active'),
-        hold:x.status==='hold'||!!x.hold,
+        notes:x.notes||'',
+        onHoldNotes:x.onHoldNotes||'',
+        status:savedStatus,
+        hold:savedStatus==='hold',
         lat:isNationalSpecialist?54.35:(Number.isFinite(pegnumiLat)?pegnumiLat:(Number.isFinite(Number(x.lat))?Number(x.lat):null)),
         lng:isNationalSpecialist?-2.55:(Number.isFinite(pegnumiLng)?pegnumiLng:(Number.isFinite(Number(x.lng))?Number(x.lng):null))
       };
     });
   }
 
-  function filteredContractors(){
+  function filteredContractors(options={}){
     const selector=$('directMapType');
     const type=selector?selector.value:'contractor';
     const selected=[...document.querySelectorAll('[data-direct-client-filter]:checked')].map(input=>input.value);
-    return dmContractors.filter(c=>(!type||c.kind===type)&&selected.every(key=>c.capabilities?.[key]===true));
+
+    return dmContractors.filter(c=>{
+      if(type&&c.kind!==type)return false;
+      if(!selected.every(key=>c.capabilities?.[key]===true))return false;
+      if(c.status==='hold')return options.includeFullHold===true;
+      if(c.status==='ins_lbg')return selected.length===1&&selected[0]==='tp';
+      return true;
+    });
   }
 
   function contractorCard(c,show=true){
-    const status=c.status|| (c.hold?'hold':'active');
-    return `<article class="direct-map-card ${status==='hold'?'on-hold':status==='taking'?'taking-instructions':''}">
+    const status=c.status||(c.hold?'hold':'active');
+    const availability=status==='limited'?'Available with limited services':
+      status==='ins_lbg'?'Available for TP claims only':'';
+    const cardClass=status==='hold'?'on-hold':
+      status==='limited'?'limited-services':
+      status==='ins_lbg'?'ins-lbg-hold':'';
+
+    return `<article class="direct-map-card ${cardClass}">
       <div class="direct-map-card-top">
         <div class="direct-map-initials">${dmEsc(dmInitials(c.name))}</div>
         <div class="direct-map-grow"><strong>${dmEsc(c.name)}</strong><small>${dmEsc(c.region||c.kind)}${c.postcode?' · '+dmEsc(c.postcode):''}</small></div>
+        ${availability?'<span class="direct-map-availability '+(status==='ins_lbg'?'ins-lbg':'limited')+'">'+availability+'</span>':''}
       </div>
       <div class="direct-map-badges">
-        ${status==='hold'?'<span class="direct-map-badge full-hold">On hold</span>':status==='taking'?'<span class="direct-map-badge taking">Taking instructions</span>':''}
         ${c.primary?'<span class="direct-map-badge primary">Primary: '+dmEsc(c.primary)+'</span>':''}
         ${c.secondary?'<span class="direct-map-badge secondary">Secondary: '+dmEsc(c.secondary)+'</span>':''}
         ${c.capabilities?.lbg?'<span class="direct-map-badge client">LBG</span>':''}
@@ -3620,11 +3651,12 @@ renderResponsibilities=function(){
 
   function updateDirectory(){
     const arr=filteredContractors();
-    $('directMapActive').textContent=arr.filter(c=>(c.status||'active')==='active').length;
-    $('directMapTaking').textContent=arr.filter(c=>c.status==='taking').length;
-    $('directMapHold').textContent=arr.filter(c=>(c.status|| (c.hold?'hold':'active'))==='hold').length;
+    const allInScope=filteredContractors({includeFullHold:true});
+    $('directMapActive').textContent=arr.filter(c=>c.status==='active').length;
+    $('directMapTaking').textContent=arr.filter(c=>c.status==='limited'||c.status==='ins_lbg').length;
+    $('directMapHold').textContent=allInScope.filter(c=>c.status==='hold').length;
     $('directMapMapped').textContent=arr.filter(c=>Number.isFinite(c.lat)&&Number.isFinite(c.lng)).length;
-    $('directMapList').innerHTML=arr.map(c=>contractorCard(c)).join('')||'<div class="direct-map-card">No contractors available.</div>';
+    $('directMapList').innerHTML=arr.map(c=>contractorCard(c)).join('')||'<div class="direct-map-card">No contractors available for the selected claim type.</div>';
   }
 
   function drawMarkers(){
@@ -3648,9 +3680,9 @@ renderResponsibilities=function(){
       const isBlueSpecialist=viewingAll&&c.kind==='specialist';
       const marker=L.circleMarker([c.lat,c.lng],{
         radius:7,
-        color:isBlueSpecialist?'#174f8f':(c.status==='active'?'#07503b':'#666d73'),
+        color:isBlueSpecialist?'#174f8f':(c.status==='active'?'#07503b':'#a95d00'),
         weight:2,
-        fillColor:isBlueSpecialist?'#3b82d0':(c.status==='active'?'#31a86c':'#9aa0a5'),
+        fillColor:isBlueSpecialist?'#3b82d0':(c.status==='active'?'#31a86c':'#f0a13a'),
         fillOpacity:.9
       }).addTo(dmMarkers);
       const locationLabel=c.listedPostcode||c.mappedPostcode||c.postcode;
@@ -3659,12 +3691,14 @@ renderResponsibilities=function(){
       marker.bindPopup(
         `<strong>${dmEsc(c.name)}</strong>`+
         `<br>${dmEsc(c.region)}`+
+        `${c.status==='limited'?'<br><span style="color:#d77700;font-weight:800">Available with limited services</span>':c.status==='ins_lbg'?'<br><span style="color:#c76600;font-weight:800">Available for TP claims only</span>':''}`+
         `${locationLabel?'<br>'+dmEsc(locationLabel):''}`+
         `${c.isNationalSpecialist?'<br><small>National coverage — central UK map marker</small>':''}`+
         `${coverageMapped&&!c.isNationalSpecialist?'<br><small>Mapped from listed coverage area</small>':''}`+
         `${/pegnumi/i.test(c.name)?'<br><small>Regional placeholder map location</small>':''}`+
         `${c.phone?'<br>'+dmEsc(c.phone):''}`+
-        `${c.email?'<br>'+dmEsc(c.email):''}`
+        `${c.email?'<br>'+dmEsc(c.email):''}`+
+        `${c.onHoldNotes?'<br><br><strong>Important note</strong><br>'+dmEsc(c.onHoldNotes):c.notes?'<br><br><strong>Important note</strong><br>'+dmEsc(c.notes):''}`
       );
       c.marker=marker;
     });
@@ -3761,7 +3795,7 @@ renderResponsibilities=function(){
       const candidates=filteredContractors().filter(c=>c.status!=='hold'&&Number.isFinite(c.lat)&&Number.isFinite(c.lng));
       if(!candidates.length)throw new Error('No active mapped contractors are available.');
       const pRank={primary:0,secondary:1,none:2};
-      const statusRank={active:0,taking:1,hold:2};
+      const statusRank={active:0,limited:1,ins_lbg:1,hold:2};
       const shortlist=candidates.map(c=>({...c,prio:priority(c,origin.postcode),straight:Math.hypot(c.lat-origin.lat,c.lng-origin.lng)}))
         .sort((a,b)=>statusRank[a.status||'active']-statusRank[b.status||'active']||pRank[a.prio]-pRank[b.prio]||a.straight-b.straight).slice(0,8);
       const routed=[];
@@ -3772,7 +3806,7 @@ renderResponsibilities=function(){
       if(!routed.length)throw new Error('No driving routes could be calculated.');
       routed.sort((a,b)=>statusRank[a.status||'active']-statusRank[b.status||'active']||pRank[a.prio]-pRank[b.prio]||a.miles-b.miles);
       const top=routed.slice(0,3), bounds=[[origin.lat,origin.lng]];
-      $('directMapResults').innerHTML=top.map((c,i)=>`<article class="direct-map-card"><div class="direct-map-card-top"><div class="direct-map-initials">${i+1}</div><div class="direct-map-grow"><strong>${dmEsc(c.name)}</strong><small>${c.miles.toFixed(1)} miles · ${Math.round(c.minutes)} mins</small></div></div><div class="direct-map-badges"><span class="direct-map-badge ${c.prio==='primary'?'primary':c.prio==='secondary'?'secondary':''}">${dmEsc(c.prio==='none'?'Outside listed coverage':c.prio+' coverage')}</span></div></article>`).join('');
+      $('directMapResults').innerHTML=top.map((c,i)=>`<article class="direct-map-card"><div class="direct-map-card-top"><div class="direct-map-initials">${i+1}</div><div class="direct-map-grow"><strong>${dmEsc(c.name)}</strong><small>${c.miles.toFixed(1)} miles · ${Math.round(c.minutes)} mins</small></div>${c.status==='limited'?'<span class="direct-map-availability limited">Available with limited services</span>':c.status==='ins_lbg'?'<span class="direct-map-availability ins-lbg">Available for TP claims only</span>':''}</div><div class="direct-map-badges"><span class="direct-map-badge ${c.prio==='primary'?'primary':c.prio==='secondary'?'secondary':''}">${dmEsc(c.prio==='none'?'Outside listed coverage':c.prio+' coverage')}</span></div></article>`).join('');
       const routeColours={
         primary:'#0d8a52',
         secondary:'#34b877',
@@ -3812,7 +3846,7 @@ renderResponsibilities=function(){
     $('directMapLoading').style.display='none';
     dmContractors=collectContractors();
     window.DIRECT_MAP_CONTRACTORS=dmContractors;
-    if(dmContractors.length&&dmContractors.every(item=>!item.hold)){
+    if(dmContractors.length&&dmContractors.every(item=>item.status==='active')){
       window.setTimeout(()=>window.tbrnUnlockAchievement?.('full-house'),0);
     }
     updateDirectory();drawMarkers();mapContractors();
@@ -3838,7 +3872,7 @@ renderResponsibilities=function(){
         <div class="direct-map-shell" id="directMapShell">
           <aside class="direct-map-panel">
             <div><h3>Contractor Route Locator</h3><p>UK & NI coverage, postcode search and nearest contractor routing.</p></div>
-            <div class="direct-map-metrics"><div class="direct-map-metric"><b id="directMapActive">0</b><span>Active</span></div><div class="direct-map-metric"><b id="directMapTaking">0</b><span>Taking</span></div><div class="direct-map-metric"><b id="directMapHold">0</b><span>On hold</span></div><div class="direct-map-metric"><b id="directMapMapped">0</b><span>Mapped</span></div></div>
+            <div class="direct-map-metrics"><div class="direct-map-metric"><b id="directMapActive">0</b><span>Active</span></div><div class="direct-map-metric"><b id="directMapTaking">0</b><span>Restricted</span></div><div class="direct-map-metric"><b id="directMapHold">0</b><span>On hold</span></div><div class="direct-map-metric"><b id="directMapMapped">0</b><span>Mapped</span></div></div>
             <div class="direct-map-search">
               <label for="directMapPostcode">Search postcode</label><input id="directMapPostcode" placeholder="Example: SW1A 1AA">
               <label for="directMapType">Contractor type</label><select id="directMapType"><option value="contractor" selected>General contractors</option><option value="specialist">Specialists & emergency</option><option value="">All contractors</option></select>
@@ -3855,6 +3889,7 @@ renderResponsibilities=function(){
   <div class="direct-map-legend" aria-label="Map status legend">
     <strong>Map status</strong>
     <div class="direct-map-legend-row"><span class="sv-map-legend-dot active"></span>Available</div>
+    <div class="direct-map-legend-row"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f0a13a;border:2px solid #a95d00"></span>Restricted availability</div>
     <div class="direct-map-legend-row"><span class="sv-map-legend-dot hold"></span>Not available</div>
   </div>
 </div>
@@ -3891,13 +3926,53 @@ renderResponsibilities=function(){
 
 <script id="tbrn-three-status-directory-script">
 (function(){
-  function opStatus(item){
-    if(item&&item.status==='taking')return'taking';
-    if(item&&item.status==='hold')return'hold';
-    return item&&item.hold?'hold':'active';
+  const CONTRACTOR_TITLES=['2. General','Emergency & Specialist'];
+
+  function isContractorDirectory(record){
+    return !!record&&CONTRACTOR_TITLES.includes(record.title);
   }
+
+  function opStatus(item,contractorMode=false){
+    if(contractorMode&&item?.status==='ins_lbg')return'ins_lbg';
+    if(contractorMode&&(item?.status==='limited'||item?.status==='taking'))return'limited';
+    if(!contractorMode&&item?.status==='taking')return'taking';
+    if(item?.status==='hold'||item?.hold===true||item?.hold==='true')return'hold';
+    return'active';
+  }
+
+  function statusMeta(status,contractorMode=false){
+    if(!contractorMode){
+      if(status==='taking')return{cardClass:'is-taking-instructions',chipClass:'taking',chipText:'Taking instructions',bannerClass:'taking',banner:'This surveyor is on hold but may still receive new instructions.'};
+      if(status==='hold')return{cardClass:'is-on-hold',chipClass:'hold',chipText:'On hold',bannerClass:'full',banner:'This surveyor is fully on hold and must not receive new instructions.'};
+      return{cardClass:'',chipClass:'',chipText:'Available',bannerClass:'',banner:''};
+    }
+    if(status==='limited')return{cardClass:'is-limited-services',chipClass:'limited',chipText:'Limited services',bannerClass:'limited',banner:'Available with limited services. Check the on-hold notes before instructing.'};
+    if(status==='ins_lbg')return{cardClass:'is-ins-lbg-hold',chipClass:'ins-lbg',chipText:'TP claims only',bannerClass:'ins-lbg',banner:'On hold for INS and LBG claims. This contractor may only receive TP instructions.'};
+    if(status==='hold')return{cardClass:'is-on-hold',chipClass:'hold',chipText:'On hold',bannerClass:'full',banner:'This contractor is fully on hold and must not receive new instructions.'};
+    return{cardClass:'',chipClass:'',chipText:'Available',bannerClass:'',banner:''};
+  }
+
+  function statusOptions(status,contractorMode=false){
+    const options=contractorMode
+      ?[['active','Available'],['hold','On hold'],['limited','On hold (limited services)'],['ins_lbg','On hold (INS & LBG)']]
+      :[['active','Available'],['taking','Taking instructions'],['hold','On hold']];
+    return '<option value="">Change status…</option>'+options.map(([value,label])=>
+      '<option value="'+value+'"'+(value===status?' disabled':'')+'>'+label+'</option>'
+    ).join('');
+  }
+
+  function statusToast(name,status,contractorMode=false){
+    const label=contractorMode
+      ?{active:'available',hold:'placed fully on hold',limited:'available with limited services',ins_lbg:'available for TP claims only'}[status]
+      :{active:'reactivated',taking:'on hold but still taking instructions',hold:'placed fully on hold'}[status];
+    holdToast(name+': '+(label||'status updated'));
+  }
+
   function setEntryStatus(record,id,status){
     if(!adminMode)return;
+    const contractorMode=isContractorDirectory(record);
+    const allowed=contractorMode?['active','hold','limited','ins_lbg']:['active','taking','hold'];
+    if(!allowed.includes(status))return;
     const entries=getEntries(record);
     const entry=entries.find(e=>e.id===id);
     if(!entry)return;
@@ -3905,10 +3980,11 @@ renderResponsibilities=function(){
     entry.hold=status==='hold';
     saveEntries(record,entries);
     window.renderDirectory(record);
-    holdToast(`${entry.name}: ${status==='active'?'reactivated':status==='taking'?'on hold but still taking instructions':'placed fully on hold'}`);
+    statusToast(entry.name,status,contractorMode);
   }
+
   function setSpecialistStatus(id,status){
-    if(!adminMode)return;
+    if(!adminMode||!['active','hold','limited','ins_lbg'].includes(status))return;
     const record=DATA.find(d=>d.title==='Specialists Work Type');
     if(!record)return;
     const cards=getSpecialistCards(record);
@@ -3918,13 +3994,17 @@ renderResponsibilities=function(){
     card.hold=status==='hold';
     saveSpecialistCards(cards);
     window.renderSpecialistCards(record);
-    holdToast(`${card.contractor}: ${status==='active'?'reactivated':status==='taking'?'on hold but still taking instructions':'placed fully on hold'}`);
+    statusToast(card.contractor,status,true);
   }
 
   window.renderDirectory=function(x){
     let entries=getEntries(x);
+    const contractorMode=isContractorDirectory(x);
     const regions=[...new Set(entries.map(e=>e.region).filter(Boolean))].sort();
-    $('canvas').innerHTML=`<div class="directory-shell">${adminMode?'<div class="admin-hold-hint">Admin mode is active. Set each entry to Active, On hold – taking instructions, or Fully on hold.</div>':''}<div class="directory-tools"><input id="entrySearch" placeholder="Search by name, postcode, region or coverage..."><select id="regionFilter"><option value="">All regions / work types</option>${regions.map(r=>`<option>${esc(r)}</option>`).join('')}</select><div class="directory-count" id="entryCount"></div>${adminMode?`<button class="admin-add" id="addEntryBtn">+ Add ${x.title==='3. Surveyors'?'surveyor':x.title==='2. General'?'contractor':'specialist'}</button>`:''}</div><div class="entry-grid" id="entryGrid"></div></div>`;
+    const hint=contractorMode
+      ?'Admin mode is active. Set each contractor to Available, On hold, On hold (limited services), or On hold (INS & LBG).'
+      :'Admin mode is active. Set each surveyor to Available, Taking instructions, or On hold.';
+    $('canvas').innerHTML=`<div class="directory-shell">${adminMode?'<div class="admin-hold-hint">'+hint+'</div>':''}<div class="directory-tools"><input id="entrySearch" placeholder="Search by name, postcode, region or coverage..."><select id="regionFilter"><option value="">All regions / work types</option>${regions.map(r=>`<option>${esc(r)}</option>`).join('')}</select><div class="directory-count" id="entryCount"></div>${adminMode?`<button class="admin-add" id="addEntryBtn">+ Add ${x.title==='3. Surveyors'?'surveyor':x.title==='2. General'?'contractor':'specialist'}</button>`:''}</div><div class="entry-grid" id="entryGrid"></div></div>`;
 
     const draw=()=>{
       entries=getEntries(x);
@@ -3932,17 +4012,11 @@ renderResponsibilities=function(){
       const shown=entries.filter(e=>(!reg||e.region===reg)&&Object.values(e).join(' ').toLowerCase().includes(q));
       $('entryCount').textContent=`${shown.length} ${x.title==='3. Surveyors'?(shown.length===1?'surveyor':'surveyors'):(shown.length===1?'entry':'entries')}`;
       $('entryGrid').innerHTML=shown.map(e=>{
-        const status=opStatus(e);
+        const status=opStatus(e,contractorMode);
+        const meta=statusMeta(status,contractorMode);
         const initials=(e.name||'TB').split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
-        const cardClass=status==='hold'?'is-on-hold':status==='taking'?'is-taking-instructions':'';
-        const chipClass=status==='hold'?'hold':status==='taking'?'taking':'';
-        const chipText=status==='hold'?'On hold':status==='taking'?'Taking instructions':'Available';
-        const banner=status==='hold'
-          ?'<div class="hold-banner full">This entry is fully on hold and must not receive new instructions.</div>'
-          :status==='taking'
-          ?'<div class="hold-banner taking">This entry is on hold but may still receive new instructions.</div>'
-          :'';
-        return `<article class="entry-card ${cardClass}" data-tbrn-card-id="${esc(e.id||e.name)}"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${chipClass}">${chipText}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${banner}${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><div class="status-actions"><select class="status-select" data-admin-action="change-entry-status" data-entry-id="${esc(e.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-entry" data-entry-id="${esc(e.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-entry" data-entry-id="${esc(e.id)}">Remove</button></div>`:''}</div></article>`;
+        const banner=meta.banner?'<div class="hold-banner '+meta.bannerClass+'">'+meta.banner+'</div>':'';
+        return `<article class="entry-card ${meta.cardClass}" data-tbrn-card-id="${esc(e.id||e.name)}"><div class="entry-top"><div class="entry-avatar">${esc(initials||'TB')}</div><div class="entry-heading"><h4>${esc(e.name)}</h4><p>${esc(e.kind==='surveyor'?(e.company||e.region):(e.region||e.kind))}</p></div><span class="status-chip ${meta.chipClass}">${meta.chipText}</span></div>${renderEntryBadgeRows(e.badges)}<div class="entry-details">${cardDetail(e.kind==='specialist'?'Work type':'Region',e.region)}${cardDetail('Company',e.kind==='surveyor'&&e.company!==e.name?e.company:'')}${cardDetail('Base postcode',e.postcode)}${cardDetail('VAT type',e.vat)}${cardDetail('Primary cover',e.primary)}${cardDetail('Secondary cover',e.secondary)}${cardDetail('Telephone',e.phone)}${cardDetail('Email',e.email)}</div>${banner}${stripComment(e.notes)?`<div class="entry-note"><b>Important note</b><br>${esc(stripComment(e.notes))}</div>`:''}<div class="entry-actions">${phoneLink(e.phone)}${mailLink(e.email)}${adminMode?`<div class="entry-admin"><div class="status-actions"><select class="status-select" data-admin-action="change-entry-status" data-entry-id="${esc(e.id)}">${statusOptions(status,contractorMode)}</select></div><button type="button" data-admin-action="edit-entry" data-entry-id="${esc(e.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-entry" data-entry-id="${esc(e.id)}">Remove</button></div>`:''}</div></article>`;
       }).join('')||'<div class="directory-empty">No matching entries found.</div>';
     };
 
@@ -3954,24 +4028,18 @@ renderResponsibilities=function(){
 
   window.renderSpecialistCards=function(x){
     let cards=getSpecialistCards(x);
-    $('canvas').innerHTML=`<div class="grouped-directory">${adminMode?'<div class="admin-hold-hint">Admin mode is active. Set each specialist to Active, On hold – taking instructions, or Fully on hold.</div>':''}<div class="directory-tools"><input id="specialistSearch" placeholder="Search specialist contractor or work type..."><div class="directory-count" id="specialistCount"></div>${adminMode?'<button class="admin-add" id="addSpecialistBtn">+ Add contractor card</button>':''}</div><div class="group-card-grid" id="specialistGrid"></div></div>`;
+    $('canvas').innerHTML=`<div class="grouped-directory">${adminMode?'<div class="admin-hold-hint">Admin mode is active. Set each specialist to Available, On hold, On hold (limited services), or On hold (INS & LBG).</div>':''}<div class="directory-tools"><input id="specialistSearch" placeholder="Search specialist contractor or work type..."><div class="directory-count" id="specialistCount"></div>${adminMode?'<button class="admin-add" id="addSpecialistBtn">+ Add contractor card</button>':''}</div><div class="group-card-grid" id="specialistGrid"></div></div>`;
     const draw=()=>{
       cards=getSpecialistCards(x);
       const q=$('specialistSearch').value.toLowerCase();
       const shown=cards.filter(c=>(c.contractor+' '+c.services.map(s=>s.workType+' '+s.guidance).join(' ')).toLowerCase().includes(q));
       $('specialistCount').textContent=`${shown.length} contractor card${shown.length===1?'':'s'}`;
       $('specialistGrid').innerHTML=shown.map(c=>{
-        const status=opStatus(c);
+        const status=opStatus(c,true);
+        const meta=statusMeta(status,true);
         const initials=c.contractor.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
-        const cardClass=status==='hold'?'is-on-hold':status==='taking'?'is-taking-instructions':'';
-        const chipClass=status==='hold'?'hold':status==='taking'?'taking':'';
-        const chipText=status==='hold'?'On hold':status==='taking'?'Taking instructions':'Available';
-        const banner=status==='hold'
-          ?'<div class="hold-banner full">This specialist is fully on hold and must not receive new instructions.</div>'
-          :status==='taking'
-          ?'<div class="hold-banner taking">This specialist is on hold but may still receive new instructions.</div>'
-          :'';
-        return `<article class="specialist-card ${cardClass}" data-tbrn-card-id="${esc(c.id||c.contractor)}"><div class="specialist-card-head"><div class="entry-avatar">${esc(initials||'SC')}</div><div class="grow"><h4>${esc(c.contractor)}</h4><p>${c.services.length} specialist work type${c.services.length===1?'':'s'}</p></div><span class="status-chip ${chipClass}">${chipText}</span>${adminMode?`<div class="resource-admin-actions"><div class="status-actions"><select class="status-select" data-admin-action="change-specialist-status" data-card-id="${esc(c.id)}"><option value="">Change status…</option>${status==='active'?'<option value="taking">Hold – taking instructions</option><option value="hold">Place on hold</option>':status==='taking'?'<option value="active">Reactivate</option><option value="hold">Place on hold</option>':'<option value="active">Reactivate</option><option value="taking">Hold – taking instructions</option>'}</select></div><button type="button" data-admin-action="edit-specialist" data-card-id="${esc(c.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-specialist" data-card-id="${esc(c.id)}">Remove</button></div>`:''}</div>${banner}<div class="service-list">${c.services.map(s=>`<div class="service-item"><strong>${esc(s.workType)}</strong>${s.guidance?`<p>${esc(s.guidance)}</p>`:''}</div>`).join('')}</div></article>`;
+        const banner=meta.banner?'<div class="hold-banner '+meta.bannerClass+'">'+meta.banner+'</div>':'';
+        return `<article class="specialist-card ${meta.cardClass}" data-tbrn-card-id="${esc(c.id||c.contractor)}"><div class="specialist-card-head"><div class="entry-avatar">${esc(initials||'SC')}</div><div class="grow"><h4>${esc(c.contractor)}</h4><p>${c.services.length} specialist work type${c.services.length===1?'':'s'}</p></div><span class="status-chip ${meta.chipClass}">${meta.chipText}</span>${adminMode?`<div class="resource-admin-actions"><div class="status-actions"><select class="status-select" data-admin-action="change-specialist-status" data-card-id="${esc(c.id)}">${statusOptions(status,true)}</select></div><button type="button" data-admin-action="edit-specialist" data-card-id="${esc(c.id)}">Edit</button><button type="button" class="danger" data-admin-action="remove-specialist" data-card-id="${esc(c.id)}">Remove</button></div>`:''}</div>${banner}<div class="service-list">${c.services.map(s=>`<div class="service-item"><strong>${esc(s.workType)}</strong>${s.guidance?`<p>${esc(s.guidance)}</p>`:''}</div>`).join('')}</div></article>`;
       }).join('')||'<div class="directory-empty">No matching contractor cards found.</div>';
     };
     $('specialistSearch').addEventListener('input',draw);
@@ -3979,25 +4047,11 @@ renderResponsibilities=function(){
     draw();
   };
 
-  document.addEventListener('click',function(e){
+  document.addEventListener('change',function(event){
     if(!adminMode)return;
-    const btn=e.target.closest('[data-admin-action="set-entry-status"],[data-admin-action="set-specialist-status"]');
-    if(!btn)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if(btn.dataset.adminAction==='set-entry-status'){
-      const record=DATA.find(d=>d.title===window.__activeManagedDirectoryTitle);
-      if(record)setEntryStatus(record,btn.dataset.entryId,btn.dataset.status);
-    }else{
-      setSpecialistStatus(btn.dataset.cardId,btn.dataset.status);
-    }
-  },true);
-
-  document.addEventListener('change',function(e){
-    if(!adminMode)return;
-    const select=e.target.closest('[data-admin-action="change-entry-status"],[data-admin-action="change-specialist-status"]');
+    const select=event.target.closest('[data-admin-action="change-entry-status"],[data-admin-action="change-specialist-status"]');
     if(!select||!select.value)return;
-    e.stopImmediatePropagation();
+    event.stopImmediatePropagation();
     if(select.dataset.adminAction==='change-entry-status'){
       const record=DATA.find(d=>d.title===window.__activeManagedDirectoryTitle);
       if(record)setEntryStatus(record,select.dataset.entryId,select.value);
@@ -5081,7 +5135,8 @@ function renderEntryBadgeRows(badges){
   };
 
   function statusOf(entry){
-    if(entry?.status==='taking')return'taking';
+    if(entry?.status==='ins_lbg')return'ins_lbg';
+    if(entry?.status==='limited'||entry?.status==='taking')return'limited';
     if(entry?.status==='hold'||entry?.hold===true||entry?.hold==='true')return'hold';
     return'active';
   }
@@ -5103,7 +5158,7 @@ function renderEntryBadgeRows(badges){
       if(status==='active')return;
 
       const notes=document.createElement('div');
-      notes.className='on-hold-notes-box '+(status==='taking'?'taking':'');
+      notes.className='on-hold-notes-box '+(status==='limited'||status==='ins_lbg'?'taking':'');
       notes.innerHTML='<b>On Hold Notes</b><span>'+esc(entry.onHoldNotes)+'</span>';
 
       const actions=card.querySelector('.entry-actions');
@@ -6771,7 +6826,7 @@ function renderEntryBadgeRows(badges){
   /* Dashboard states */
   setTimeout(()=>{
     const contractorData=Array.isArray(window.DIRECT_MAP_CONTRACTORS)?window.DIRECT_MAP_CONTRACTORS:[];
-    if(contractorData.length&&contractorData.every(item=>!item.hold)){
+    if(contractorData.length&&contractorData.every(item=>item.status==='active')){
       unlock('full-house');
       toast('🟢 Miracles do happen','Every mapped contractor is currently available.');
     }
