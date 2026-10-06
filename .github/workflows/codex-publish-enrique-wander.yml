@@ -1,0 +1,71 @@
+name: Publish Enrique roaming mascot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/codex-publish-enrique-wander.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: codex-publish-enrique-wander
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply verified update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin codex/enrique-wander-20261006
+          git show origin/codex/enrique-wander-20261006:.codex/enrique-wander.patch.gz.b64 | base64 -d | gunzip > /tmp/enrique-wander.patch
+          echo "ad7c73a012fa74639afb2d091d9c845cabe422db8dac493daaf32af6275d9e9f  /tmp/enrique-wander.patch" | sha256sum -c -
+          git apply --check /tmp/enrique-wander.patch
+          git apply /tmp/enrique-wander.patch
+          grep -q 'id="enriqueWanderer"' index.html
+          grep -q 'pointer-events:none' index.html
+          grep -q 'tbrnEnriqueWanderNow' index.html
+          grep -q 'prefers-reduced-motion:reduce' index.html
+          rm .github/workflows/codex-publish-enrique-wander.yml
+
+      - name: Validate embedded scripts
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+          for(const [i,m] of scripts.entries()){
+            if(m[1].trim())new vm.Script(m[1],{filename:'outer-'+i+'.js'});
+          }
+          const marker='frame.srcdoc=';
+          const start=html.indexOf(marker)+marker.length;
+          const end=html.indexOf(';\n  let assistantOpen',start);
+          if(start<marker.length||end<0)throw new Error('Enrique srcdoc not found');
+          const srcdoc=vm.runInNewContext(html.slice(start,end));
+          for(const [i,m] of [...srcdoc.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].entries()){
+            if(m[1].trim())new vm.Script(m[1],{filename:'inner-'+i+'.js'});
+          }
+          if(!srcdoc.includes('viewBox="0 0 80 80"'))throw new Error('Detailed avatar missing');
+          if(!srcdoc.includes('tbrn-enrique-wander'))throw new Error('Wander state listener missing');
+          NODE
+
+      - name: Commit live update and clean temporary branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/codex-publish-enrique-wander.yml
+          git commit -m "Add detailed roaming Enrique mascot"
+          git push origin main
+          git push origin --delete codex/enrique-wander-20261006 || true
