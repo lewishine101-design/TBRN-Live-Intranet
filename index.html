@@ -10306,7 +10306,11 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
 #enriqueWanderer{position:fixed;right:88px;bottom:22px;width:92px;height:92px;z-index:97990;pointer-events:none;visibility:hidden;opacity:0;transform-origin:50% 100%;filter:drop-shadow(0 12px 12px rgba(8,31,49,.22));will-change:transform,opacity}
 #enriqueWanderer svg{display:block;width:100%;height:100%;overflow:visible}
 #enriqueWanderer.is-wandering{visibility:visible}
-@media(max-width:700px),(prefers-reduced-motion:reduce){#enriqueWanderer{display:none!important}}
+#enriqueWanderer.is-poking:after{content:"✦";position:absolute;right:-2px;top:29px;color:#f4a640;font-size:25px;font-weight:900;text-shadow:0 2px 8px #fff;animation:enriquePokeSpark .55s ease-out both}
+.enrique-poked{animation:enriqueCardPoke .68s cubic-bezier(.36,.07,.19,.97) both!important}
+@keyframes enriqueCardPoke{0%,100%{transform:translate3d(0,0,0)}15%{transform:translate3d(-5px,1px,0) rotate(-1deg)}30%{transform:translate3d(6px,-1px,0) rotate(1.2deg)}48%{transform:translate3d(-4px,0,0) rotate(-.8deg)}66%{transform:translate3d(3px,-1px,0) rotate(.6deg)}82%{transform:translate3d(-1px,0,0)}}
+@keyframes enriquePokeSpark{0%{opacity:0;transform:scale(.25) rotate(-20deg)}35%{opacity:1;transform:scale(1.25) rotate(12deg)}100%{opacity:0;transform:scale(.65) rotate(45deg)}}
+@media(max-width:700px),(prefers-reduced-motion:reduce){#enriqueWanderer{display:none!important}.enrique-poked{animation:none!important}}
 </style>
 <script id="enrique-assistant-host">
 (function(){
@@ -10334,6 +10338,8 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
   let assistantOpen=false;
   let wanderTimer=0;
   let wanderAnimation=null;
+  let wanderTimeouts=[];
+  const pokedCards=new Set();
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const wanderer=document.createElement('div');
   wanderer.id='enriqueWanderer';
@@ -10346,43 +10352,116 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
   function scheduleWander(initial=false){
     clearTimeout(wanderTimer);
     if(assistantOpen||reducedMotion.matches||window.innerWidth<=700)return;
-    const delay=initial?45000+Math.random()*45000:120000+Math.random()*180000;
+    const delay=initial?30000+Math.random()*30000:90000+Math.random()*90000;
     wanderTimer=window.setTimeout(runEnriqueWander,delay);
+  }
+  function clearWanderEffects(){
+    wanderTimeouts.forEach(clearTimeout);
+    wanderTimeouts=[];
+    wanderer.classList.remove('is-poking');
+    pokedCards.forEach(card=>card.classList.remove('enrique-poked'));
+    pokedCards.clear();
+  }
+  function queueWanderAction(action,delay){
+    const timer=window.setTimeout(()=>{
+      wanderTimeouts=wanderTimeouts.filter(item=>item!==timer);
+      if(wanderAnimation&&!assistantOpen)action();
+    },delay);
+    wanderTimeouts.push(timer);
+  }
+  function visiblePlaythings(){
+    const selector='.catcard,.doccard,.stat,.result,.admin-card,.entry-card,.specialist-card,.support-card,.portal-entry,.executive-template-choice';
+    return [...document.querySelectorAll(selector)].filter(card=>{
+      const rect=card.getBoundingClientRect(),style=getComputedStyle(card);
+      return style.display!=='none'&&style.visibility!=='hidden'&&rect.width>130&&rect.width<520&&rect.height>65&&rect.top>90&&rect.top<window.innerHeight-105&&rect.left>260&&rect.right<window.innerWidth-16;
+    });
+  }
+  function cardTopPoint(card,bias=.68){
+    const rect=card.getBoundingClientRect();
+    const baseLeft=window.innerWidth-180,baseTop=window.innerHeight-114;
+    return {x:rect.left+rect.width*bias-46-baseLeft,y:rect.top-78-baseTop};
+  }
+  function cardSidePoint(card){
+    const rect=card.getBoundingClientRect();
+    const baseLeft=window.innerWidth-180,baseTop=window.innerHeight-114;
+    return {x:rect.right-33-baseLeft,y:Math.min(rect.bottom-84,window.innerHeight-112)-baseTop};
+  }
+  function pokeCard(card,delay){
+    queueWanderAction(()=>{
+      if(!card?.isConnected)return;
+      wanderer.classList.remove('is-poking');
+      void wanderer.offsetWidth;
+      wanderer.classList.add('is-poking');
+      card.classList.remove('enrique-poked');
+      void card.offsetWidth;
+      card.classList.add('enrique-poked');
+      pokedCards.add(card);
+      queueWanderAction(()=>{wanderer.classList.remove('is-poking');card.classList.remove('enrique-poked');pokedCards.delete(card)},720);
+    },delay);
   }
   function stopWander(){
     if(wanderAnimation){wanderAnimation.cancel();wanderAnimation=null}
+    clearWanderEffects();
     wanderer.classList.remove('is-wandering');
     wanderer.style.opacity='0';
     frame.contentWindow?.postMessage({type:'tbrn-enrique-wander',state:'end'},'*');
   }
   function runEnriqueWander(){
     if(!wanderAllowed()){scheduleWander(false);return}
-    const distance=Math.min(Math.max(window.innerWidth*.55,360),900);
+    clearWanderEffects();
+    const playthings=visiblePlaythings();
+    const first=playthings.length?playthings[Math.floor(Math.random()*playthings.length)]:null;
+    const neighbours=first?playthings.filter(card=>card!==first&&Math.abs(card.getBoundingClientRect().top-first.getBoundingClientRect().top)<150):[];
+    const second=neighbours.length?neighbours[Math.floor(Math.random()*neighbours.length)]:null;
     wanderer.classList.add('is-wandering');
     frame.contentWindow?.postMessage({type:'tbrn-enrique-wander',state:'start'},'*');
-    wanderAnimation=wanderer.animate([
-      {offset:0,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'},
-      {offset:.06,opacity:1,transform:'translate3d(0,-8px,0) scale(1) rotate(-7deg)'},
-      {offset:.14,opacity:1,transform:`translate3d(${-distance*.14}px,0,0) rotate(7deg)`},
-      {offset:.23,opacity:1,transform:`translate3d(${-distance*.29}px,-13px,0) rotate(-7deg)`},
-      {offset:.32,opacity:1,transform:`translate3d(${-distance*.44}px,1px,0) rotate(7deg)`},
-      {offset:.42,opacity:1,transform:`translate3d(${-distance*.62}px,-16px,0) rotate(-6deg)`},
-      {offset:.5,opacity:1,transform:`translate3d(${-distance*.72}px,0,0) rotate(0deg)`},
-      {offset:.57,opacity:1,transform:`translate3d(${-distance*.72}px,-5px,0) scaleX(-1) rotate(-4deg)`},
-      {offset:.66,opacity:1,transform:`translate3d(${-distance*.55}px,0,0) scaleX(-1) rotate(7deg)`},
-      {offset:.75,opacity:1,transform:`translate3d(${-distance*.38}px,-14px,0) scaleX(-1) rotate(-7deg)`},
-      {offset:.84,opacity:1,transform:`translate3d(${-distance*.22}px,0,0) scaleX(-1) rotate(7deg)`},
-      {offset:.94,opacity:1,transform:'translate3d(-18px,-9px,0) scaleX(-1) rotate(-5deg)'},
-      {offset:1,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'}
-    ],{duration:12000,easing:'ease-in-out',fill:'both'});
-    wanderAnimation.finished.catch(()=>{}).then(()=>{
-      if(!wanderAnimation)return;
+    let frames,duration;
+    if(first){
+      const side=cardSidePoint(first),top=cardTopPoint(first,.72),other=second?cardTopPoint(second,.34):{x:top.x-55,y:top.y-18};
+      frames=[
+        {offset:0,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'},
+        {offset:.06,opacity:1,transform:'translate3d(0,-8px,0) scale(1) rotate(-8deg)'},
+        {offset:.17,opacity:1,transform:`translate3d(${side.x}px,${side.y}px,0) rotate(8deg)`},
+        {offset:.27,opacity:1,transform:`translate3d(${side.x-4}px,${(side.y+top.y)*.5}px,0) rotate(-10deg) scale(.96)`},
+        {offset:.38,opacity:1,transform:`translate3d(${top.x}px,${top.y-20}px,0) rotate(9deg) scale(1.03)`},
+        {offset:.46,opacity:1,transform:`translate3d(${top.x}px,${top.y}px,0) rotate(-3deg)`},
+        {offset:.53,opacity:1,transform:`translate3d(${top.x-8}px,${top.y+5}px,0) rotate(-17deg) scale(1.04)`},
+        {offset:.59,opacity:1,transform:`translate3d(${top.x+5}px,${top.y-6}px,0) rotate(8deg)`},
+        {offset:.69,opacity:1,transform:`translate3d(${other.x}px,${other.y-24}px,0) rotate(-9deg) scale(1.04)`},
+        {offset:.76,opacity:1,transform:`translate3d(${other.x}px,${other.y}px,0) rotate(3deg)`},
+        {offset:.82,opacity:1,transform:`translate3d(${other.x+8}px,${other.y+5}px,0) rotate(18deg) scale(1.04)`},
+        {offset:.87,opacity:1,transform:`translate3d(${other.x-5}px,${other.y-7}px,0) rotate(-8deg)`},
+        {offset:.94,opacity:1,transform:'translate3d(-18px,-9px,0) scaleX(-1) rotate(-5deg)'},
+        {offset:1,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'}
+      ];
+      duration=16000;
+      pokeCard(first,8200);
+      pokeCard(second||first,12600);
+    }else{
+      const distance=Math.min(Math.max(window.innerWidth*.55,360),900);
+      frames=[
+        {offset:0,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'},
+        {offset:.08,opacity:1,transform:'translate3d(0,-8px,0) scale(1) rotate(-8deg)'},
+        {offset:.25,opacity:1,transform:`translate3d(${-distance*.32}px,-16px,0) rotate(9deg)`},
+        {offset:.43,opacity:1,transform:`translate3d(${-distance*.64}px,0,0) rotate(-9deg)`},
+        {offset:.56,opacity:1,transform:`translate3d(${-distance*.72}px,-25px,0) rotate(8deg) scale(1.08)`},
+        {offset:.66,opacity:1,transform:`translate3d(${-distance*.62}px,0,0) scaleX(-1) rotate(-7deg)`},
+        {offset:.84,opacity:1,transform:`translate3d(${-distance*.25}px,-14px,0) scaleX(-1) rotate(8deg)`},
+        {offset:1,opacity:0,transform:'translate3d(25px,20px,0) scale(.55) rotate(0deg)'}
+      ];
+      duration=12000;
+    }
+    const active=wanderer.animate(frames,{duration,easing:'ease-in-out',fill:'both'});
+    wanderAnimation=active;
+    active.finished.then(()=>{
+      if(wanderAnimation!==active)return;
       wanderAnimation=null;
+      clearWanderEffects();
       wanderer.classList.remove('is-wandering');
       wanderer.style.opacity='0';
       frame.contentWindow?.postMessage({type:'tbrn-enrique-wander',state:'end'},'*');
       scheduleWander(false);
-    });
+    },()=>{});
   }
   window.addEventListener('message',event=>{
     if(event.source!==frame.contentWindow||event.data?.type!=='tbrn-enrique-state')return;
