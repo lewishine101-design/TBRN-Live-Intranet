@@ -31,7 +31,7 @@ jobs:
           echo "ad7c73a012fa74639afb2d091d9c845cabe422db8dac493daaf32af6275d9e9f  /tmp/enrique-wander.patch" | sha256sum -c -
           git apply --check /tmp/enrique-wander.patch
           git apply /tmp/enrique-wander.patch
-          grep -q 'id="enriqueWanderer"' index.html
+          grep -q "wanderer.id='enriqueWanderer'" index.html
           grep -q 'pointer-events:none' index.html
           grep -q 'tbrnEnriqueWanderNow' index.html
           grep -q 'prefers-reduced-motion:reduce' index.html
