@@ -464,8 +464,7 @@ body.tbrn-modern-hub #categories .catfoot {
   color: #83aa9b;
 }
 
-body.tbrn-modern-hub #categories .catfoot::after {
-  content: "→";
+body.tbrn-modern-hub #categories .catfoot span:last-child {
   width: 30px;
   height: 30px;
   margin-top: -7px;
@@ -476,10 +475,6 @@ body.tbrn-modern-hub #categories .catfoot::after {
   background: rgba(41, 176, 107, .12);
   color: #5ce197;
   font-size: 15px;
-}
-
-body.tbrn-modern-hub #categories .catfoot span:last-child {
-  display: none;
 }
 
 body.tbrn-modern-hub .modern-bottom-grid {
