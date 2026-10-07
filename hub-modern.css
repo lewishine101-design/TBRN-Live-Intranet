@@ -2038,16 +2038,18 @@ body.tbrn-modern-hub .tbrn-achievement-card {
 body.tbrn-modern-hub .mini-chip.yes,
 body.tbrn-modern-hub .status-chip.ok,
 body.tbrn-modern-hub .portal-access-badge {
-  border-color: #87bca2;
-  background: #b8d9c9;
-  color: #075936;
+  border-color: #72ad90;
+  background: #afd4c1;
+  color: #034d2d;
+  font-weight: 800;
 }
 
 body.tbrn-modern-hub .mini-chip.no,
 body.tbrn-modern-hub .portal-access-badge.no {
-  border-color: #d5aaa6;
-  background: #ead0cd;
-  color: #7d2925;
+  border-color: #cd9691;
+  background: #e7c4c1;
+  color: #72211d;
+  font-weight: 800;
 }
 
 body.tbrn-modern-hub .status-chip.taking,
@@ -2062,9 +2064,10 @@ body.tbrn-modern-hub .hold-banner.taking {
 body.tbrn-modern-hub .entry-note,
 body.tbrn-modern-hub .resp-example,
 body.tbrn-modern-hub .portal-note-banner {
-  border-color: #c8a75c;
-  background: #e5dab9;
-  color: #56420e;
+  border-color: #b38d39;
+  background: #e0d1a8;
+  color: #443300;
+  font-weight: 650;
 }
 
 body.tbrn-modern-hub .entry-note *,
