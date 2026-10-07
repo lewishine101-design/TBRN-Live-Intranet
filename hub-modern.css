@@ -270,7 +270,7 @@ body.tbrn-modern-hub .modern-dashboard-date strong {
 }
 
 body.tbrn-modern-hub #rollingHero {
-  min-height: 130px;
+  min-height: 170px;
   border: 1px solid rgba(105, 223, 167, .28);
   border-left: 4px solid #4be190;
   border-radius: 14px;
@@ -281,13 +281,13 @@ body.tbrn-modern-hub #rollingHero {
 }
 
 body.tbrn-modern-hub #rollingHero .rolling-hero-track {
-  min-height: 130px;
+  min-height: 170px;
 }
 
 body.tbrn-modern-hub #rollingHero .rolling-hero-slide {
   grid-template-columns: minmax(0, 1.65fr) minmax(220px, .55fr);
   gap: 22px;
-  min-height: 130px;
+  min-height: 170px;
   padding: 20px 78px 27px 26px;
 }
 
