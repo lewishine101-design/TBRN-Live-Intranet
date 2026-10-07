@@ -1528,3 +1528,507 @@ body.tbrn-modern-hub .tbrn-achievement-card {
     padding: 14px;
   }
 }
+
+/* Hub 2.1 balanced sage palette ---------------------------------------------
+   Keeps the established layout and dark navigation, while moving the working
+   area to the approved lighter sage treatment. */
+
+body.tbrn-modern-hub {
+  --modern-surface: #d4dfd9;
+  --modern-surface-strong: #c7d6ce;
+  --modern-surface-soft: #dde6e1;
+  --modern-border: rgba(28, 77, 61, .20);
+  --modern-border-strong: rgba(18, 119, 77, .52);
+  --modern-text: #142a23;
+  --modern-muted: #536c63;
+  --modern-accent: #087747;
+  --modern-shadow: 0 12px 30px rgba(20, 54, 43, .11);
+  background: #afc2b8;
+}
+
+body.tbrn-modern-hub .shell {
+  background:
+    radial-gradient(circle at 52% -12%, rgba(244, 249, 246, .42), transparent 38%),
+    linear-gradient(145deg, #bdcdc4 0%, #b4c6bc 52%, #adbfb5 100%);
+}
+
+body.tbrn-modern-hub .sidebar {
+  background: rgba(2, 39, 35, .97);
+}
+
+body.tbrn-modern-hub .topbar {
+  background: rgba(216, 226, 221, .94);
+  border-bottom-color: rgba(25, 70, 56, .18);
+  box-shadow: 0 8px 24px rgba(24, 56, 46, .10);
+}
+
+body.tbrn-modern-hub .searchbox input {
+  border-color: rgba(30, 75, 61, .27);
+  background: rgba(231, 238, 234, .72);
+  color: #152a23;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .46);
+}
+
+body.tbrn-modern-hub .searchbox input::placeholder,
+body.tbrn-modern-hub input::placeholder,
+body.tbrn-modern-hub textarea::placeholder {
+  color: #62766f;
+}
+
+body.tbrn-modern-hub .searchbox span,
+body.tbrn-modern-hub .profile,
+body.tbrn-modern-hub .modern-update-button {
+  color: #17332a;
+}
+
+body.tbrn-modern-hub .profile .avatar {
+  border-color: rgba(15, 101, 65, .24);
+  background: #0b4939;
+  color: #fff;
+}
+
+body.tbrn-modern-hub .modern-update-button {
+  border-color: rgba(28, 75, 60, .19);
+  background: rgba(239, 244, 241, .55);
+}
+
+body.tbrn-modern-hub .modern-update-button:hover {
+  background: rgba(237, 245, 241, .88);
+}
+
+body.tbrn-modern-hub .modern-update-button::after {
+  border-color: #d8e2dd;
+  background: #07944f;
+}
+
+body.tbrn-modern-hub .content {
+  color: #142a23;
+}
+
+body.tbrn-modern-hub .modern-dashboard-intro h1,
+body.tbrn-modern-hub .modern-dashboard-date strong,
+body.tbrn-modern-hub #home > .section-head h3,
+body.tbrn-modern-hub .modern-quick-panel .section-head h3 {
+  color: #10241e;
+}
+
+body.tbrn-modern-hub .modern-dashboard-intro h1 span,
+body.tbrn-modern-hub .modern-status-live {
+  color: #087747;
+}
+
+body.tbrn-modern-hub .modern-dashboard-intro p,
+body.tbrn-modern-hub .modern-dashboard-date,
+body.tbrn-modern-hub #home > .section-head p,
+body.tbrn-modern-hub .modern-quick-panel .section-head p {
+  color: #526c62;
+}
+
+body.tbrn-modern-hub #rollingHero {
+  border-color: rgba(22, 120, 77, .34);
+  border-left-color: #179b62;
+  background:
+    radial-gradient(circle at 12% 35%, rgba(67, 182, 123, .18), transparent 30%),
+    #b9d5c8;
+  box-shadow: 0 13px 32px rgba(29, 72, 58, .11);
+}
+
+body.tbrn-modern-hub #rollingHero .eyebrow,
+body.tbrn-modern-hub #rollingHero .rolling-update-icon {
+  color: #087747;
+}
+
+body.tbrn-modern-hub #rollingHero h2 {
+  color: #10271f;
+}
+
+body.tbrn-modern-hub #rollingHero .rolling-hero-copy > p,
+body.tbrn-modern-hub #rollingHero .rolling-update-panel p {
+  color: #3f5d53;
+}
+
+body.tbrn-modern-hub #rollingHero .pulse,
+body.tbrn-modern-hub #rollingHero .rolling-update-panel,
+body.tbrn-modern-hub #rollingHero .rolling-arrow {
+  border-color: rgba(24, 90, 67, .20);
+  background: rgba(233, 241, 237, .44);
+  color: #173b2f;
+}
+
+body.tbrn-modern-hub #rollingHero .rolling-dot {
+  background: rgba(28, 80, 62, .30);
+}
+
+body.tbrn-modern-hub #rollingHero .rolling-dot.active {
+  background: #087747;
+}
+
+body.tbrn-modern-hub #categories .catcard,
+body.tbrn-modern-hub .modern-quick-panel,
+body.tbrn-modern-hub .modern-system-status {
+  border-color: rgba(29, 78, 62, .21);
+  background: #d4dfd9;
+  color: #142a23;
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub #categories .catcard:hover {
+  border-color: rgba(12, 121, 73, .48);
+  background: #dbe5df;
+  box-shadow: 0 17px 38px rgba(22, 58, 46, .15);
+}
+
+body.tbrn-modern-hub #categories .cat-icon,
+body.tbrn-modern-hub #home #quick .cat-icon {
+  border-color: rgba(24, 115, 75, .13);
+  background: #b9d9ca;
+  color: #10251f;
+}
+
+body.tbrn-modern-hub #categories .smallpill,
+body.tbrn-modern-hub #categories .catfoot,
+body.tbrn-modern-hub .modern-status-time {
+  color: #587066;
+}
+
+body.tbrn-modern-hub #categories .smallpill {
+  border-color: rgba(31, 76, 62, .14);
+  background: rgba(237, 243, 239, .52);
+}
+
+body.tbrn-modern-hub #categories .catcard h4,
+body.tbrn-modern-hub .modern-system-status h3,
+body.tbrn-modern-hub .modern-status-time strong {
+  color: #11271f;
+}
+
+body.tbrn-modern-hub #categories .catcard p {
+  color: #4e685e;
+}
+
+body.tbrn-modern-hub #categories .catfoot {
+  border-top-color: rgba(30, 76, 62, .17);
+}
+
+body.tbrn-modern-hub #categories .catfoot span:last-child {
+  border-color: rgba(21, 122, 75, .22);
+  background: #b9d9ca;
+  color: #123c2e;
+}
+
+body.tbrn-modern-hub #home #quick .doccard {
+  border-color: rgba(30, 76, 62, .18);
+  background: rgba(226, 234, 230, .72);
+}
+
+body.tbrn-modern-hub #home #quick .doccard:hover {
+  border-color: rgba(13, 121, 73, .40);
+  background: #e2ebe6;
+}
+
+body.tbrn-modern-hub #home #quick .doccard h4 {
+  color: #183229;
+}
+
+/* Shared light surfaces across all Hub workspaces. */
+body.tbrn-modern-hub .pagehead,
+body.tbrn-modern-hub #categoryDocs .doccard,
+body.tbrn-modern-hub #searchView .result,
+body.tbrn-modern-hub .workspace,
+body.tbrn-modern-hub .directory-tools,
+body.tbrn-modern-hub .portal-access-tools,
+body.tbrn-modern-hub .resp-toolbar,
+body.tbrn-modern-hub .contacts-table-toolbar,
+body.tbrn-modern-hub .commercial-vat-savebar,
+body.tbrn-modern-hub .vat-save-bar,
+body.tbrn-modern-hub .entry-card,
+body.tbrn-modern-hub .specialist-card,
+body.tbrn-modern-hub .support-card,
+body.tbrn-modern-hub .portal-group-card,
+body.tbrn-modern-hub .group-section,
+body.tbrn-modern-hub .resp-card,
+body.tbrn-modern-hub .map-resource-intro,
+body.tbrn-modern-hub .vat-choice-intro,
+body.tbrn-modern-hub .commercial-vat-intro,
+body.tbrn-modern-hub .vat-choice-card,
+body.tbrn-modern-hub .commercial-vat-card,
+body.tbrn-modern-hub .vat-contractor-item,
+body.tbrn-modern-hub .contacts-table-shell,
+body.tbrn-modern-hub .admin-locked,
+body.tbrn-modern-hub .admin-card,
+body.tbrn-modern-hub .rename-admin-section {
+  border-color: var(--modern-border);
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .pagehead,
+body.tbrn-modern-hub .map-resource-intro,
+body.tbrn-modern-hub .admin-locked {
+  background:
+    radial-gradient(circle at 88% 14%, rgba(64, 166, 112, .12), transparent 32%),
+    var(--modern-surface);
+}
+
+body.tbrn-modern-hub .pagehead h2,
+body.tbrn-modern-hub #categoryDocs h4,
+body.tbrn-modern-hub #searchView .result h4,
+body.tbrn-modern-hub .workspace-bar h3,
+body.tbrn-modern-hub .entry-heading h4,
+body.tbrn-modern-hub .specialist-card-head h4,
+body.tbrn-modern-hub .support-card-head h4,
+body.tbrn-modern-hub .group-section-head h3,
+body.tbrn-modern-hub .portal-group-head h3,
+body.tbrn-modern-hub .resp-head h3,
+body.tbrn-modern-hub .resp-tier strong,
+body.tbrn-modern-hub .map-resource-intro h3,
+body.tbrn-modern-hub .direct-map-panel h3,
+body.tbrn-modern-hub .surveyor-map-panel h3,
+body.tbrn-modern-hub .sv-map-panel h3,
+body.tbrn-modern-hub .vat-choice-card h3,
+body.tbrn-modern-hub .commercial-vat-card h3,
+body.tbrn-modern-hub .commercial-vat-content,
+body.tbrn-modern-hub .contacts-table-toolbar strong,
+body.tbrn-modern-hub .admin-card h3,
+body.tbrn-modern-hub .rename-admin-section h3,
+body.tbrn-modern-hub .service-item strong {
+  color: #142a23;
+}
+
+body.tbrn-modern-hub .pagehead p,
+body.tbrn-modern-hub #categoryDocs p,
+body.tbrn-modern-hub #searchView .result p,
+body.tbrn-modern-hub .workspace-bar p,
+body.tbrn-modern-hub .entry-heading p,
+body.tbrn-modern-hub .specialist-card-head p,
+body.tbrn-modern-hub .support-card-head p,
+body.tbrn-modern-hub .group-section-head p,
+body.tbrn-modern-hub .portal-group-head p,
+body.tbrn-modern-hub .detail-row b,
+body.tbrn-modern-hub .resp-head p,
+body.tbrn-modern-hub .resp-label,
+body.tbrn-modern-hub .resp-tier span,
+body.tbrn-modern-hub .map-resource-intro p,
+body.tbrn-modern-hub .map-file-note,
+body.tbrn-modern-hub .direct-map-panel p,
+body.tbrn-modern-hub .surveyor-map-panel p,
+body.tbrn-modern-hub .sv-map-panel p,
+body.tbrn-modern-hub .direct-map-section,
+body.tbrn-modern-hub .sv-map-section,
+body.tbrn-modern-hub .vat-choice-card p,
+body.tbrn-modern-hub .commercial-vat-intro p,
+body.tbrn-modern-hub .contacts-table-toolbar span,
+body.tbrn-modern-hub .admin-locked p,
+body.tbrn-modern-hub .admin-card p,
+body.tbrn-modern-hub .rename-admin-help,
+body.tbrn-modern-hub .admin-card .resource-type,
+body.tbrn-modern-hub .service-item p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .pagehead .bigicon,
+body.tbrn-modern-hub #categoryDocs .cat-icon,
+body.tbrn-modern-hub .entry-avatar,
+body.tbrn-modern-hub .portal-entry-avatar,
+body.tbrn-modern-hub .resp-icon,
+body.tbrn-modern-hub .vat-choice-icon,
+body.tbrn-modern-hub .commercial-vat-card-number {
+  border-color: rgba(24, 111, 73, .14);
+  background: #b9d9ca;
+  color: #0b6942;
+}
+
+body.tbrn-modern-hub .action,
+body.tbrn-modern-hub .entry-action,
+body.tbrn-modern-hub .resource-admin-actions button,
+body.tbrn-modern-hub .entry-admin button,
+body.tbrn-modern-hub .resp-admin-edit,
+body.tbrn-modern-hub .direct-map-buttons button.secondary,
+body.tbrn-modern-hub .surveyor-map-buttons button.secondary,
+body.tbrn-modern-hub .sv-map-buttons button.secondary,
+body.tbrn-modern-hub .direct-map-card button,
+body.tbrn-modern-hub .surveyor-map-card button,
+body.tbrn-modern-hub .sv-map-card button {
+  border-color: rgba(29, 77, 61, .21);
+  background: rgba(232, 239, 235, .72);
+  color: #214138;
+}
+
+body.tbrn-modern-hub .action:hover,
+body.tbrn-modern-hub .entry-action:hover,
+body.tbrn-modern-hub .resource-admin-actions button:hover,
+body.tbrn-modern-hub .entry-admin button:hover,
+body.tbrn-modern-hub .resp-admin-edit:hover {
+  background: #e1ebe5;
+}
+
+body.tbrn-modern-hub #categoryDocs .doccard:hover,
+body.tbrn-modern-hub #searchView .result:hover,
+body.tbrn-modern-hub .vat-choice-card:hover,
+body.tbrn-modern-hub .commercial-vat-card:hover {
+  background: #dce6e0;
+  box-shadow: 0 17px 38px rgba(22, 58, 46, .15);
+}
+
+body.tbrn-modern-hub .workspace-bar {
+  border-bottom-color: var(--modern-border);
+  background: #c4d4cc;
+}
+
+body.tbrn-modern-hub .workspace-bar .smallpill,
+body.tbrn-modern-hub #categoryDocs .smallpill,
+body.tbrn-modern-hub .mini-chip,
+body.tbrn-modern-hub .contractor-chip,
+body.tbrn-modern-hub .support-meta span,
+body.tbrn-modern-hub .vat-choice-tag,
+body.tbrn-modern-hub .vat-choice-open {
+  border-color: rgba(31, 76, 62, .15);
+  background: rgba(235, 241, 238, .66);
+  color: #526b62;
+}
+
+body.tbrn-modern-hub .directory-tools input,
+body.tbrn-modern-hub .directory-tools select,
+body.tbrn-modern-hub .portal-access-tools input,
+body.tbrn-modern-hub .portal-access-tools select,
+body.tbrn-modern-hub .resp-toolbar input,
+body.tbrn-modern-hub .form-field input,
+body.tbrn-modern-hub .form-field textarea,
+body.tbrn-modern-hub .form-field select,
+body.tbrn-modern-hub .commercial-vat-editor,
+body.tbrn-modern-hub .contacts-table input,
+body.tbrn-modern-hub .contacts-table select,
+body.tbrn-modern-hub .rename-admin-row input,
+body.tbrn-modern-hub .direct-map-search input,
+body.tbrn-modern-hub .direct-map-search select,
+body.tbrn-modern-hub .surveyor-map-search input,
+body.tbrn-modern-hub .surveyor-map-search select,
+body.tbrn-modern-hub .sv-map-search input,
+body.tbrn-modern-hub .sv-map-search select {
+  border-color: rgba(29, 77, 61, .24);
+  background: #e6ede9;
+  color: #17332a;
+}
+
+body.tbrn-modern-hub .detail-row span,
+body.tbrn-modern-hub .detail-row a,
+body.tbrn-modern-hub .resp-value,
+body.tbrn-modern-hub .resp-column li {
+  color: #29493f;
+}
+
+body.tbrn-modern-hub .entry-badges,
+body.tbrn-modern-hub .entry-actions,
+body.tbrn-modern-hub .specialist-card-head,
+body.tbrn-modern-hub .support-card-head,
+body.tbrn-modern-hub .portal-group-head,
+body.tbrn-modern-hub .resp-head,
+body.tbrn-modern-hub .commercial-vat-content div {
+  border-color: rgba(30, 77, 62, .16);
+}
+
+body.tbrn-modern-hub .service-item,
+body.tbrn-modern-hub .resp-chip.alt,
+body.tbrn-modern-hub .resp-action,
+body.tbrn-modern-hub .resp-tier,
+body.tbrn-modern-hub .resp-column,
+body.tbrn-modern-hub .flag-option,
+body.tbrn-modern-hub .rename-admin-row,
+body.tbrn-modern-hub .directory-empty,
+body.tbrn-modern-hub .resp-empty,
+body.tbrn-modern-hub .contacts-empty,
+body.tbrn-modern-hub .vat-empty-list {
+  border-color: rgba(30, 77, 62, .16);
+  background: rgba(231, 238, 234, .58);
+  color: #405f54;
+}
+
+body.tbrn-modern-hub .resp-column h4 {
+  background: #c1d3ca;
+  color: #17352b;
+}
+
+body.tbrn-modern-hub .direct-map-shell,
+body.tbrn-modern-hub .surveyor-map-shell,
+body.tbrn-modern-hub .sv-map-shell {
+  border-color: var(--modern-border);
+  background: #c4d4cc;
+}
+
+body.tbrn-modern-hub .direct-map-panel,
+body.tbrn-modern-hub .surveyor-map-panel,
+body.tbrn-modern-hub .sv-map-panel {
+  border-color: var(--modern-border);
+  background: #d1ddd7;
+  color: var(--modern-text);
+}
+
+body.tbrn-modern-hub .direct-map-metric,
+body.tbrn-modern-hub .surveyor-map-metric,
+body.tbrn-modern-hub .sv-map-metric,
+body.tbrn-modern-hub .direct-map-search,
+body.tbrn-modern-hub .surveyor-map-search,
+body.tbrn-modern-hub .sv-map-search,
+body.tbrn-modern-hub .direct-map-card,
+body.tbrn-modern-hub .surveyor-map-card,
+body.tbrn-modern-hub .sv-map-card {
+  border-color: rgba(29, 77, 61, .18);
+  background: rgba(232, 239, 235, .66);
+  color: #203f35;
+}
+
+body.tbrn-modern-hub .direct-map-metric span,
+body.tbrn-modern-hub .surveyor-map-metric span,
+body.tbrn-modern-hub .sv-map-metric span,
+body.tbrn-modern-hub .direct-map-card small,
+body.tbrn-modern-hub .surveyor-map-card small,
+body.tbrn-modern-hub .sv-map-card small {
+  color: #5a7169;
+}
+
+body.tbrn-modern-hub .direct-map-legend,
+body.tbrn-modern-hub .surveyor-map-legend,
+body.tbrn-modern-hub .sv-map-legend,
+body.tbrn-modern-hub .direct-map-status,
+body.tbrn-modern-hub .surveyor-map-status,
+body.tbrn-modern-hub .sv-map-status {
+  border-color: rgba(29, 77, 61, .18);
+  background: rgba(216, 227, 221, .95);
+  color: #405f54;
+}
+
+body.tbrn-modern-hub .admin-modal {
+  background: rgba(8, 27, 21, .66);
+}
+
+body.tbrn-modern-hub .admin-modal-card,
+body.tbrn-modern-hub .vat-guidance-panel,
+body.tbrn-modern-hub .tbrn-achievement-panel {
+  border-color: rgba(29, 77, 61, .24);
+  background: #d3dfd9;
+  color: #142a23;
+  box-shadow: 0 30px 90px rgba(8, 28, 21, .35);
+}
+
+body.tbrn-modern-hub .admin-modal-head,
+body.tbrn-modern-hub .admin-modal-foot,
+body.tbrn-modern-hub .vat-guidance-header {
+  border-color: rgba(29, 77, 61, .18);
+  background: #c5d5cd;
+}
+
+body.tbrn-modern-hub .admin-modal-close,
+body.tbrn-modern-hub .vat-guidance-close {
+  background: rgba(239, 244, 241, .62);
+  color: #17332a;
+}
+
+body.tbrn-modern-hub .form-field label {
+  color: #405e54;
+}
+
+body.tbrn-modern-hub .tbrn-achievement-card {
+  border-color: rgba(29, 77, 61, .17);
+  background: rgba(233, 240, 236, .68);
+}
