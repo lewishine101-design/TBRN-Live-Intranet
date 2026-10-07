@@ -49,6 +49,26 @@
     });
   }
 
+  function decorateResourceCards() {
+    document.querySelectorAll('#categoryDocs .doccard, #quick .doccard').forEach(card => {
+      const categoryText = card.querySelector('.smallpill')?.textContent?.trim() || '';
+      const key = displayMap[categoryText] || categoryText;
+      const holder = card.querySelector('.cat-icon');
+      if (holder && icons[key] && holder.dataset.modernIcon !== key) {
+        holder.innerHTML = icons[key];
+        holder.dataset.modernIcon = key;
+      }
+    });
+
+    const categoryTitle = document.getElementById('catTitle')?.textContent?.trim();
+    const categoryIcon = document.getElementById('catIcon');
+    const categoryKey = displayMap[categoryTitle] || categoryTitle;
+    if (categoryIcon && icons[categoryKey] && categoryIcon.dataset.modernIcon !== categoryKey) {
+      categoryIcon.innerHTML = icons[categoryKey];
+      categoryIcon.dataset.modernIcon = categoryKey;
+    }
+  }
+
   function greeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -121,6 +141,7 @@
     updateSidebarStatus();
     decorateNavigation();
     decorateCards();
+    decorateResourceCards();
   }
 
   modernise();

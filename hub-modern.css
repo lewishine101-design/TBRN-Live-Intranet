@@ -743,3 +743,788 @@ body.tbrn-modern-hub #enriqueAssistantFrame.enrique-collapsed {
     transition: none;
   }
 }
+
+/* Complete workspace makeover ------------------------------------------------ */
+
+body.tbrn-modern-hub {
+  --modern-surface: rgba(3, 53, 46, .88);
+  --modern-surface-strong: #063f36;
+  --modern-surface-soft: rgba(255, 255, 255, .035);
+  --modern-border: rgba(111, 221, 170, .19);
+  --modern-border-strong: rgba(83, 220, 151, .42);
+  --modern-text: #edf8f3;
+  --modern-muted: #91b3a6;
+  --modern-accent: #4cdd8d;
+  --modern-shadow: 0 16px 42px rgba(0, 20, 17, .16);
+}
+
+body.tbrn-modern-hub .pagehead {
+  padding: 22px 24px;
+  border: 1px solid var(--modern-border);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 88% 14%, rgba(59, 198, 127, .11), transparent 31%),
+    var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .pagehead .bigicon {
+  width: 50px;
+  height: 50px;
+  padding: 12px;
+  border: 1px solid rgba(92, 221, 158, .20);
+  border-radius: 13px;
+  background: rgba(62, 201, 129, .10);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub .pagehead .bigicon svg {
+  width: 100%;
+  height: 100%;
+}
+
+body.tbrn-modern-hub .pagehead h2 {
+  color: #f5fbf8;
+  font-size: clamp(22px, 2.4vw, 30px);
+  letter-spacing: -.025em;
+}
+
+body.tbrn-modern-hub .pagehead p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .action {
+  border-color: var(--modern-border);
+  background: rgba(255, 255, 255, .04);
+  color: #deeee7;
+}
+
+body.tbrn-modern-hub .action:hover {
+  border-color: var(--modern-border-strong);
+  background: rgba(66, 202, 133, .10);
+}
+
+body.tbrn-modern-hub .action.primary {
+  border-color: #37bc76;
+  background: linear-gradient(135deg, #13794f, #24a867);
+  color: #fff;
+}
+
+/* Category libraries and global search */
+body.tbrn-modern-hub #categoryDocs {
+  gap: 14px;
+}
+
+body.tbrn-modern-hub #categoryDocs .doccard,
+body.tbrn-modern-hub #searchView .result {
+  min-height: 170px;
+  padding: 19px;
+  border: 1px solid var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub #categoryDocs .doccard:hover,
+body.tbrn-modern-hub #searchView .result:hover {
+  transform: translateY(-2px);
+  border-color: var(--modern-border-strong);
+  background: #06483c;
+}
+
+body.tbrn-modern-hub #categoryDocs .cat-icon {
+  width: 39px;
+  height: 39px;
+  padding: 9px;
+  border: 1px solid rgba(94, 220, 159, .18);
+  border-radius: 11px;
+  background: rgba(66, 202, 133, .09);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub #categoryDocs .cat-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+body.tbrn-modern-hub #categoryDocs .smallpill {
+  border: 1px solid rgba(108, 213, 165, .12);
+  background: rgba(255, 255, 255, .025);
+  color: #9ebdb1;
+}
+
+body.tbrn-modern-hub #categoryDocs h4,
+body.tbrn-modern-hub #searchView .result h4 {
+  color: #f2faf6;
+}
+
+body.tbrn-modern-hub #categoryDocs p,
+body.tbrn-modern-hub #searchView .result p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub #categoryDocs .catfoot {
+  margin-top: auto;
+  border-top-color: rgba(109, 216, 167, .13);
+  color: #8eb2a4;
+}
+
+body.tbrn-modern-hub #categoryDocs .doccard {
+  display: flex;
+  flex-direction: column;
+}
+
+body.tbrn-modern-hub #searchView .search-results {
+  gap: 10px;
+}
+
+body.tbrn-modern-hub #searchView .result {
+  min-height: 0;
+}
+
+/* Document shell: dark chrome with a bright reading canvas */
+body.tbrn-modern-hub .workspace {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--modern-border);
+  border-radius: 16px;
+  background: var(--modern-surface);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .workspace-bar {
+  padding: 16px 20px;
+  border-bottom-color: var(--modern-border);
+  background: #04392f;
+}
+
+body.tbrn-modern-hub .workspace-bar h3 {
+  color: #f1faf6;
+}
+
+body.tbrn-modern-hub .workspace-bar p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .workspace-bar .smallpill {
+  border: 1px solid rgba(104, 218, 166, .14);
+  background: rgba(255, 255, 255, .035);
+  color: #a5c6ba;
+}
+
+body.tbrn-modern-hub .document {
+  padding: 20px;
+  background: #eaf2ed;
+}
+
+body.tbrn-modern-hub .content-canvas {
+  border-color: #cfdfd7;
+  border-radius: 14px;
+  background: #fff;
+  color: #17332a;
+  box-shadow: 0 10px 28px rgba(2, 44, 37, .08);
+}
+
+body.tbrn-modern-hub .content-canvas table {
+  border-color: #d3e1da !important;
+}
+
+body.tbrn-modern-hub .content-canvas td,
+body.tbrn-modern-hub .content-canvas th {
+  border-color: #e0eae4 !important;
+}
+
+/* Shared dark controls */
+body.tbrn-modern-hub .directory-tools,
+body.tbrn-modern-hub .portal-access-tools,
+body.tbrn-modern-hub .resp-toolbar,
+body.tbrn-modern-hub .contacts-table-toolbar,
+body.tbrn-modern-hub .commercial-vat-savebar,
+body.tbrn-modern-hub .vat-save-bar {
+  border: 1px solid var(--modern-border);
+  border-radius: 13px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .directory-tools input,
+body.tbrn-modern-hub .directory-tools select,
+body.tbrn-modern-hub .portal-access-tools input,
+body.tbrn-modern-hub .portal-access-tools select,
+body.tbrn-modern-hub .resp-toolbar input,
+body.tbrn-modern-hub .form-field input,
+body.tbrn-modern-hub .form-field textarea,
+body.tbrn-modern-hub .form-field select,
+body.tbrn-modern-hub .commercial-vat-editor,
+body.tbrn-modern-hub .contacts-table input,
+body.tbrn-modern-hub .contacts-table select,
+body.tbrn-modern-hub .rename-admin-row input,
+body.tbrn-modern-hub .direct-map-search input,
+body.tbrn-modern-hub .direct-map-search select,
+body.tbrn-modern-hub .surveyor-map-search input,
+body.tbrn-modern-hub .surveyor-map-search select,
+body.tbrn-modern-hub .sv-map-search input,
+body.tbrn-modern-hub .sv-map-search select {
+  border-color: rgba(122, 218, 174, .22);
+  background: #083f36;
+  color: #edf8f3;
+}
+
+body.tbrn-modern-hub input::placeholder,
+body.tbrn-modern-hub textarea::placeholder {
+  color: #799e91;
+}
+
+body.tbrn-modern-hub .directory-tools input:focus,
+body.tbrn-modern-hub .directory-tools select:focus,
+body.tbrn-modern-hub .portal-access-tools input:focus,
+body.tbrn-modern-hub .resp-toolbar input:focus,
+body.tbrn-modern-hub .form-field input:focus,
+body.tbrn-modern-hub .form-field textarea:focus,
+body.tbrn-modern-hub .form-field select:focus {
+  border-color: rgba(78, 222, 148, .62);
+  box-shadow: 0 0 0 4px rgba(53, 202, 127, .10);
+  outline: 0;
+}
+
+body.tbrn-modern-hub .directory-count,
+body.tbrn-modern-hub .resp-count,
+body.tbrn-modern-hub .form-help,
+body.tbrn-modern-hub .contacts-help {
+  color: var(--modern-muted);
+}
+
+/* Contractor, surveyor and specialist directories */
+body.tbrn-modern-hub .entry-grid,
+body.tbrn-modern-hub .group-card-grid {
+  gap: 14px;
+}
+
+body.tbrn-modern-hub .entry-card,
+body.tbrn-modern-hub .specialist-card,
+body.tbrn-modern-hub .support-card,
+body.tbrn-modern-hub .portal-group-card,
+body.tbrn-modern-hub .group-section {
+  border: 1px solid var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .entry-card:hover,
+body.tbrn-modern-hub .specialist-card:hover,
+body.tbrn-modern-hub .support-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--modern-border-strong);
+  box-shadow: 0 20px 48px rgba(0, 19, 16, .20);
+}
+
+body.tbrn-modern-hub .entry-avatar,
+body.tbrn-modern-hub .portal-entry-avatar {
+  border: 1px solid rgba(92, 220, 157, .17);
+  background: rgba(62, 200, 129, .10);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub .entry-heading h4,
+body.tbrn-modern-hub .specialist-card-head h4,
+body.tbrn-modern-hub .support-card-head h4,
+body.tbrn-modern-hub .group-section-head h3,
+body.tbrn-modern-hub .portal-group-head h3 {
+  color: #f1faf6;
+}
+
+body.tbrn-modern-hub .entry-heading p,
+body.tbrn-modern-hub .specialist-card-head p,
+body.tbrn-modern-hub .support-card-head p,
+body.tbrn-modern-hub .group-section-head p,
+body.tbrn-modern-hub .portal-group-head p,
+body.tbrn-modern-hub .detail-row b {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .detail-row span,
+body.tbrn-modern-hub .detail-row a {
+  color: #d9ebe3;
+}
+
+body.tbrn-modern-hub .entry-badges,
+body.tbrn-modern-hub .entry-actions,
+body.tbrn-modern-hub .specialist-card-head,
+body.tbrn-modern-hub .support-card-head,
+body.tbrn-modern-hub .portal-group-head {
+  border-color: rgba(112, 216, 168, .13);
+}
+
+body.tbrn-modern-hub .mini-chip,
+body.tbrn-modern-hub .contractor-chip,
+body.tbrn-modern-hub .support-meta span {
+  border-color: rgba(107, 212, 164, .15);
+  background: rgba(255, 255, 255, .035);
+  color: #b5d0c6;
+}
+
+body.tbrn-modern-hub .mini-chip.yes,
+body.tbrn-modern-hub .status-chip.ok,
+body.tbrn-modern-hub .portal-access-badge {
+  border-color: rgba(77, 222, 145, .19);
+  background: rgba(65, 205, 133, .12);
+  color: #62e49e;
+}
+
+body.tbrn-modern-hub .mini-chip.no,
+body.tbrn-modern-hub .status-chip.hold {
+  border-color: rgba(231, 115, 107, .22);
+  background: rgba(211, 82, 76, .12);
+  color: #ffaaa3;
+}
+
+body.tbrn-modern-hub .entry-note,
+body.tbrn-modern-hub .resp-example {
+  border-color: rgba(228, 175, 73, .22);
+  background: rgba(202, 143, 41, .11);
+  color: #efd49d;
+}
+
+body.tbrn-modern-hub .entry-action,
+body.tbrn-modern-hub .resource-admin-actions button,
+body.tbrn-modern-hub .entry-admin button,
+body.tbrn-modern-hub .resp-admin-edit {
+  border-color: rgba(113, 216, 169, .18);
+  background: rgba(255, 255, 255, .035);
+  color: #cfe5dc;
+}
+
+body.tbrn-modern-hub .entry-action:hover,
+body.tbrn-modern-hub .resource-admin-actions button:hover,
+body.tbrn-modern-hub .entry-admin button:hover,
+body.tbrn-modern-hub .resp-admin-edit:hover {
+  border-color: var(--modern-border-strong);
+  background: rgba(67, 202, 133, .10);
+}
+
+body.tbrn-modern-hub .entry-action.primary,
+body.tbrn-modern-hub .admin-primary {
+  border-color: #39bc78 !important;
+  background: linear-gradient(135deg, #13794f, #24a867) !important;
+  color: #fff !important;
+}
+
+body.tbrn-modern-hub .service-item {
+  border-color: rgba(111, 215, 168, .14);
+  background: rgba(255, 255, 255, .03);
+}
+
+body.tbrn-modern-hub .service-item strong {
+  color: #e8f5ef;
+}
+
+body.tbrn-modern-hub .service-item p {
+  color: #9fbbb0;
+}
+
+body.tbrn-modern-hub .directory-empty,
+body.tbrn-modern-hub .resp-empty,
+body.tbrn-modern-hub .contacts-empty,
+body.tbrn-modern-hub .vat-empty-list {
+  border-color: rgba(115, 217, 170, .22);
+  background: rgba(255, 255, 255, .025);
+  color: var(--modern-muted);
+}
+
+/* Responsibilities */
+body.tbrn-modern-hub .resp-card {
+  border: 1px solid var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .resp-head {
+  border-bottom-color: rgba(111, 216, 168, .14);
+}
+
+body.tbrn-modern-hub .resp-icon {
+  border: 1px solid rgba(91, 220, 157, .17);
+  background: rgba(61, 198, 127, .10);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub .resp-head h3,
+body.tbrn-modern-hub .resp-tier strong {
+  color: #eef8f3;
+}
+
+body.tbrn-modern-hub .resp-head p,
+body.tbrn-modern-hub .resp-label,
+body.tbrn-modern-hub .resp-tier span {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .resp-value {
+  color: #d8e9e2;
+}
+
+body.tbrn-modern-hub .resp-chip {
+  border-color: rgba(78, 222, 148, .18);
+  background: rgba(58, 195, 123, .11);
+  color: #6ae4a2;
+}
+
+body.tbrn-modern-hub .resp-chip.alt,
+body.tbrn-modern-hub .resp-action,
+body.tbrn-modern-hub .resp-tier,
+body.tbrn-modern-hub .resp-column {
+  border-color: rgba(110, 215, 167, .14);
+  background: rgba(255, 255, 255, .03);
+  color: #cce2d9;
+}
+
+body.tbrn-modern-hub .resp-column h4 {
+  background: #075346;
+}
+
+body.tbrn-modern-hub .resp-column li {
+  border-bottom-color: rgba(111, 214, 168, .12);
+  color: #cce0d8;
+}
+
+/* Map resources */
+body.tbrn-modern-hub .map-resource-intro {
+  border-color: var(--modern-border);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 90% 18%, rgba(62, 200, 128, .11), transparent 30%),
+    var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .map-resource-intro h3 {
+  color: #f2faf6;
+}
+
+body.tbrn-modern-hub .map-resource-intro p,
+body.tbrn-modern-hub .map-file-note {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .map-resource-intro .map-resource-icon {
+  background: linear-gradient(135deg, #0b6848, #22a866);
+}
+
+body.tbrn-modern-hub .direct-map-shell,
+body.tbrn-modern-hub .surveyor-map-shell,
+body.tbrn-modern-hub .sv-map-shell {
+  border-color: var(--modern-border);
+  background: #07392f;
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .direct-map-panel,
+body.tbrn-modern-hub .surveyor-map-panel,
+body.tbrn-modern-hub .sv-map-panel {
+  border-color: var(--modern-border);
+  background: #04372f;
+  color: var(--modern-text);
+}
+
+body.tbrn-modern-hub .direct-map-panel h3,
+body.tbrn-modern-hub .surveyor-map-panel h3,
+body.tbrn-modern-hub .sv-map-panel h3 {
+  color: #f0faf5;
+}
+
+body.tbrn-modern-hub .direct-map-panel p,
+body.tbrn-modern-hub .surveyor-map-panel p,
+body.tbrn-modern-hub .sv-map-panel p,
+body.tbrn-modern-hub .direct-map-section,
+body.tbrn-modern-hub .sv-map-section {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .direct-map-metric,
+body.tbrn-modern-hub .surveyor-map-metric,
+body.tbrn-modern-hub .sv-map-metric,
+body.tbrn-modern-hub .direct-map-search,
+body.tbrn-modern-hub .surveyor-map-search,
+body.tbrn-modern-hub .sv-map-search,
+body.tbrn-modern-hub .direct-map-card,
+body.tbrn-modern-hub .surveyor-map-card,
+body.tbrn-modern-hub .sv-map-card {
+  border-color: rgba(111, 215, 168, .16);
+  background: rgba(255, 255, 255, .035);
+  color: #dceee7;
+}
+
+body.tbrn-modern-hub .direct-map-metric b,
+body.tbrn-modern-hub .surveyor-map-metric b,
+body.tbrn-modern-hub .sv-map-metric b {
+  color: #63e09d;
+}
+
+body.tbrn-modern-hub .direct-map-metric span,
+body.tbrn-modern-hub .surveyor-map-metric span,
+body.tbrn-modern-hub .sv-map-metric span,
+body.tbrn-modern-hub .direct-map-card small,
+body.tbrn-modern-hub .surveyor-map-card small,
+body.tbrn-modern-hub .sv-map-card small {
+  color: #8eafa3;
+}
+
+body.tbrn-modern-hub .direct-map-initials,
+body.tbrn-modern-hub .surveyor-map-initials,
+body.tbrn-modern-hub .sv-map-initials {
+  background: rgba(60, 199, 128, .10);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub .direct-map-buttons button,
+body.tbrn-modern-hub .surveyor-map-buttons button,
+body.tbrn-modern-hub .sv-map-buttons button {
+  background: linear-gradient(135deg, #126f4b, #25a969);
+}
+
+body.tbrn-modern-hub .direct-map-buttons button.secondary,
+body.tbrn-modern-hub .surveyor-map-buttons button.secondary,
+body.tbrn-modern-hub .sv-map-buttons button.secondary,
+body.tbrn-modern-hub .direct-map-card button,
+body.tbrn-modern-hub .surveyor-map-card button,
+body.tbrn-modern-hub .sv-map-card button {
+  border-color: rgba(111, 215, 168, .18);
+  background: rgba(255, 255, 255, .045);
+  color: #cde3da;
+}
+
+body.tbrn-modern-hub .direct-map-status,
+body.tbrn-modern-hub .surveyor-map-status,
+body.tbrn-modern-hub .sv-map-status {
+  background: rgba(255, 255, 255, .04);
+  color: #a8c4b9;
+}
+
+body.tbrn-modern-hub .direct-map-status.success,
+body.tbrn-modern-hub .surveyor-map-status.success,
+body.tbrn-modern-hub .sv-map-status.success {
+  background: rgba(65, 204, 132, .12);
+  color: #66e39f;
+}
+
+body.tbrn-modern-hub .direct-map-legend,
+body.tbrn-modern-hub .surveyor-map-legend,
+body.tbrn-modern-hub .sv-map-legend {
+  border-color: rgba(112, 214, 168, .17);
+  background: rgba(2, 47, 40, .94);
+  color: #bfd8ce;
+}
+
+/* VAT, finance and contacts */
+body.tbrn-modern-hub .vat-choice-intro,
+body.tbrn-modern-hub .commercial-vat-intro {
+  border-color: var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .vat-choice-card,
+body.tbrn-modern-hub .commercial-vat-card,
+body.tbrn-modern-hub .vat-contractor-item {
+  border-color: var(--modern-border);
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .vat-choice-card:hover,
+body.tbrn-modern-hub .commercial-vat-card:hover {
+  border-color: var(--modern-border-strong);
+  box-shadow: 0 20px 46px rgba(0, 19, 16, .20);
+}
+
+body.tbrn-modern-hub .vat-choice-card h3,
+body.tbrn-modern-hub .commercial-vat-card h3,
+body.tbrn-modern-hub .commercial-vat-content {
+  color: #edf8f3;
+}
+
+body.tbrn-modern-hub .vat-choice-card p,
+body.tbrn-modern-hub .commercial-vat-intro p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .vat-choice-icon,
+body.tbrn-modern-hub .commercial-vat-card-number {
+  border-color: rgba(90, 220, 157, .16);
+  background: rgba(61, 199, 128, .10);
+  color: var(--modern-accent);
+}
+
+body.tbrn-modern-hub .vat-choice-tag,
+body.tbrn-modern-hub .vat-choice-open {
+  border-color: rgba(108, 216, 167, .16);
+  background: rgba(255, 255, 255, .035);
+  color: #b8d4c9;
+}
+
+body.tbrn-modern-hub .commercial-vat-content div {
+  border-bottom-color: rgba(108, 214, 166, .13);
+}
+
+body.tbrn-modern-hub .contacts-table-shell {
+  overflow: hidden;
+  border: 1px solid var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .contacts-table-toolbar {
+  border: 0;
+  border-bottom: 1px solid var(--modern-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.tbrn-modern-hub .contacts-table-toolbar strong {
+  color: #eef8f3;
+}
+
+body.tbrn-modern-hub .contacts-table-toolbar span {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .contacts-table-wrap {
+  background: #fff;
+}
+
+/* Admin and editing surfaces */
+body.tbrn-modern-hub .admin-locked {
+  border: 1px solid var(--modern-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(58, 198, 126, .12), transparent 32%),
+    var(--modern-surface);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .admin-locked p {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .admin-card,
+body.tbrn-modern-hub .rename-admin-section {
+  border: 1px solid var(--modern-border);
+  border-radius: 14px;
+  background: var(--modern-surface);
+  color: var(--modern-text);
+  box-shadow: var(--modern-shadow);
+}
+
+body.tbrn-modern-hub .admin-card h3,
+body.tbrn-modern-hub .rename-admin-section h3 {
+  color: #eff9f4;
+}
+
+body.tbrn-modern-hub .admin-card p,
+body.tbrn-modern-hub .rename-admin-help,
+body.tbrn-modern-hub .admin-card .resource-type {
+  color: var(--modern-muted);
+}
+
+body.tbrn-modern-hub .admin-state {
+  background: rgba(63, 203, 130, .12);
+  color: #65e19e;
+}
+
+body.tbrn-modern-hub .admin-state.off {
+  background: rgba(255, 255, 255, .04);
+  color: #9bb8ad;
+}
+
+body.tbrn-modern-hub .admin-add,
+body.tbrn-modern-hub .commercial-vat-save,
+body.tbrn-modern-hub .vat-save-all {
+  background: linear-gradient(135deg, #13794f, #24a867);
+  color: #fff;
+}
+
+body.tbrn-modern-hub .admin-modal {
+  background: rgba(0, 18, 15, .78);
+  backdrop-filter: blur(8px);
+}
+
+body.tbrn-modern-hub .admin-modal-card,
+body.tbrn-modern-hub .vat-guidance-panel {
+  border: 1px solid var(--modern-border);
+  background: #053b32;
+  color: var(--modern-text);
+  box-shadow: 0 32px 100px rgba(0, 11, 9, .46);
+}
+
+body.tbrn-modern-hub .admin-modal-head,
+body.tbrn-modern-hub .admin-modal-foot,
+body.tbrn-modern-hub .vat-guidance-header {
+  border-color: var(--modern-border);
+  background: #04352d;
+}
+
+body.tbrn-modern-hub .admin-modal-close,
+body.tbrn-modern-hub .vat-guidance-close {
+  background: rgba(255, 255, 255, .055);
+  color: #edf8f3;
+}
+
+body.tbrn-modern-hub .form-field label {
+  color: #b7d0c6;
+}
+
+body.tbrn-modern-hub .flag-option,
+body.tbrn-modern-hub .rename-admin-row {
+  border-color: rgba(112, 215, 168, .16);
+  background: rgba(255, 255, 255, .025);
+  color: #cfe2da;
+}
+
+/* Achievement cabinet */
+body.tbrn-modern-hub .tbrn-achievement-panel {
+  border: 1px solid var(--modern-border);
+  background: #04382f;
+  color: var(--modern-text);
+  box-shadow: 0 28px 90px rgba(0, 13, 11, .42);
+}
+
+body.tbrn-modern-hub .tbrn-achievement-card {
+  border-color: rgba(111, 215, 168, .16);
+  background: rgba(255, 255, 255, .035);
+}
+
+@media (max-width: 1100px) {
+  body.tbrn-modern-hub #categoryDocs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  body.tbrn-modern-hub .pagehead {
+    padding: 18px;
+  }
+
+  body.tbrn-modern-hub #categoryDocs {
+    grid-template-columns: 1fr;
+  }
+
+  body.tbrn-modern-hub .document {
+    padding: 10px;
+  }
+
+  body.tbrn-modern-hub .workspace-bar {
+    padding: 14px;
+  }
+}
