@@ -2032,3 +2032,59 @@ body.tbrn-modern-hub .tbrn-achievement-card {
   border-color: rgba(29, 77, 61, .17);
   background: rgba(233, 240, 236, .68);
 }
+
+/* Hub 2.1 light-surface contrast repair ------------------------------------
+   These state styles previously retained neon text intended for dark cards. */
+body.tbrn-modern-hub .mini-chip.yes,
+body.tbrn-modern-hub .status-chip.ok,
+body.tbrn-modern-hub .portal-access-badge {
+  border-color: #87bca2;
+  background: #b8d9c9;
+  color: #075936;
+}
+
+body.tbrn-modern-hub .mini-chip.no,
+body.tbrn-modern-hub .portal-access-badge.no {
+  border-color: #d5aaa6;
+  background: #ead0cd;
+  color: #7d2925;
+}
+
+body.tbrn-modern-hub .status-chip.taking,
+body.tbrn-modern-hub .status-chip.hold,
+body.tbrn-modern-hub .hold-banner,
+body.tbrn-modern-hub .hold-banner.taking {
+  border-color: #c89a45;
+  background: #ead8ad;
+  color: #674300;
+}
+
+body.tbrn-modern-hub .entry-note,
+body.tbrn-modern-hub .resp-example,
+body.tbrn-modern-hub .portal-note-banner {
+  border-color: #c8a75c;
+  background: #e5dab9;
+  color: #56420e;
+}
+
+body.tbrn-modern-hub .entry-note *,
+body.tbrn-modern-hub .resp-example *,
+body.tbrn-modern-hub .portal-note-banner * {
+  color: inherit;
+}
+
+body.tbrn-modern-hub .resp-chip {
+  border-color: #8fb9a5;
+  background: #c4dcd0;
+  color: #124f37;
+}
+
+body.tbrn-modern-hub .direct-map-metric b,
+body.tbrn-modern-hub .surveyor-map-metric b,
+body.tbrn-modern-hub .sv-map-metric b,
+body.tbrn-modern-hub .admin-state,
+body.tbrn-modern-hub .direct-map-status.success,
+body.tbrn-modern-hub .surveyor-map-status.success,
+body.tbrn-modern-hub .sv-map-status.success {
+  color: #075c37;
+}
