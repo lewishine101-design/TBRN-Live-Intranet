@@ -1534,9 +1534,9 @@ body.tbrn-modern-hub .tbrn-achievement-card {
    area to the approved lighter sage treatment. */
 
 body.tbrn-modern-hub {
-  --modern-surface: #d4dfd9;
-  --modern-surface-strong: #c7d6ce;
-  --modern-surface-soft: #dde6e1;
+  --modern-surface: #ffffff;
+  --modern-surface-strong: #f4f8f6;
+  --modern-surface-soft: #f7faf8;
   --modern-border: rgba(28, 77, 61, .20);
   --modern-border-strong: rgba(18, 119, 77, .52);
   --modern-text: #142a23;
@@ -1667,14 +1667,14 @@ body.tbrn-modern-hub #categories .catcard,
 body.tbrn-modern-hub .modern-quick-panel,
 body.tbrn-modern-hub .modern-system-status {
   border-color: rgba(29, 78, 62, .21);
-  background: #d4dfd9;
+  background: #ffffff;
   color: #142a23;
   box-shadow: var(--modern-shadow);
 }
 
 body.tbrn-modern-hub #categories .catcard:hover {
   border-color: rgba(12, 121, 73, .48);
-  background: #dbe5df;
+  background: #f5faf7;
   box-shadow: 0 17px 38px rgba(22, 58, 46, .15);
 }
 
@@ -1718,12 +1718,12 @@ body.tbrn-modern-hub #categories .catfoot span:last-child {
 
 body.tbrn-modern-hub #home #quick .doccard {
   border-color: rgba(30, 76, 62, .18);
-  background: rgba(226, 234, 230, .72);
+  background: #f8fbf9;
 }
 
 body.tbrn-modern-hub #home #quick .doccard:hover {
   border-color: rgba(13, 121, 73, .40);
-  background: #e2ebe6;
+  background: #f1f7f4;
 }
 
 body.tbrn-modern-hub #home #quick .doccard h4 {
@@ -1867,7 +1867,7 @@ body.tbrn-modern-hub #categoryDocs .doccard:hover,
 body.tbrn-modern-hub #searchView .result:hover,
 body.tbrn-modern-hub .vat-choice-card:hover,
 body.tbrn-modern-hub .commercial-vat-card:hover {
-  background: #dce6e0;
+  background: #f4f8f6;
   box-shadow: 0 17px 38px rgba(22, 58, 46, .15);
 }
 
@@ -2090,4 +2090,19 @@ body.tbrn-modern-hub .direct-map-status.success,
 body.tbrn-modern-hub .surveyor-map-status.success,
 body.tbrn-modern-hub .sv-map-status.success {
   color: #075c37;
+}
+
+/* Rolling display-bar statistics must not inherit the old dark-theme text. */
+body.tbrn-modern-hub #rollingHero .pulse-row span {
+  color: #173b2f;
+  font-weight: 750;
+}
+
+body.tbrn-modern-hub #rollingHero .pulse-row b {
+  color: #0e241d;
+  font-weight: 850;
+}
+
+body.tbrn-modern-hub #rollingHero .rolling-status-ready {
+  color: #045b35;
 }
