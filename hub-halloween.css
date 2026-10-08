@@ -1,0 +1,401 @@
+/*
+ * TBRN Hub 2.1 — Halloween preview layer
+ * This file is deliberately separate from the core theme so the seasonal
+ * treatment can be enabled or removed without changing the Hub layout.
+ */
+
+body.tbrn-modern-hub.tbrn-halloween-preview {
+  --halloween-ink: #1d2520;
+  --halloween-green: #193d32;
+  --halloween-green-deep: #071d18;
+  --halloween-orange: #e76f24;
+  --halloween-orange-soft: #fff0e3;
+  --halloween-purple: #5f3d78;
+  --halloween-purple-soft: #eee5f3;
+  --halloween-lime: #abc447;
+  --halloween-sage: #9bb39f;
+  background: #9bb39f;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .shell {
+  background:
+    radial-gradient(circle at 78% 5%, rgba(234, 224, 179, .28), transparent 18rem),
+    radial-gradient(circle at 38% 94%, rgba(255, 255, 255, .18), transparent 28rem),
+    linear-gradient(145deg, #a9bea9 0%, #91aa96 52%, #829d8c 100%);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .main {
+  position: relative;
+  isolation: isolate;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .main::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 76px 0 0 255px;
+  pointer-events: none;
+  opacity: .34;
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(255,255,255,.38), transparent 18%),
+    radial-gradient(ellipse at 74% 42%, rgba(255,255,255,.26), transparent 22%),
+    radial-gradient(ellipse at 42% 82%, rgba(255,255,255,.24), transparent 24%);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar {
+  overflow: hidden auto;
+  border-right-color: rgba(229, 159, 73, .35);
+  background:
+    radial-gradient(circle at 82% 9%, rgba(236, 218, 156, .17) 0 3.5rem, transparent 3.65rem),
+    linear-gradient(180deg, #102e25 0%, #081f19 48%, #061612 100%);
+  box-shadow: 12px 0 35px rgba(9, 29, 23, .24);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar::before {
+  content: "🦇  ·  🦇";
+  position: absolute;
+  top: 80px;
+  right: 18px;
+  color: #0a1713;
+  font-size: 17px;
+  letter-spacing: 7px;
+  opacity: .9;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar::after {
+  content: "🕸";
+  position: absolute;
+  right: -15px;
+  bottom: 116px;
+  color: rgba(239, 232, 213, .52);
+  font-size: 92px;
+  line-height: 1;
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar .brand {
+  border-bottom-color: rgba(255, 182, 92, .22);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .navlabel {
+  color: #afc7b9;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .nav button {
+  color: #d9e7df;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .nav button:hover,
+body.tbrn-modern-hub.tbrn-halloween-preview .nav button.active {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(231, 111, 36, .25), rgba(171, 196, 71, .12));
+  box-shadow: inset 3px 0 0 #e76f24;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .nav button .ico {
+  color: #c8dd82;
+  background: rgba(171, 196, 71, .10);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar .sidecard {
+  position: relative;
+  border-color: rgba(229, 159, 73, .32);
+  background: linear-gradient(145deg, rgba(93, 55, 38, .73), rgba(45, 28, 39, .8));
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar .sidecard::before {
+  content: "🎃";
+  position: absolute;
+  top: -15px;
+  right: 11px;
+  font-size: 25px;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,.28));
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar .sidecard strong {
+  color: #fff3dc;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .sidebar .sidecard p {
+  color: #d7c9ba;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .topbar {
+  border-bottom-color: rgba(53, 79, 65, .24);
+  background: rgba(240, 238, 224, .91);
+  box-shadow: 0 8px 24px rgba(25, 55, 43, .08);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .searchbox input {
+  border-color: rgba(72, 86, 76, .28);
+  background: rgba(255, 255, 255, .78);
+  color: #1c2e26;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .searchbox input:focus {
+  border-color: #bf6c32;
+  box-shadow: 0 0 0 4px rgba(231, 111, 36, .13);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-update-button::after {
+  background: var(--halloween-orange);
+  box-shadow: 0 0 0 3px rgba(231, 111, 36, .16);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .profile .avatar {
+  border-color: #d27636;
+  background: linear-gradient(145deg, #563269, #291c38);
+  color: #fff6e9;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .content {
+  position: relative;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro {
+  position: relative;
+  z-index: 1;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro::after {
+  content: "☾  🦇";
+  position: absolute;
+  right: 1.2rem;
+  top: -.85rem;
+  color: rgba(42, 50, 39, .69);
+  font-size: clamp(25px, 3vw, 43px);
+  letter-spacing: 14px;
+  text-shadow: 0 5px 13px rgba(39, 43, 32, .16);
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro h1 {
+  color: #17251f;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro h1 span {
+  color: var(--halloween-orange);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro p,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-date {
+  color: #40584c;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero {
+  border-color: rgba(232, 118, 43, .48);
+  border-left-color: var(--halloween-orange);
+  background:
+    radial-gradient(circle at 91% 10%, rgba(236, 209, 132, .20), transparent 17rem),
+    radial-gradient(circle at 16% 120%, rgba(113, 69, 130, .55), transparent 28rem),
+    linear-gradient(125deg, #241932 0%, #38213d 50%, #45312c 100%);
+  box-shadow: 0 16px 38px rgba(34, 23, 39, .25);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero::before {
+  content: "🦇";
+  position: absolute;
+  right: 26%;
+  top: 14px;
+  color: rgba(10, 7, 13, .72);
+  font-size: 22px;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .eyebrow,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-update-icon {
+  color: #ffc078;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero h2,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .pulse-row b,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-update-panel strong {
+  color: #fff8eb;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-hero-copy > p,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-update-panel p,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .pulse-row span {
+  color: #eaded1;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .pulse,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-update-panel,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-arrow {
+  border-color: rgba(255, 203, 133, .28);
+  background: rgba(27, 18, 31, .32);
+  color: #fff7e9;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-dot {
+  background: rgba(255, 236, 207, .32);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-dot.active,
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-status-ready {
+  background: var(--halloween-orange);
+  color: #ffe5c2;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #rollingHero .rolling-status-ready {
+  background: transparent;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #home > .section-head h3,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-quick-panel .section-head h3 {
+  color: #17251f;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #home > .section-head p,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-quick-panel .section-head p {
+  color: #435e50;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-quick-panel,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-system-status,
+body.tbrn-modern-hub.tbrn-halloween-preview .doccard,
+body.tbrn-modern-hub.tbrn-halloween-preview .pagehead,
+body.tbrn-modern-hub.tbrn-halloween-preview .workspace {
+  border-color: rgba(52, 71, 59, .24);
+  background: #fff;
+  color: var(--halloween-ink);
+  box-shadow: 0 12px 28px rgba(27, 54, 43, .13);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard {
+  position: relative;
+  overflow: hidden;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard::after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  bottom: -14px;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(95, 61, 120, .11);
+  border-radius: 50%;
+  box-shadow: 0 0 0 9px rgba(95, 61, 120, .035), 0 0 0 18px rgba(95, 61, 120, .025);
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard:hover,
+body.tbrn-modern-hub.tbrn-halloween-preview .doccard:hover {
+  border-color: rgba(231, 111, 36, .56);
+  background: #fffdf9;
+  box-shadow: 0 17px 38px rgba(38, 47, 40, .18);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard:nth-child(4n+1) .cat-icon {
+  background: var(--halloween-orange-soft);
+  color: #c85113;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard:nth-child(4n+2) .cat-icon {
+  background: var(--halloween-purple-soft);
+  color: var(--halloween-purple);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard:nth-child(4n+3) .cat-icon {
+  background: #eef2d5;
+  color: #627b10;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard:nth-child(4n+4) .cat-icon {
+  background: #e4f0e9;
+  color: #245f48;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard h4,
+body.tbrn-modern-hub.tbrn-halloween-preview .doccard h4,
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-system-status h3 {
+  color: #17251f;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catcard p,
+body.tbrn-modern-hub.tbrn-halloween-preview .doccard p,
+body.tbrn-modern-hub.tbrn-halloween-preview #categories .catfoot {
+  color: #52685d;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .smallpill {
+  background: #f5eadc;
+  color: #6f4322;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-status-live {
+  color: #2f641f;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-system-status::after {
+  content: "🎃";
+  position: absolute;
+  right: 16px;
+  bottom: 10px;
+  font-size: 25px;
+  opacity: .78;
+  pointer-events: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .modern-system-status {
+  position: relative;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #enriqueAssistantFrame.enrique-collapsed {
+  filter: drop-shadow(0 12px 24px rgba(36, 20, 41, .28));
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview #enriqueWanderer {
+  filter: sepia(.13) saturate(1.18) hue-rotate(320deg) drop-shadow(0 12px 12px rgba(35, 20, 39, .3));
+}
+
+.tbrn-halloween-preview-badge {
+  position: fixed;
+  z-index: 97980;
+  left: 270px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid rgba(88, 57, 31, .26);
+  border-radius: 999px;
+  background: rgba(255, 248, 235, .91);
+  color: #5b321c;
+  box-shadow: 0 7px 20px rgba(31, 43, 35, .14);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  body.tbrn-modern-hub.tbrn-halloween-preview .main::before {
+    left: 0;
+  }
+
+  body.tbrn-modern-hub.tbrn-halloween-preview .modern-dashboard-intro::after {
+    opacity: .35;
+    right: 0;
+  }
+
+  .tbrn-halloween-preview-badge {
+    left: 14px;
+    bottom: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.tbrn-modern-hub.tbrn-halloween-preview *,
+  body.tbrn-modern-hub.tbrn-halloween-preview *::before,
+  body.tbrn-modern-hub.tbrn-halloween-preview *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
