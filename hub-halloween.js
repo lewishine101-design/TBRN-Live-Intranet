@@ -182,17 +182,20 @@
         ghost.setAttribute('aria-hidden', 'true');
         ghost.innerHTML = '<span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__mouth"></span>';
 
-        const ghostWidth = 58;
-        const inset = Math.min(30, Math.max(10, card.offsetWidth * .13));
-        const left = side === 'right'
-          ? card.offsetLeft + card.offsetWidth - ghostWidth - inset
-          : card.offsetLeft + inset;
-
-        ghost.style.left = `${Math.round(left)}px`;
-        ghost.style.top = `${Math.round(card.offsetTop + 8)}px`;
-        ghost.style.setProperty('--ghost-tilt', `${randomBetween(-5, 5)}deg`);
         stage.classList.add('tbrn-ghost-stage');
         card.classList.add('tbrn-ghost-card');
+
+        const stageRect = stage.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        const ghostWidth = 58;
+        const inset = Math.min(30, Math.max(10, cardRect.width * .13));
+        const left = side === 'right'
+          ? cardRect.right - stageRect.left - ghostWidth - inset
+          : cardRect.left - stageRect.left + inset;
+
+        ghost.style.left = `${Math.round(left)}px`;
+        ghost.style.top = `${Math.round(cardRect.top - stageRect.top + 8)}px`;
+        ghost.style.setProperty('--ghost-tilt', `${randomBetween(-5, 5)}deg`);
         stage.appendChild(ghost);
         scene.ghosts.push(ghost);
         scene.cards.add(card);
