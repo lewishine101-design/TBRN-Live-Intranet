@@ -101,17 +101,18 @@
   function startCardGhosts() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let ghostTimer = 0;
-    let activeGhost = null;
+    let activeScene = null;
 
     const randomBetween = (minimum, maximum) =>
       Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
 
-    const removeGhost = () => {
-      if (!activeGhost) return;
-      activeGhost.ghost.remove();
-      activeGhost.card.classList.remove('tbrn-ghost-card');
-      activeGhost.stage.classList.remove('tbrn-ghost-stage');
-      activeGhost = null;
+    const removeGhosts = () => {
+      if (!activeScene) return;
+      activeScene.timers.forEach((timer) => window.clearTimeout(timer));
+      activeScene.ghosts.forEach((ghost) => ghost.remove());
+      activeScene.cards.forEach((card) => card.classList.remove('tbrn-ghost-card'));
+      activeScene.stages.forEach((stage) => stage.classList.remove('tbrn-ghost-stage'));
+      activeScene = null;
     };
 
     const homeIsVisible = () => {
@@ -124,18 +125,18 @@
       );
     };
 
-    const scheduleGhost = (firstAppearance) => {
+    const scheduleGhosts = (firstAppearance) => {
       window.clearTimeout(ghostTimer);
       if (reduceMotion.matches) return;
-      const delay = firstAppearance ? randomBetween(8000, 14000) : randomBetween(35000, 80000);
-      ghostTimer = window.setTimeout(showGhost, delay);
+      const delay = firstAppearance ? randomBetween(5000, 9000) : randomBetween(18000, 35000);
+      ghostTimer = window.setTimeout(showGhosts, delay);
     };
 
-    const showGhost = () => {
-      removeGhost();
+    const showGhosts = () => {
+      removeGhosts();
 
       if (!homeIsVisible()) {
-        scheduleGhost(true);
+        scheduleGhosts(true);
         return;
       }
 
@@ -146,65 +147,107 @@
         return rect.width >= 120 && rect.height >= 70 && rect.bottom > 0 && rect.top < window.innerHeight;
       });
 
-      if (!cards.length) {
-        scheduleGhost(true);
+      if (cards.length < 2) {
+        scheduleGhosts(true);
         return;
       }
 
-      const card = cards[randomBetween(0, cards.length - 1)];
-      const stage = card.parentElement;
-      if (!stage) {
-        scheduleGhost(false);
-        return;
-      }
+      const firstCardIndex = randomBetween(0, cards.length - 1);
+      const firstCard = cards[firstCardIndex];
+      const remainingCards = cards.filter((card, index) => index !== firstCardIndex);
+      const secondCard = remainingCards[randomBetween(0, remainingCards.length - 1)];
 
-      const ghost = document.createElement('span');
-      const side = Math.random() > .5 ? 'right' : 'left';
-      const variant = randomBetween(1, 3);
-      ghost.className = `tbrn-card-ghost tbrn-card-ghost--${side} tbrn-card-ghost--${variant}`;
-      ghost.setAttribute('aria-hidden', 'true');
-      ghost.innerHTML = '<span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__mouth"></span>';
+      activeScene = {
+        ghosts: [],
+        cards: new Set(),
+        stages: new Set(),
+        timers: []
+      };
+      const scene = activeScene;
 
-      const ghostWidth = 58;
-      const inset = Math.min(30, Math.max(10, card.offsetWidth * .13));
-      const left = side === 'right'
-        ? card.offsetLeft + card.offsetWidth - ghostWidth - inset
-        : card.offsetLeft + inset;
+      const later = (callback, delay) => {
+        const timer = window.setTimeout(() => {
+          if (activeScene === scene) callback();
+        }, delay);
+        scene.timers.push(timer);
+      };
 
-      ghost.style.left = `${Math.round(left)}px`;
-      ghost.style.top = `${Math.round(card.offsetTop + 8)}px`;
-      ghost.style.setProperty('--ghost-tilt', `${randomBetween(-5, 5)}deg`);
+      const buildGhost = (card, role) => {
+        const stage = card.parentElement;
+        if (!stage) return null;
+        const ghost = document.createElement('span');
+        const side = Math.random() > .5 ? 'right' : 'left';
+        const variant = randomBetween(1, 3);
+        ghost.className = `tbrn-card-ghost tbrn-card-ghost--${side} tbrn-card-ghost--${variant} tbrn-card-ghost--friend-${role}`;
+        ghost.setAttribute('aria-hidden', 'true');
+        ghost.innerHTML = '<span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__mouth"></span>';
 
-      stage.classList.add('tbrn-ghost-stage');
-      card.classList.add('tbrn-ghost-card');
-      stage.appendChild(ghost);
-      activeGhost = { ghost, card, stage };
+        const ghostWidth = 58;
+        const inset = Math.min(30, Math.max(10, card.offsetWidth * .13));
+        const left = side === 'right'
+          ? card.offsetLeft + card.offsetWidth - ghostWidth - inset
+          : card.offsetLeft + inset;
 
-      requestAnimationFrame(() => ghost.classList.add('is-peeking'));
+        ghost.style.left = `${Math.round(left)}px`;
+        ghost.style.top = `${Math.round(card.offsetTop + 8)}px`;
+        ghost.style.setProperty('--ghost-tilt', `${randomBetween(-5, 5)}deg`);
+        stage.classList.add('tbrn-ghost-stage');
+        card.classList.add('tbrn-ghost-card');
+        stage.appendChild(ghost);
+        scene.ghosts.push(ghost);
+        scene.cards.add(card);
+        scene.stages.add(stage);
+        return ghost;
+      };
 
-      window.setTimeout(() => {
-        if (!activeGhost || activeGhost.ghost !== ghost) return;
+      const peek = (ghost) => {
+        if (!ghost) return;
+        ghost.classList.remove('is-hiding');
+        requestAnimationFrame(() => ghost.classList.add('is-peeking'));
+      };
+
+      const duck = (ghost) => {
+        if (!ghost) return;
         ghost.classList.remove('is-peeking');
         ghost.classList.add('is-hiding');
-        window.setTimeout(() => {
-          if (activeGhost && activeGhost.ghost === ghost) removeGhost();
-          scheduleGhost(false);
-        }, 700);
-      }, randomBetween(3200, 4800));
+      };
+
+      const firstGhost = buildGhost(firstCard, 'a');
+      const secondGhost = buildGhost(secondCard, 'b');
+      if (!firstGhost || !secondGhost) {
+        removeGhosts();
+        scheduleGhosts(false);
+        return;
+      }
+
+      peek(firstGhost);
+      later(() => peek(secondGhost), 850);
+      later(() => duck(firstGhost), 1650);
+      later(() => peek(firstGhost), 2450);
+      later(() => duck(secondGhost), 3250);
+      later(() => peek(secondGhost), 4050);
+      later(() => {
+        duck(firstGhost);
+        duck(secondGhost);
+      }, 5200);
+      later(() => {
+        removeGhosts();
+        scheduleGhosts(false);
+      }, 5950);
     };
 
     const resetGhosts = () => {
-      removeGhost();
-      scheduleGhost(true);
+      removeGhosts();
+      scheduleGhosts(true);
     };
 
     reduceMotion.addEventListener?.('change', resetGhosts);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') scheduleGhost(true);
-      else removeGhost();
+      if (document.visibilityState === 'visible') scheduleGhosts(true);
+      else removeGhosts();
     });
     window.addEventListener('resize', resetGhosts, { passive: true });
-    scheduleGhost(true);
+    scheduleGhosts(true);
   }
 
   themeEnrique();

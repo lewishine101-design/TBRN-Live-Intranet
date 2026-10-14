@@ -698,10 +698,30 @@ body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--left {
   transform-origin: 28% 90%;
 }
 
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-a .tbrn-card-ghost__eye {
+  transform: translateX(2px);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-b .tbrn-card-ghost__eye {
+  transform: translateX(-2px);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-b .tbrn-card-ghost__mouth {
+  top: 39px;
+  left: 24px;
+  width: 11px;
+  height: 6px;
+  border-radius: 3px 3px 9px 9px;
+}
+
 body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-peeking {
   opacity: .97;
   transform: translate3d(0, -50px, 0) rotate(var(--ghost-tilt));
   animation: tbrn-ghost-look-around 1.8s ease-in-out .7s infinite alternate;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-b.is-peeking {
+  animation-direction: alternate-reverse;
 }
 
 body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-hiding {
