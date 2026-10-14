@@ -630,6 +630,10 @@ body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost {
   clip-path: polygon(0 0, 100% 0, 100% 85%, 86% 100%, 69% 86%, 51% 100%, 33% 86%, 15% 100%, 0 84%);
   opacity: 0;
   pointer-events: none;
+  appearance: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
   transform: translate3d(0, 18px, 0) rotate(var(--ghost-tilt));
   transform-origin: 50% 90%;
   transition: transform .68s cubic-bezier(.2,.8,.25,1.1), opacity .32s ease;
@@ -716,8 +720,14 @@ body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-b .tbrn-car
 
 body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-peeking {
   opacity: .97;
+  pointer-events: auto;
   transform: translate3d(0, -50px, 0) rotate(var(--ghost-tilt));
   animation: tbrn-ghost-look-around 1.8s ease-in-out .7s infinite alternate;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-peeking:focus-visible {
+  outline: 3px solid #e76f24;
+  outline-offset: 4px;
 }
 
 body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--friend-b.is-peeking {
@@ -730,9 +740,29 @@ body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-hiding {
   transform: translate3d(0, 12px, 0) rotate(var(--ghost-tilt));
 }
 
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-caught {
+  pointer-events: none;
+  animation: tbrn-ghost-caught .46s ease-out both;
+}
+
 @keyframes tbrn-ghost-look-around {
   0% { margin-left: -3px; }
   100% { margin-left: 4px; }
+}
+
+@keyframes tbrn-ghost-caught {
+  0% {
+    opacity: .97;
+    transform: translate3d(0, -50px, 0) rotate(var(--ghost-tilt)) scale(1);
+  }
+  46% {
+    opacity: 1;
+    transform: translate3d(0, -58px, 0) rotate(9deg) scale(1.13);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -31px, 0) rotate(-13deg) scale(.72);
+  }
 }
 
 .tbrn-halloween-preview-badge {

@@ -1,0 +1,64 @@
+name: Deploy Ghost Hunter achievement
+
+on:
+  push:
+    paths:
+      - .github/workflows/deploy-ghost-hunter.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-ghost-hunter
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add achievement and refresh Halloween assets
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'index.html';
+          let html = fs.readFileSync(file, 'utf8');
+
+          const achievementAnchor = "    {id:'weekend-survivor',icon:'🗓️',title:'Weekend Survivor',desc:'Click the Weekend Morale Bulletin five times.'}\n  ];";
+          const achievementReplacement = "    {id:'weekend-survivor',icon:'🗓️',title:'Weekend Survivor',desc:'Click the Weekend Morale Bulletin five times.'},\n    {id:'ghost-hunter',icon:'👻',title:'Ghost Hunter',desc:'Catch a Halloween ghost while it is peeking.'}\n  ];";
+          if (!html.includes("id:'ghost-hunter'")) {
+            if (!html.includes(achievementAnchor)) throw new Error('Achievement insertion point was not found');
+            html = html.replace(achievementAnchor, achievementReplacement);
+          }
+
+          const clueAnchor = "    'weekend-survivor':'Show the morale bulletin enough enthusiasm and it may reward your survival.'\n  };";
+          const clueReplacement = "    'weekend-survivor':'Show the morale bulletin enough enthusiasm and it may reward your survival.',\n    'ghost-hunter':'Something pale keeps peeking from behind the dashboard cards. Catch it before it disappears.'\n  };";
+          if (!html.includes("'ghost-hunter':")) {
+            if (!html.includes(clueAnchor)) throw new Error('Clue insertion point was not found');
+            html = html.replace(clueAnchor, clueReplacement);
+          }
+
+          html = html.replace('hub-halloween.css?v=5', 'hub-halloween.css?v=6');
+          html = html.replace('hub-halloween.js?v=5', 'hub-halloween.js?v=6');
+
+          if (!html.includes("id:'ghost-hunter'") || !html.includes("'ghost-hunter':")) {
+            throw new Error('Ghost Hunter achievement validation failed');
+          }
+          if (!html.includes('hub-halloween.css?v=6') || !html.includes('hub-halloween.js?v=6')) {
+            throw new Error('Halloween asset version validation failed');
+          }
+
+          fs.writeFileSync(file, html, 'utf8');
+          NODE
+
+      - name: Commit update and remove workflow
+        run: |
+          rm .github/workflows/deploy-ghost-hunter.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/deploy-ghost-hunter.yml
+          git commit -m "Add Ghost Hunter achievement"
+          git push origin HEAD:main

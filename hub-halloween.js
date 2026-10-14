@@ -175,12 +175,36 @@
       const buildGhost = (card, role) => {
         const stage = card.parentElement;
         if (!stage) return null;
-        const ghost = document.createElement('span');
+        const ghost = document.createElement('button');
         const side = Math.random() > .5 ? 'right' : 'left';
         const variant = randomBetween(1, 3);
+        ghost.type = 'button';
         ghost.className = `tbrn-card-ghost tbrn-card-ghost--${side} tbrn-card-ghost--${variant} tbrn-card-ghost--friend-${role}`;
-        ghost.setAttribute('aria-hidden', 'true');
+        ghost.setAttribute('aria-label', 'Catch the ghost');
+        ghost.title = 'Catch the ghost';
+        ghost.tabIndex = -1;
         ghost.innerHTML = '<span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__eye"></span><span class="tbrn-card-ghost__mouth"></span>';
+
+        ghost.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!ghost.classList.contains('is-peeking') || ghost.dataset.caught === 'true') return;
+
+          ghost.dataset.caught = 'true';
+          ghost.tabIndex = -1;
+          ghost.classList.remove('is-peeking');
+          ghost.classList.add('is-caught');
+
+          if (typeof window.tbrnUnlockAchievement === 'function') {
+            window.tbrnUnlockAchievement('ghost-hunter');
+          }
+
+          window.setTimeout(() => {
+            if (!ghost.isConnected) return;
+            ghost.classList.remove('is-caught');
+            ghost.classList.add('is-hiding');
+          }, 460);
+        });
 
         stage.classList.add('tbrn-ghost-stage');
         card.classList.add('tbrn-ghost-card');
@@ -204,13 +228,15 @@
       };
 
       const peek = (ghost) => {
-        if (!ghost) return;
+        if (!ghost || ghost.dataset.caught === 'true') return;
+        ghost.tabIndex = 0;
         ghost.classList.remove('is-hiding');
         requestAnimationFrame(() => ghost.classList.add('is-peeking'));
       };
 
       const duck = (ghost) => {
-        if (!ghost) return;
+        if (!ghost || ghost.dataset.caught === 'true') return;
+        ghost.tabIndex = -1;
         ghost.classList.remove('is-peeking');
         ghost.classList.add('is-hiding');
       };
