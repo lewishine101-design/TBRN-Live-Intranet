@@ -602,6 +602,119 @@ body.tbrn-modern-hub.tbrn-halloween-preview #enriqueWanderer img {
   object-fit: contain;
 }
 
+/* Occasional home-card ghosts. The ghost is a sibling of the chosen card so
+   the card naturally masks its lower half while every control stays clickable. */
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-ghost-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-ghost-card {
+  position: relative;
+  z-index: 2;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost {
+  --ghost-tilt: 0deg;
+  position: absolute;
+  z-index: 1;
+  width: 58px;
+  height: 65px;
+  border: 1px solid rgba(60, 69, 64, .16);
+  border-radius: 52% 52% 19% 19%;
+  background:
+    radial-gradient(circle at 44% 27%, rgba(255,255,255,.96), transparent 42%),
+    linear-gradient(145deg, #fffef4 8%, #e5eee8 72%, #c5d6cd);
+  box-shadow: 0 8px 19px rgba(20, 35, 29, .24);
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 86% 100%, 69% 86%, 51% 100%, 33% 86%, 15% 100%, 0 84%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 18px, 0) rotate(var(--ghost-tilt));
+  transform-origin: 50% 90%;
+  transition: transform .68s cubic-bezier(.2,.8,.25,1.1), opacity .32s ease;
+  will-change: transform, opacity;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost::before,
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost::after {
+  content: "";
+  position: absolute;
+  top: 35px;
+  width: 18px;
+  height: 12px;
+  border-radius: 50%;
+  background: inherit;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost::before {
+  left: -8px;
+  transform: rotate(-24deg);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost::after {
+  right: -8px;
+  transform: rotate(24deg);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost__eye {
+  position: absolute;
+  top: 23px;
+  left: 18px;
+  width: 6px;
+  height: 9px;
+  border-radius: 50%;
+  background: #23362e;
+  box-shadow: 16px 0 0 #23362e;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost__eye:nth-child(2) {
+  display: none;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost__mouth {
+  position: absolute;
+  top: 38px;
+  left: 26px;
+  width: 7px;
+  height: 8px;
+  border-radius: 50% 50% 42% 42%;
+  background: #52655c;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--2 {
+  filter: hue-rotate(22deg) saturate(.76);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--3 {
+  filter: hue-rotate(292deg) saturate(.7);
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--right {
+  transform-origin: 72% 90%;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost--left {
+  transform-origin: 28% 90%;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-peeking {
+  opacity: .97;
+  transform: translate3d(0, -50px, 0) rotate(var(--ghost-tilt));
+  animation: tbrn-ghost-look-around 1.8s ease-in-out .7s infinite alternate;
+}
+
+body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost.is-hiding {
+  opacity: 0;
+  animation: none;
+  transform: translate3d(0, 12px, 0) rotate(var(--ghost-tilt));
+}
+
+@keyframes tbrn-ghost-look-around {
+  0% { margin-left: -3px; }
+  100% { margin-left: 4px; }
+}
+
 .tbrn-halloween-preview-badge {
   display: none !important;
 }
@@ -628,5 +741,11 @@ body.tbrn-modern-hub.tbrn-halloween-preview #enriqueWanderer img {
   body.tbrn-modern-hub.tbrn-halloween-preview #enriqueAssistantFrame.enrique-collapsed {
     width: 200px;
     height: 100px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.tbrn-modern-hub.tbrn-halloween-preview .tbrn-card-ghost {
+    display: none !important;
   }
 }
