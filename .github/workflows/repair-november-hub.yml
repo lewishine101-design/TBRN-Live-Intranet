@@ -1,0 +1,38 @@
+name: Repair November Hub deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-november-hub.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore complete Hub and apply November dashboard theme
+        shell: bash
+        run: |
+          git show df4f64a87cd93489ff1c9fcde5c35210aed9467e:index.html > index.html
+          sed -i 's|<link rel="stylesheet" href="hub-halloween.css?v=6">|<link rel="stylesheet" href="hub-november.css?v=3">|' index.html
+          sed -i 's|<script src="hub-halloween.js?v=6"></script>|<script src="hub-november.js?v=3"></script>|' index.html
+          test -s hub-november.css
+          test -s hub-november.js
+          test -s assets/november/bonfire-night-background.webp
+          grep -q 'hub-november.css?v=3' index.html
+          grep -q 'hub-november.js?v=3' index.html
+      - name: Commit repaired live Hub and remove workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f '.github/workflows/repair-november-hub.yml'
+          git add index.html '.github/workflows/repair-november-hub.yml'
+          git commit -m "Repair Hub entry and apply November dashboard theme"
+          git push origin main
