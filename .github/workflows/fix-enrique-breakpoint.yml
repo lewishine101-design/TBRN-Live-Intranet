@@ -1,0 +1,28 @@
+name: Fix Enrique desktop breakpoint
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-enrique-breakpoint.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stop iframe mobile rules overriding desktop panel
+        shell: bash
+        run: |
+          printf '%s' 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgoKcGF0aCA9IFBhdGgoImluZGV4Lmh0bWwiKQpzb3VyY2UgPSBwYXRoLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQoKcmVwbGFjZW1lbnRzID0gewogICAgIkBtZWRpYShtYXgtd2lkdGg6NzYwcHgpey50ZXN0LXNoZWxse2Rpc3BsYXk6YmxvY2t9LnRlc3Qtc2lkZXtkaXNwbGF5Om5vbmV9LnRlc3QtY29udGVudHtwYWRkaW5nOjE0cHh9LnRlc3QtZ3JpZHtncmlkLXRlbXBsYXRlLWNvbHVtbnM6MWZyfS5hc3Npc3RhbnR7aW5zZXQ6MDt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO2JvcmRlcjowO2JvcmRlci1yYWRpdXM6MH0iOgogICAgIkBtZWRpYShtYXgtd2lkdGg6NDIwcHgpey50ZXN0LXNoZWxse2Rpc3BsYXk6YmxvY2t9LnRlc3Qtc2lkZXtkaXNwbGF5Om5vbmV9LnRlc3QtY29udGVudHtwYWRkaW5nOjE0cHh9LnRlc3QtZ3JpZHtncmlkLXRlbXBsYXRlLWNvbHVtbnM6MWZyfS5hc3Npc3RhbnR7aW5zZXQ6MDt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO2JvcmRlcjowO2JvcmRlci1yYWRpdXM6MH0iLAoKICAgICJAbWVkaWEobWF4LXdpZHRoOjc2MHB4KXsuYXNzaXN0YW50e2luc2V0OjAhaW1wb3J0YW50fX0iOgogICAgIkBtZWRpYShtYXgtd2lkdGg6NDIwcHgpey5hc3Npc3RhbnR7aW5zZXQ6MCFpbXBvcnRhbnR9fSIsCn0KCm1pc3NpbmcgPSBbb2xkIGZvciBvbGQgaW4gcmVwbGFjZW1lbnRzIGlmIG9sZCBub3QgaW4gc291cmNlXQppZiBtaXNzaW5nOgogICAgcmFpc2UgU3lzdGVtRXhpdChmIkV4cGVjdGVkIEVucmlxdWUgYnJlYWtwb2ludCBtYXJrZXJzIHdlcmUgbm90IGZvdW5kOiB7bWlzc2luZ30iKQoKZm9yIG9sZCwgbmV3IGluIHJlcGxhY2VtZW50cy5pdGVtcygpOgogICAgc291cmNlID0gc291cmNlLnJlcGxhY2Uob2xkLCBuZXcsIDEpCgpwYXRoLndyaXRlX3RleHQoc291cmNlLCBlbmNvZGluZz0idXRmLTgiKQo=' | base64 --decode > /tmp/patch_enrique_breakpoint.py
+          python3 /tmp/patch_enrique_breakpoint.py
+          grep -q '@media(max-width:420px){.test-shell' index.html
+          grep -q '@media(max-width:420px){.assistant' index.html
+      - name: Commit and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/fix-enrique-breakpoint.yml
+          git commit -m "Fix Enrique compact desktop layout"
+          git push
