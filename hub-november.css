@@ -208,6 +208,142 @@ body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapse
   opacity: .9;
 }
 
+/* Two November rockets play hide-and-seek behind dashboard cards. */
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-rocket-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-rocket-card {
+  position: relative;
+  z-index: 2;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket {
+  --rocket-colour: #f25f3a;
+  --rocket-accent: #ffd166;
+  --rocket-tilt: 0deg;
+  position: absolute;
+  z-index: 1;
+  width: 43px;
+  height: 78px;
+  padding: 0;
+  border: 0;
+  border-radius: 52% 52% 36% 36%;
+  appearance: none;
+  cursor: pointer;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 36% 27%, rgba(255,255,255,.9) 0 5%, transparent 6%),
+    linear-gradient(90deg, rgba(255,255,255,.2), transparent 35%),
+    var(--rocket-colour);
+  box-shadow: 0 7px 18px rgba(0,0,0,.28), 0 0 12px color-mix(in srgb, var(--rocket-colour) 70%, transparent);
+  transform: translate3d(0, 25px, 0) rotate(var(--rocket-tilt));
+  transform-origin: 50% 90%;
+  transition: transform .62s cubic-bezier(.2,.8,.25,1.12), opacity .3s ease;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: 4px;
+  height: 29px;
+  z-index: -1;
+  background: var(--rocket-accent);
+  clip-path: polygon(0 100%, 21% 20%, 40% 58%, 50% 0, 61% 58%, 80% 20%, 100% 100%, 69% 77%, 50% 100%, 30% 77%);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  bottom: -25px;
+  width: 10px;
+  height: 29px;
+  border-radius: 50% 50% 65% 65%;
+  background: linear-gradient(#fff8c5, #ffb13b 40%, #ff5d2d 72%, transparent);
+  filter: drop-shadow(0 0 7px #ff9d38);
+  animation: tbrn-rocket-fizz .22s ease-in-out infinite alternate;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__face {
+  position: absolute;
+  top: 29px;
+  left: 12px;
+  width: 6px;
+  height: 7px;
+  border-radius: 50%;
+  background: #27243a;
+  box-shadow: 14px 0 0 #27243a;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__face::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 7px;
+  width: 8px;
+  height: 4px;
+  border-bottom: 2px solid #27243a;
+  border-radius: 50%;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket--friend-b {
+  --rocket-colour: #3f78d7;
+  --rocket-accent: #7de2d1;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-peeking {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, -59px, 0) rotate(var(--rocket-tilt));
+  animation: tbrn-rocket-wiggle 1.25s ease-in-out .4s infinite alternate;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-hiding {
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+  transform: translate3d(0, 25px, 0) rotate(var(--rocket-tilt));
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-caught {
+  pointer-events: none;
+  animation: tbrn-rocket-caught .6s ease-out both;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-launching {
+  pointer-events: none;
+  opacity: 1;
+  animation: tbrn-rocket-launch 1.35s cubic-bezier(.3,.05,.7,.25) both;
+}
+
+@keyframes tbrn-rocket-fizz {
+  from { transform: scaleY(.72) rotate(-4deg); opacity: .76; }
+  to { transform: scaleY(1.16) rotate(4deg); opacity: 1; }
+}
+
+@keyframes tbrn-rocket-wiggle {
+  from { margin-left: -3px; }
+  to { margin-left: 4px; }
+}
+
+@keyframes tbrn-rocket-caught {
+  0% { opacity: 1; transform: translate3d(0,-59px,0) rotate(var(--rocket-tilt)) scale(1); }
+  45% { opacity: 1; transform: translate3d(0,-68px,0) rotate(12deg) scale(1.18); }
+  100% { opacity: 0; transform: translate3d(0,-105px,0) rotate(-10deg) scale(.62); }
+}
+
+@keyframes tbrn-rocket-launch {
+  0% { transform: translate3d(0,-59px,0) rotate(var(--rocket-tilt)); }
+  25% { transform: translate3d(18px,-95px,0) rotate(9deg); }
+  100% { transform: translate3d(var(--rocket-flight-x),-88vh,0) rotate(15deg); opacity: 0; }
+}
+
 .tbrn-november-embers i {
   position: absolute;
   left: var(--ember-x);
@@ -262,5 +398,6 @@ body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapse
 
 @media (prefers-reduced-motion: reduce) {
   .tbrn-november-embers,
-  .tbrn-november-fireworks { display: none; }
+  .tbrn-november-fireworks,
+  .tbrn-card-rocket { display: none !important; }
 }
