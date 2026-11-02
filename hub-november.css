@@ -385,6 +385,20 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-rocket-celebration {
   will-change: transform;
 }
 
+.tbrn-rocket-smoke {
+  position: fixed;
+  z-index: 10018;
+  width: var(--smoke-size);
+  height: var(--smoke-size);
+  margin: calc(var(--smoke-size) / -2) 0 0 calc(var(--smoke-size) / -2);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 38% 34%, rgba(255,255,255,.82), rgba(207,214,218,.58) 42%, rgba(119,133,143,.16) 72%, transparent 74%);
+  filter: blur(1.4px);
+  opacity: .76;
+  animation: tbrn-smoke-drift 1.35s ease-out forwards;
+}
+
 .tbrn-rocket-burst {
   position: fixed;
   z-index: 10025;
@@ -460,6 +474,12 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-rocket-celebration {
   22% { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
   45%,78% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
   100% { transform: translate(-50%,-50%) scale(.82); opacity: 0; }
+}
+
+@keyframes tbrn-smoke-drift {
+  0% { transform: translate3d(0,0,0) scale(.5); opacity: .76; }
+  45% { opacity: .48; }
+  100% { transform: translate3d(var(--smoke-x),var(--smoke-y),0) scale(1.85); opacity: 0; }
 }
 
 .tbrn-november-embers i {

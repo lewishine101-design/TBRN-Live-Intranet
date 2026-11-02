@@ -158,22 +158,77 @@
       flyer.style.height = `${rect.height}px`;
       document.body.appendChild(flyer);
 
-      const endX = window.innerWidth * (.28 + Math.random() * .44);
-      const endY = window.innerHeight * (.2 + Math.random() * .28);
-      const firstX = rect.left < window.innerWidth / 2 ? window.innerWidth * .72 : window.innerWidth * .12;
-      const secondX = rect.left < window.innerWidth / 2 ? window.innerWidth * .16 : window.innerWidth * .76;
-      const flight = flyer.animate([
-        { transform: 'translate3d(0,0,0) rotate(0deg)', offset: 0 },
-        { transform: `translate3d(${firstX - rect.left}px,${window.innerHeight * .18 - rect.top}px,0) rotate(38deg)`, offset: .28 },
-        { transform: `translate3d(${secondX - rect.left}px,${window.innerHeight * .67 - rect.top}px,0) rotate(-42deg)`, offset: .58 },
-        { transform: `translate3d(${window.innerWidth * .63 - rect.left}px,${window.innerHeight * .42 - rect.top}px,0) rotate(31deg)`, offset: .78 },
-        { transform: `translate3d(${endX - rect.left}px,${endY - rect.top}px,0) rotate(-8deg) scale(.9)`, offset: 1 }
-      ], { duration: 2300, easing: 'cubic-bezier(.42,.02,.35,1)', fill: 'forwards' });
+      const centreOffsetX = rect.width / 2;
+      const centreOffsetY = rect.height / 2;
+      const endX = window.innerWidth * (.3 + Math.random() * .4);
+      const endY = window.innerHeight * (.17 + Math.random() * .25);
+      const startsLeft = rect.left < window.innerWidth / 2;
+      const points = [
+        { x: rect.left, y: rect.top },
+        { x: startsLeft ? window.innerWidth * .7 : window.innerWidth * .18, y: window.innerHeight * .16 },
+        { x: startsLeft ? window.innerWidth * .82 : window.innerWidth * .12, y: window.innerHeight * .58 },
+        { x: startsLeft ? window.innerWidth * .25 : window.innerWidth * .74, y: window.innerHeight * .7 },
+        { x: startsLeft ? window.innerWidth * .15 : window.innerWidth * .86, y: window.innerHeight * .3 },
+        { x: endX, y: endY }
+      ];
+      const catmull = (p0, p1, p2, p3, t) => {
+        const t2 = t * t;
+        const t3 = t2 * t;
+        return {
+          x: .5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2*p0.x - 5*p1.x + 4*p2.x - p3.x) * t2 + (-p0.x + 3*p1.x - 3*p2.x + p3.x) * t3),
+          y: .5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2*p0.y - 5*p1.y + 4*p2.y - p3.y) * t2 + (-p0.y + 3*p1.y - 3*p2.y + p3.y) * t3)
+        };
+      };
+      const pathPoint = progress => {
+        const scaled = Math.min(progress, .9999) * (points.length - 1);
+        const segment = Math.floor(scaled);
+        const local = scaled - segment;
+        return catmull(
+          points[Math.max(0, segment - 1)],
+          points[segment],
+          points[Math.min(points.length - 1, segment + 1)],
+          points[Math.min(points.length - 1, segment + 2)],
+          local
+        );
+      };
+      const addSmoke = (x, y, angle) => {
+        const smoke = document.createElement('i');
+        smoke.className = 'tbrn-rocket-smoke';
+        smoke.style.left = `${x}px`;
+        smoke.style.top = `${y}px`;
+        smoke.style.setProperty('--smoke-size', `${13 + Math.random() * 15}px`);
+        smoke.style.setProperty('--smoke-x', `${-Math.cos(angle) * (12 + Math.random() * 18) + (Math.random() - .5) * 16}px`);
+        smoke.style.setProperty('--smoke-y', `${-Math.sin(angle) * (12 + Math.random() * 18) - 8 - Math.random() * 12}px`);
+        document.body.appendChild(smoke);
+        window.setTimeout(() => smoke.remove(), 1400);
+      };
 
-      flight.finished.then(() => {
-        flyer.remove();
-        explodeWithTbrn(endX + rect.width / 2, endY + rect.height / 2);
-      }).catch(() => flyer.remove());
+      const duration = 3000;
+      const started = performance.now();
+      let lastSmoke = 0;
+      const fly = now => {
+        const raw = Math.min(1, (now - started) / duration);
+        const eased = raw < .5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
+        const position = pathPoint(eased);
+        const next = pathPoint(Math.min(.9999, eased + .006));
+        const angle = Math.atan2(next.y - position.y, next.x - position.x);
+        const rotation = angle * 180 / Math.PI + 90;
+        const speedPulse = 1 + Math.sin(raw * Math.PI * 8) * .025;
+        flyer.style.transform = `translate3d(${position.x - rect.left}px,${position.y - rect.top}px,0) rotate(${rotation}deg) scale(${speedPulse})`;
+        if (now - lastSmoke > 42) {
+          const exhaustX = position.x + centreOffsetX - Math.cos(angle) * 31;
+          const exhaustY = position.y + centreOffsetY - Math.sin(angle) * 31;
+          addSmoke(exhaustX, exhaustY, angle);
+          lastSmoke = now;
+        }
+        if (raw < 1) {
+          window.requestAnimationFrame(fly);
+        } else {
+          flyer.remove();
+          explodeWithTbrn(endX + centreOffsetX, endY + centreOffsetY);
+        }
+      };
+      window.requestAnimationFrame(fly);
     };
 
     const clearScene = () => {
@@ -325,4 +380,4 @@
 
   startCardRockets();
 })();
-// Deployment marker: November dashboard theme v8 with TBRN rocket celebration.
+// Deployment marker: November dashboard theme v9 with organic smoke-trail flight.
