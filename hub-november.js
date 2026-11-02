@@ -193,7 +193,7 @@
           rocket.tabIndex = -1;
           rocket.classList.remove('is-peeking');
           rocket.classList.add('is-caught');
-          window.tbrnUnlockAchievement?.('ghost-hunter');
+          window.tbrnUnlockAchievement?.('rocket-wrangler');
         });
 
         stage.classList.add('tbrn-rocket-stage');
