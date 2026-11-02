@@ -373,6 +373,95 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-launching {
   100% { transform: translate3d(var(--rocket-flight-x),-88vh,0) rotate(15deg); opacity: 0; }
 }
 
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-rocket-celebration {
+  position: fixed;
+  z-index: 10020;
+  margin: 0;
+  opacity: 1;
+  pointer-events: none;
+  animation: none !important;
+  transition: none !important;
+  filter: drop-shadow(0 0 8px rgba(255,190,72,.9));
+  will-change: transform;
+}
+
+.tbrn-rocket-burst {
+  position: fixed;
+  z-index: 10025;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.tbrn-rocket-burst__spark {
+  --spark-colour: #ffd166;
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--spark-colour);
+  box-shadow: 0 0 7px 2px var(--spark-colour);
+  animation: tbrn-tbrn-burst 1.15s cubic-bezier(.12,.68,.28,1) forwards;
+}
+
+.tbrn-rocket-burst__label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%,-50%) scale(.25);
+  padding: 10px 18px 11px;
+  border: 2px solid rgba(255,255,255,.86);
+  border-radius: 15px;
+  color: #fff;
+  background: rgba(7,24,42,.78);
+  box-shadow: 0 0 20px rgba(255,184,71,.9), 0 0 55px rgba(255,96,53,.65);
+  font: 900 28px/1 "Segoe UI",Arial,sans-serif;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-shadow: 0 0 8px #fff, 0 0 18px #ffd166;
+  opacity: 0;
+  animation: tbrn-tbrn-label 1.65s .12s cubic-bezier(.18,.9,.22,1) forwards;
+}
+
+.tbrn-rocket-burst::before,
+.tbrn-rocket-burst::after {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #fff2a8;
+  border-radius: 50%;
+  opacity: 0;
+  animation: tbrn-burst-ring .9s ease-out forwards;
+}
+
+.tbrn-rocket-burst::after {
+  border-color: #ff7848;
+  animation-delay: .13s;
+}
+
+@keyframes tbrn-tbrn-burst {
+  0% { transform: translate(0,0) scale(1.25); opacity: 1; }
+  68% { opacity: 1; }
+  100% { transform: translate(var(--spark-x),var(--spark-y)) scale(.12); opacity: 0; }
+}
+
+@keyframes tbrn-burst-ring {
+  0% { transform: scale(.2); opacity: 1; }
+  100% { transform: scale(9); opacity: 0; }
+}
+
+@keyframes tbrn-tbrn-label {
+  0% { transform: translate(-50%,-50%) scale(.25); opacity: 0; }
+  22% { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+  45%,78% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%,-50%) scale(.82); opacity: 0; }
+}
+
 .tbrn-november-embers i {
   position: absolute;
   left: var(--ember-x);

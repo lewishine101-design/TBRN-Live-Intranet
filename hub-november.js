@@ -120,6 +120,62 @@
     let activeScene = null;
     const random = (minimum, maximum) => Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
 
+    const explodeWithTbrn = (x, y) => {
+      const burst = document.createElement('div');
+      burst.className = 'tbrn-rocket-burst';
+      burst.style.left = `${x}px`;
+      burst.style.top = `${y}px`;
+      burst.setAttribute('aria-hidden', 'true');
+      const palette = ['#ffd166','#ff7b42','#fff4c7','#6fe0d4','#90a7ff','#ff557f'];
+      for (let index = 0; index < 44; index += 1) {
+        const spark = document.createElement('i');
+        spark.className = 'tbrn-rocket-burst__spark';
+        const angle = Math.PI * 2 * index / 44 + (Math.random() - .5) * .1;
+        const distance = 75 + Math.random() * 105;
+        spark.style.setProperty('--spark-x', `${Math.cos(angle) * distance}px`);
+        spark.style.setProperty('--spark-y', `${Math.sin(angle) * distance}px`);
+        spark.style.setProperty('--spark-colour', palette[index % palette.length]);
+        spark.style.animationDelay = `${Math.random() * .09}s`;
+        burst.appendChild(spark);
+      }
+      const label = document.createElement('strong');
+      label.className = 'tbrn-rocket-burst__label';
+      label.textContent = 'TBRN';
+      burst.appendChild(label);
+      document.body.appendChild(burst);
+      window.setTimeout(() => burst.remove(), 1900);
+    };
+
+    const celebrateRocket = rocket => {
+      const rect = rocket.getBoundingClientRect();
+      const flyer = rocket.cloneNode(true);
+      flyer.removeAttribute('tabindex');
+      flyer.removeAttribute('title');
+      flyer.className = `tbrn-card-rocket tbrn-rocket-celebration${rocket.classList.contains('tbrn-card-rocket--friend-b') ? ' tbrn-card-rocket--friend-b' : ''}`;
+      flyer.style.left = `${rect.left}px`;
+      flyer.style.top = `${rect.top}px`;
+      flyer.style.width = `${rect.width}px`;
+      flyer.style.height = `${rect.height}px`;
+      document.body.appendChild(flyer);
+
+      const endX = window.innerWidth * (.28 + Math.random() * .44);
+      const endY = window.innerHeight * (.2 + Math.random() * .28);
+      const firstX = rect.left < window.innerWidth / 2 ? window.innerWidth * .72 : window.innerWidth * .12;
+      const secondX = rect.left < window.innerWidth / 2 ? window.innerWidth * .16 : window.innerWidth * .76;
+      const flight = flyer.animate([
+        { transform: 'translate3d(0,0,0) rotate(0deg)', offset: 0 },
+        { transform: `translate3d(${firstX - rect.left}px,${window.innerHeight * .18 - rect.top}px,0) rotate(38deg)`, offset: .28 },
+        { transform: `translate3d(${secondX - rect.left}px,${window.innerHeight * .67 - rect.top}px,0) rotate(-42deg)`, offset: .58 },
+        { transform: `translate3d(${window.innerWidth * .63 - rect.left}px,${window.innerHeight * .42 - rect.top}px,0) rotate(31deg)`, offset: .78 },
+        { transform: `translate3d(${endX - rect.left}px,${endY - rect.top}px,0) rotate(-8deg) scale(.9)`, offset: 1 }
+      ], { duration: 2300, easing: 'cubic-bezier(.42,.02,.35,1)', fill: 'forwards' });
+
+      flight.finished.then(() => {
+        flyer.remove();
+        explodeWithTbrn(endX + rect.width / 2, endY + rect.height / 2);
+      }).catch(() => flyer.remove());
+    };
+
     const clearScene = () => {
       if (!activeScene) return;
       activeScene.timers.forEach(timer => window.clearTimeout(timer));
@@ -192,8 +248,9 @@
           rocket.dataset.caught = 'true';
           rocket.tabIndex = -1;
           rocket.classList.remove('is-peeking');
-          rocket.classList.add('is-caught');
+          rocket.classList.add('is-hiding');
           window.tbrnUnlockAchievement?.('rocket-wrangler');
+          celebrateRocket(rocket);
         });
 
         stage.classList.add('tbrn-rocket-stage');
@@ -268,4 +325,4 @@
 
   startCardRockets();
 })();
-// Deployment marker: November dashboard theme v7 with realistic card rockets.
+// Deployment marker: November dashboard theme v8 with TBRN rocket celebration.
