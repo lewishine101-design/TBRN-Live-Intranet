@@ -198,6 +198,16 @@ body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapse
   pointer-events: none;
 }
 
+.tbrn-november-fireworks {
+  position: fixed;
+  z-index: 1;
+  inset: 76px 0 0 255px;
+  width: calc(100% - 255px);
+  height: calc(100% - 76px);
+  pointer-events: none;
+  opacity: .9;
+}
+
 .tbrn-november-embers i {
   position: absolute;
   left: var(--ember-x);
@@ -227,6 +237,11 @@ body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapse
   .tbrn-november-embers {
     left: 0;
   }
+
+  .tbrn-november-fireworks {
+    left: 0;
+    width: 100%;
+  }
 }
 
 @media (max-width: 700px) {
@@ -236,9 +251,16 @@ body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapse
       url("assets/november/bonfire-night-background.webp");
   }
 
-  .tbrn-november-embers { inset: 70px 0 0; }
+  .tbrn-november-embers,
+  .tbrn-november-fireworks { inset: 70px 0 0; }
+
+  .tbrn-november-fireworks {
+    width: 100%;
+    height: calc(100% - 70px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tbrn-november-embers { display: none; }
+  .tbrn-november-embers,
+  .tbrn-november-fireworks { display: none; }
 }
