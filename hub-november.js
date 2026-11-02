@@ -184,7 +184,7 @@
         rocket.setAttribute('aria-label', 'Catch the firework rocket');
         rocket.title = 'Catch the firework rocket';
         rocket.tabIndex = -1;
-        rocket.innerHTML = '<span class="tbrn-card-rocket__face"></span>';
+        rocket.innerHTML = '<span class="tbrn-card-rocket__nose"></span><span class="tbrn-card-rocket__band"></span><span class="tbrn-card-rocket__stick"></span><span class="tbrn-card-rocket__spark"></span>';
         rocket.addEventListener('click', event => {
           event.preventDefault();
           event.stopPropagation();
@@ -268,4 +268,4 @@
 
   startCardRockets();
 })();
-// Deployment marker: November dashboard theme v5 with live fireworks and card rockets.
+// Deployment marker: November dashboard theme v7 with realistic card rockets.

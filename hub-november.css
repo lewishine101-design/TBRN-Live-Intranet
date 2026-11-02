@@ -226,18 +226,18 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket {
   --rocket-tilt: 0deg;
   position: absolute;
   z-index: 1;
-  width: 43px;
-  height: 78px;
+  width: 42px;
+  height: 84px;
   padding: 0;
   border: 0;
-  border-radius: 52% 52% 36% 36%;
+  border-radius: 7px 7px 5px 5px;
   appearance: none;
   cursor: pointer;
   pointer-events: none;
   opacity: 0;
   background:
-    radial-gradient(circle at 36% 27%, rgba(255,255,255,.9) 0 5%, transparent 6%),
-    linear-gradient(90deg, rgba(255,255,255,.2), transparent 35%),
+    repeating-linear-gradient(0deg, transparent 0 12px, rgba(255,255,255,.82) 12px 17px, transparent 17px 28px),
+    linear-gradient(90deg, rgba(255,255,255,.32), transparent 28% 74%, rgba(0,0,0,.16)),
     var(--rocket-colour);
   box-shadow: 0 7px 18px rgba(0,0,0,.28), 0 0 12px color-mix(in srgb, var(--rocket-colour) 70%, transparent);
   transform: translate3d(0, 25px, 0) rotate(var(--rocket-tilt));
@@ -248,48 +248,73 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket {
 body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket::before {
   content: "";
   position: absolute;
-  left: -8px;
-  right: -8px;
-  bottom: 4px;
-  height: 29px;
+  left: -9px;
+  right: -9px;
+  bottom: -1px;
+  height: 27px;
   z-index: -1;
   background: var(--rocket-accent);
-  clip-path: polygon(0 100%, 21% 20%, 40% 58%, 50% 0, 61% 58%, 80% 20%, 100% 100%, 69% 77%, 50% 100%, 30% 77%);
+  clip-path: polygon(0 100%, 23% 12%, 40% 52%, 50% 29%, 61% 52%, 78% 12%, 100% 100%, 72% 72%, 50% 92%, 28% 72%);
 }
 
 body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket::after {
   content: "";
   position: absolute;
-  left: 17px;
-  bottom: -25px;
-  width: 10px;
-  height: 29px;
+  left: 16px;
+  bottom: -28px;
+  width: 11px;
+  height: 32px;
   border-radius: 50% 50% 65% 65%;
   background: linear-gradient(#fff8c5, #ffb13b 40%, #ff5d2d 72%, transparent);
   filter: drop-shadow(0 0 7px #ff9d38);
   animation: tbrn-rocket-fizz .22s ease-in-out infinite alternate;
 }
 
-body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__face {
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__nose {
   position: absolute;
-  top: 29px;
-  left: 12px;
-  width: 6px;
-  height: 7px;
-  border-radius: 50%;
-  background: #27243a;
-  box-shadow: 14px 0 0 #27243a;
+  left: -1px;
+  top: -31px;
+  width: 44px;
+  height: 34px;
+  background: linear-gradient(100deg, rgba(255,255,255,.42), transparent 43%), var(--rocket-accent);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 -2px 4px rgba(0,0,0,.18));
 }
 
-body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__face::after {
-  content: "";
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__band {
   position: absolute;
-  top: 12px;
-  left: 7px;
-  width: 8px;
-  height: 4px;
-  border-bottom: 2px solid #27243a;
+  left: -2px;
+  right: -2px;
+  top: 8px;
+  height: 8px;
+  border-top: 2px solid rgba(255,255,255,.8);
+  border-bottom: 2px solid rgba(255,255,255,.65);
+  background: var(--rocket-accent);
+  box-shadow: 0 26px 0 color-mix(in srgb, var(--rocket-accent) 84%, white 16%);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__stick {
+  position: absolute;
+  z-index: -2;
+  left: 19px;
+  top: 68px;
+  width: 4px;
+  height: 68px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #916335, #dab77f 50%, #795027);
+  box-shadow: 1px 2px 3px rgba(0,0,0,.24);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket__spark {
+  position: absolute;
+  right: -11px;
+  bottom: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
+  background: #fffbd2;
+  box-shadow: 0 0 5px 2px #ffd166, 5px -5px 0 -1px #ff8c42, 7px 3px 0 -1px #fff0a8, -3px -7px 0 -1px #ffb347;
+  animation: tbrn-rocket-spark .28s steps(2,end) infinite;
 }
 
 body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket--friend-b {
@@ -325,6 +350,10 @@ body.tbrn-modern-hub.tbrn-november-theme .tbrn-card-rocket.is-launching {
 @keyframes tbrn-rocket-fizz {
   from { transform: scaleY(.72) rotate(-4deg); opacity: .76; }
   to { transform: scaleY(1.16) rotate(4deg); opacity: 1; }
+}
+
+@keyframes tbrn-rocket-spark {
+  50% { transform: rotate(32deg) scale(.68); opacity: .7; }
 }
 
 @keyframes tbrn-rocket-wiggle {
