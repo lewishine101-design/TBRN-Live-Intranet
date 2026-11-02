@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  // November theme release 2 — includes the themed welcome screen.
+
   document.body.classList.add('tbrn-november-theme');
 
   const emberField = document.createElement('div');
