@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  // November theme release 2 — includes the themed welcome screen.
+  // November theme release 3 — dashboard only; welcome screen remains original.
 
   document.body.classList.add('tbrn-november-theme');
 

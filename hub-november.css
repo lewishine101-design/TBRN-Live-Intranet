@@ -12,64 +12,6 @@ body.tbrn-modern-hub.tbrn-november-theme {
   background: var(--november-navy);
 }
 
-body.tbrn-november-theme .tbrn-welcome {
-  background:
-    linear-gradient(rgba(3, 14, 27, .3), rgba(3, 14, 27, .48)),
-    url("assets/november/bonfire-night-background.webp") center / cover no-repeat,
-    var(--november-navy);
-}
-
-body.tbrn-november-theme .tbrn-welcome::before,
-body.tbrn-november-theme .tbrn-welcome::after {
-  border-color: rgba(255, 192, 105, .3);
-  background: radial-gradient(circle, rgba(255, 164, 65, .15), transparent 68%);
-  box-shadow: 0 0 70px rgba(255, 124, 34, .13);
-}
-
-body.tbrn-november-theme .tbrn-welcome-panel {
-  border-color: rgba(255, 205, 138, .46);
-  background: linear-gradient(155deg, rgba(5, 25, 41, .9), rgba(22, 35, 43, .84) 62%, rgba(80, 40, 27, .8));
-  box-shadow: 0 34px 100px rgba(0, 0, 0, .55), 0 0 60px rgba(238, 128, 39, .12);
-}
-
-body.tbrn-november-theme .tbrn-welcome-kicker,
-body.tbrn-november-theme .tbrn-welcome-copy {
-  color: #f4e8d8;
-}
-
-body.tbrn-november-theme .tbrn-welcome-title span,
-body.tbrn-november-theme .tbrn-welcome-subtitle {
-  color: #ffb452;
-}
-
-body.tbrn-november-theme .tbrn-welcome-rule {
-  background: linear-gradient(90deg, transparent, #ffad45, transparent);
-  box-shadow: 0 0 20px rgba(255, 154, 45, .62);
-}
-
-body.tbrn-november-theme .tbrn-enter {
-  border-color: #ffc373;
-  background: linear-gradient(135deg, #b84a24, #ee8c35 58%, #f5b64f);
-  box-shadow: 0 16px 38px rgba(190, 72, 31, .38);
-}
-
-body.tbrn-november-theme .tbrn-enter:hover {
-  box-shadow: 0 20px 48px rgba(224, 102, 34, .48);
-}
-
-body.tbrn-november-theme .tbrn-welcome-footer {
-  color: #e7d7c3;
-}
-
-body.tbrn-november-theme .tbrn-welcome-footer i {
-  background: #ffad45;
-  box-shadow: 0 0 13px rgba(255, 165, 62, .82);
-}
-
-body.tbrn-november-theme .tbrn-welcome-version {
-  color: #cdbba5;
-}
-
 body.tbrn-modern-hub.tbrn-november-theme .shell {
   position: relative;
   isolation: isolate;
