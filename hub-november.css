@@ -1,0 +1,244 @@
+/*
+ * TBRN Hub 2.1 — November / Bonfire Night seasonal layer.
+ * Kept separate from the core presentation so it can be removed cleanly.
+ */
+
+body.tbrn-modern-hub.tbrn-november-theme {
+  --november-navy: #07182a;
+  --november-ink: #172b3c;
+  --november-amber: #f3a33b;
+  --november-copper: #c65c2e;
+  --november-cream: #fffaf1;
+  background: var(--november-navy);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(rgba(4, 17, 31, .18), rgba(4, 17, 31, .4)),
+    url("assets/november/bonfire-night-background.webp") center top / cover fixed no-repeat,
+    var(--november-navy);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .main {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .sidebar {
+  z-index: 4;
+  border-right-color: rgba(255, 180, 79, .24);
+  background: linear-gradient(180deg, rgba(5, 26, 39, .96), rgba(7, 39, 43, .94) 58%, rgba(19, 31, 31, .95));
+  box-shadow: 14px 0 42px rgba(0, 0, 0, .26);
+  backdrop-filter: blur(12px);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .sidebar::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 180px;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 110%, rgba(246, 145, 49, .2), transparent 64%);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .navlabel {
+  color: #91b4b5;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .nav button {
+  color: #d6e6e5;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .nav button:hover,
+body.tbrn-modern-hub.tbrn-november-theme .nav button.active {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(244, 156, 55, .24), rgba(244, 156, 55, .05));
+  box-shadow: inset 3px 0 0 var(--november-amber);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .nav button .ico {
+  color: #ffd092;
+  background: rgba(243, 163, 59, .11);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .sidebar .sidecard {
+  border-color: rgba(255, 185, 91, .25);
+  background: linear-gradient(145deg, rgba(94, 47, 28, .7), rgba(32, 42, 42, .82));
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .topbar {
+  z-index: 3;
+  border-bottom-color: rgba(255, 196, 118, .25);
+  background: rgba(251, 247, 238, .9);
+  box-shadow: 0 9px 30px rgba(2, 15, 28, .2);
+  backdrop-filter: blur(14px);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .content {
+  position: relative;
+  z-index: 2;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .modern-dashboard-intro {
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .48);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .modern-dashboard-intro h1,
+body.tbrn-modern-hub.tbrn-november-theme .modern-dashboard-intro h1 span {
+  color: #fff;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .modern-dashboard-intro p,
+body.tbrn-modern-hub.tbrn-november-theme .modern-dashboard-date {
+  color: #f4e9d8;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero {
+  overflow: hidden;
+  border: 1px solid rgba(255, 201, 130, .38);
+  border-left: 5px solid var(--november-amber);
+  background:
+    radial-gradient(circle at 87% 18%, rgba(255, 190, 89, .16), transparent 24%),
+    linear-gradient(135deg, rgba(6, 29, 45, .94), rgba(29, 45, 52, .91) 62%, rgba(95, 46, 28, .9));
+  box-shadow: 0 24px 58px rgba(0, 0, 0, .3);
+  backdrop-filter: blur(14px);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .54;
+  background:
+    radial-gradient(circle at 82% 28%, #ffc66c 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 18%, #ef7138 0 2px, transparent 3px),
+    radial-gradient(circle at 92% 38%, #ffd69c 0 1px, transparent 2px);
+  background-size: 54px 54px, 71px 71px, 39px 39px;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .eyebrow,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .rolling-update-icon {
+  color: #ffd092;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero h2,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .pulse-row b,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .rolling-update-panel strong {
+  color: #fff;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero p,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .pulse-row span {
+  color: #e9e1d6;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .pulse,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .rolling-update-panel,
+body.tbrn-modern-hub.tbrn-november-theme #rollingHero .rolling-arrow {
+  border-color: rgba(255, 205, 139, .24);
+  background: rgba(255, 255, 255, .08);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #home > .section-head h3,
+body.tbrn-modern-hub.tbrn-november-theme .modern-quick-panel .section-head h3 {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .4);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #home > .section-head p,
+body.tbrn-modern-hub.tbrn-november-theme .modern-quick-panel .section-head p {
+  color: #efe5d8;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #categories .catcard,
+body.tbrn-modern-hub.tbrn-november-theme .modern-quick-panel,
+body.tbrn-modern-hub.tbrn-november-theme .modern-system-status,
+body.tbrn-modern-hub.tbrn-november-theme .doccard,
+body.tbrn-modern-hub.tbrn-november-theme .pagehead,
+body.tbrn-modern-hub.tbrn-november-theme .workspace {
+  border-color: rgba(255, 225, 190, .58);
+  background: rgba(255, 253, 248, .94);
+  color: var(--november-ink);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(13px);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #categories .catcard:hover,
+body.tbrn-modern-hub.tbrn-november-theme .doccard:hover {
+  border-color: rgba(240, 143, 45, .72);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, .27), 0 0 0 2px rgba(255, 174, 70, .1);
+  transform: translateY(-3px);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #categories .catcard .cat-icon {
+  color: #9b4d27;
+  background: linear-gradient(145deg, #fff0dc, #ffdcae);
+}
+
+body.tbrn-modern-hub.tbrn-november-theme .smallpill,
+body.tbrn-modern-hub.tbrn-november-theme .modern-status-live {
+  color: #71351d;
+  background: #ffead1;
+}
+
+body.tbrn-modern-hub.tbrn-november-theme #enriqueAssistantFrame.enrique-collapsed {
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, .38));
+}
+
+.tbrn-november-embers {
+  position: fixed;
+  z-index: 1;
+  inset: 76px 0 0 255px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tbrn-november-embers i {
+  position: absolute;
+  left: var(--ember-x);
+  bottom: -15px;
+  width: var(--ember-size);
+  height: var(--ember-size);
+  border-radius: 50%;
+  background: #ffb24c;
+  box-shadow: 0 0 8px #ff832d, 0 0 15px rgba(255, 174, 58, .7);
+  opacity: 0;
+  animation: tbrn-ember-rise var(--ember-duration) var(--ember-delay) linear infinite;
+}
+
+@keyframes tbrn-ember-rise {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(.65); }
+  12% { opacity: .86; }
+  78% { opacity: .5; }
+  100% { opacity: 0; transform: translate3d(var(--ember-drift), -78vh, 0) scale(.15); }
+}
+
+@media (max-width: 980px) {
+  body.tbrn-modern-hub.tbrn-november-theme .shell {
+    background-position: center top;
+    background-attachment: scroll;
+  }
+
+  .tbrn-november-embers {
+    left: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  body.tbrn-modern-hub.tbrn-november-theme .shell {
+    background-image:
+      linear-gradient(rgba(4, 17, 31, .28), rgba(4, 17, 31, .5)),
+      url("assets/november/bonfire-night-background.webp");
+  }
+
+  .tbrn-november-embers { inset: 70px 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tbrn-november-embers { display: none; }
+}
