@@ -1,0 +1,55 @@
+/* TBRN Hub red neon card hover treatment */
+@media (hover: hover) and (pointer: fine) {
+  body.tbrn-modern-hub #categories .catcard,
+  body.tbrn-modern-hub #home #quick .doccard,
+  body.tbrn-modern-hub #categoryDocs .doccard,
+  body.tbrn-modern-hub .entry-card,
+  body.tbrn-modern-hub .specialist-card,
+  body.tbrn-modern-hub .support-card,
+  body.tbrn-modern-hub .resp-card,
+  body.tbrn-modern-hub .group-card,
+  body.tbrn-modern-hub .portal-group-card,
+  body.tbrn-modern-hub .vat-choice-card,
+  body.tbrn-modern-hub .commercial-vat-card {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  body.tbrn-modern-hub #categories .catcard:hover,
+  body.tbrn-modern-hub #home #quick .doccard:hover,
+  body.tbrn-modern-hub #categoryDocs .doccard:hover,
+  body.tbrn-modern-hub .entry-card:hover,
+  body.tbrn-modern-hub .specialist-card:hover,
+  body.tbrn-modern-hub .support-card:hover,
+  body.tbrn-modern-hub .resp-card:hover,
+  body.tbrn-modern-hub .group-card:hover,
+  body.tbrn-modern-hub .portal-group-card:hover,
+  body.tbrn-modern-hub .vat-choice-card:hover,
+  body.tbrn-modern-hub .commercial-vat-card:hover {
+    transform: translateY(-3px);
+    border-color: #ff3855 !important;
+    box-shadow:
+      0 0 0 1px rgba(255, 56, 85, .95),
+      0 0 12px rgba(255, 35, 68, .78),
+      0 0 30px rgba(255, 24, 58, .48),
+      0 18px 38px rgba(73, 0, 13, .24) !important;
+  }
+}
+
+body.tbrn-modern-hub #categories .catcard:focus-visible,
+body.tbrn-modern-hub #home #quick .doccard:focus-visible,
+body.tbrn-modern-hub #categoryDocs .doccard:focus-visible {
+  outline: 2px solid #ff3855;
+  outline-offset: 3px;
+  box-shadow: 0 0 18px rgba(255, 35, 68, .72) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.tbrn-modern-hub #categories .catcard,
+  body.tbrn-modern-hub #home #quick .doccard,
+  body.tbrn-modern-hub #categoryDocs .doccard,
+  body.tbrn-modern-hub .entry-card,
+  body.tbrn-modern-hub .specialist-card,
+  body.tbrn-modern-hub .support-card {
+    transition: none !important;
+  }
+}
