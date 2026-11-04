@@ -128,6 +128,7 @@
   function connectButton() {
     const candidate = document.querySelector('.modern-update-button');
     if (!candidate) return false;
+    if (candidate === button && candidate.dataset.notificationCentre === 'true') return true;
     button = candidate;
     button.dataset.notificationCentre = 'true';
     button.setAttribute('aria-haspopup', 'true');
