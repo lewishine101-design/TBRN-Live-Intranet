@@ -127,15 +127,26 @@
 
   function connectButton() {
     const candidate = document.querySelector('.modern-update-button');
-    if (!candidate || candidate.dataset.notificationCentre === 'true') return false;
+    if (!candidate) return false;
     button = candidate;
     button.dataset.notificationCentre = 'true';
     button.setAttribute('aria-haspopup', 'true');
     button.setAttribute('aria-controls', 'hubNotificationPanel');
-    button.addEventListener('click', togglePanel, true);
     updateButton();
     return true;
   }
+
+  // The modern Hub can redraw its top bar after initialisation. Listen at the
+  // document level so a replacement bell continues to open this panel.
+  document.addEventListener('click', event => {
+    const candidate = event.target.closest?.('.modern-update-button');
+    if (!candidate) return;
+    button = candidate;
+    button.dataset.notificationCentre = 'true';
+    button.setAttribute('aria-haspopup', 'true');
+    button.setAttribute('aria-controls', 'hubNotificationPanel');
+    togglePanel(event);
+  }, true);
 
   async function loadUpdates() {
     try {
