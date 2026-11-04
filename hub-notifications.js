@@ -5,6 +5,7 @@
   let updates = [];
   let panel;
   let button;
+  let previewAudience = 'admin';
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -23,9 +24,24 @@
     localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]));
   }
 
+  function isAdmin() {
+    const profile = document.getElementById('tbrnAccessProfile');
+    const role = document.getElementById('tbrnProfileRole')?.textContent?.trim().toLowerCase() || '';
+    return Boolean(window.adminMode || profile?.classList.contains('is-admin') || role.includes('admin'));
+  }
+
+  function normaliseAudience(update) {
+    return update?.audience === 'admin' ? 'admin' : 'all';
+  }
+
+  function visibleUpdates() {
+    if (!isAdmin() || previewAudience === 'staff') return updates.filter(update => normaliseAudience(update) === 'all');
+    return updates;
+  }
+
   function unreadUpdates() {
     const seen = readSeen();
-    return updates.filter(update => !seen.has(update.id));
+    return visibleUpdates().filter(update => !seen.has(update.id));
   }
 
   function updateButton() {
@@ -41,14 +57,24 @@
     if (!panel) return;
     const seen = readSeen();
     const list = panel.querySelector('.hub-notification-list');
-    list.innerHTML = updates.length ? updates.map(update => {
+    const shown = visibleUpdates();
+    const admin = isAdmin();
+    panel.classList.toggle('is-admin-view', admin);
+    const controls = panel.querySelector('.hub-notification-admin-controls');
+    if (controls) {
+      controls.hidden = !admin;
+      const select = controls.querySelector('select');
+      if (select) select.value = previewAudience;
+    }
+    list.innerHTML = shown.length ? shown.map(update => {
       const unread = !seen.has(update.id);
+      const restricted = normaliseAudience(update) === 'admin';
       return `<button type="button" class="hub-notification-item${unread ? ' is-unread' : ''}" data-update-id="${escapeHtml(update.id)}">
         <span class="hub-notification-dot" aria-hidden="true"></span>
-        <span><span class="hub-notification-meta"><span class="hub-notification-type">${escapeHtml(update.type)}</span><span class="hub-notification-date">${escapeHtml(update.date)}</span></span>
+        <span><span class="hub-notification-meta"><span><span class="hub-notification-type">${escapeHtml(update.type)}</span>${admin ? `<span class="hub-notification-audience ${restricted ? 'is-restricted' : ''}">${restricted ? 'Admins only' : 'All staff'}</span>` : ''}</span><span class="hub-notification-date">${escapeHtml(update.date)}</span></span>
         <h3>${escapeHtml(update.title)}</h3><p>${escapeHtml(update.message)}</p></span>
       </button>`;
-    }).join('') : '<div class="hub-notification-empty">There are no Hub updates to display.</div>';
+    }).join('') : '<div class="hub-notification-empty">There are no notifications available for this audience.</div>';
     updateButton();
   }
 
@@ -70,11 +96,17 @@
     element.id = 'hubNotificationPanel';
     element.className = 'hub-notification-panel';
     element.setAttribute('aria-label', 'Hub updates');
-    element.innerHTML = `<div class="hub-notification-head"><div><h2>Hub updates</h2><p>New features, fixes and operational changes</p></div><div class="hub-notification-actions"><button type="button" data-mark-all>Mark all read</button><button type="button" class="hub-notification-close" data-close aria-label="Close updates">×</button></div></div><div class="hub-notification-list"></div>`;
+    element.innerHTML = `<div class="hub-notification-head"><div><h2>Hub updates</h2><p>New features, fixes and operational changes</p></div><div class="hub-notification-actions"><button type="button" data-mark-all>Mark all read</button><button type="button" class="hub-notification-close" data-close aria-label="Close updates">×</button></div></div><div class="hub-notification-admin-controls" hidden><label for="hubNotificationAudiencePreview">Admin preview</label><select id="hubNotificationAudiencePreview"><option value="admin">All admin notifications</option><option value="staff">General staff view</option></select><span>Restricted notices never appear for general staff.</span></div><div class="hub-notification-list"></div>`;
     document.body.appendChild(element);
     element.querySelector('[data-close]').addEventListener('click', closePanel);
     element.querySelector('[data-mark-all]').addEventListener('click', () => {
-      writeSeen(new Set(updates.map(update => update.id)));
+      const seen = readSeen();
+      visibleUpdates().forEach(update => seen.add(update.id));
+      writeSeen(seen);
+      render();
+    });
+    element.querySelector('#hubNotificationAudiencePreview').addEventListener('change', event => {
+      previewAudience = event.target.value === 'staff' ? 'staff' : 'admin';
       render();
     });
     element.querySelector('.hub-notification-list').addEventListener('click', event => {
@@ -110,7 +142,7 @@
       const response = await fetch(`hub-updates.json?v=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Update feed unavailable');
       const payload = await response.json();
-      updates = Array.isArray(payload) ? payload.filter(update => update && update.id && update.title) : [];
+      updates = Array.isArray(payload) ? payload.filter(update => update && update.id && update.title).map(update => ({ ...update, audience: normaliseAudience(update) })) : [];
     } catch (_) {
       updates = [];
     }
@@ -123,6 +155,8 @@
     loadUpdates();
     const observer = new MutationObserver(() => connectButton());
     observer.observe(document.documentElement, { childList: true, subtree: true });
+    const profile = document.getElementById('tbrnAccessProfile');
+    if (profile) new MutationObserver(() => { previewAudience = isAdmin() ? previewAudience : 'staff'; render(); }).observe(profile, { attributes: true, childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialise, { once: true });
