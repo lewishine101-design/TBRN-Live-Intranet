@@ -3,6 +3,7 @@
     "id": "2026-11-04-notification-centre",
     "date": "4 November 2026",
     "type": "New feature",
+    "audience": "all",
     "title": "Hub update notifications are now live",
     "message": "Use the bell at the top of the Hub to see new features, fixes and important operational changes."
   },
@@ -10,6 +11,7 @@
     "id": "2026-11-03-red-card-hover",
     "date": "3 November 2026",
     "type": "Design update",
+    "audience": "all",
     "title": "Red neon card hover added",
     "message": "Hub cards now show a red neon glow when the cursor moves over them."
   },
@@ -17,6 +19,7 @@
     "id": "2026-11-02-enrique-upgrade",
     "date": "2 November 2026",
     "type": "Enrique",
+    "audience": "all",
     "title": "Enrique has been upgraded",
     "message": "Enrique now has an improved TBRN hard-hat avatar and a larger, clearer assistant window."
   },
@@ -24,7 +27,16 @@
     "id": "2026-11-02-november-theme",
     "date": "2 November 2026",
     "type": "Seasonal update",
+    "audience": "all",
     "title": "November theme and fireworks",
     "message": "The November Bonfire Night theme is active, including interactive fireworks and the Rocket Wrangler achievement."
+  },
+  {
+    "id": "2026-11-04-notification-audiences",
+    "date": "4 November 2026",
+    "type": "Administration",
+    "audience": "admin",
+    "title": "Notification audience controls enabled",
+    "message": "Hub notices can now be restricted to administrators. Use the preview control to check the exact staff-facing notification list."
   }
 ]
