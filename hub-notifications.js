@@ -136,6 +136,38 @@
     return true;
   }
 
+  function openWelcomeAccessPrompt(event) {
+    const enter = event.target.closest?.('#tbrnEnter');
+    if (!enter) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const overlay = document.getElementById('tbrnAccessPinOverlay');
+    const input = document.getElementById('tbrnAccessPinInput');
+    const error = document.getElementById('tbrnAccessPinError');
+    if (overlay && input) {
+      if (error) error.textContent = '';
+      input.value = '';
+      overlay.classList.add('is-open');
+      window.setTimeout(() => input.focus(), 60);
+      return;
+    }
+
+    sessionStorage.setItem('tbrnWelcomePassed', 'true');
+    const welcome = document.getElementById('tbrnWelcome');
+    welcome?.classList.add('is-leaving');
+    document.body.classList.remove('tbrn-welcome-open');
+    window.setTimeout(() => welcome?.remove(), 700);
+  }
+
+  // Keep welcome entry working when another Hub component redraws the button.
+  document.addEventListener('click', openWelcomeAccessPrompt, true);
+  document.addEventListener('keydown', event => {
+    if ((event.key === 'Enter' || event.key === ' ') && event.target.closest?.('#tbrnEnter')) {
+      openWelcomeAccessPrompt(event);
+    }
+  }, true);
+
   // The modern Hub can redraw its top bar after initialisation. Listen at the
   // document level so a replacement bell continues to open this panel.
   document.addEventListener('click', event => {
