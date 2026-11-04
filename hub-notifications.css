@@ -48,6 +48,8 @@
 }
 .hub-notification-admin-controls label { display: block; margin-bottom: 6px; color: #164c3c; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 .hub-notification-admin-controls select { width: 100%; padding: 9px 10px; border: 1px solid #bfd2ca; border-radius: 9px; background: #fff; color: #18382e; font: inherit; font-size: 12px; }
+.hub-notification-admin-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.hub-notification-admin-row button { border: 0; border-radius: 9px; padding: 0 12px; background: #0b6a50; color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; }
 .hub-notification-admin-controls span { display: block; margin-top: 6px; color: #697d75; font-size: 10px; }
 .hub-notification-item {
   position: relative;
@@ -65,6 +67,7 @@
 }
 .hub-notification-item:hover { background: #f4f8f6; }
 .hub-notification-item.is-unread { background: #f0faf5; }
+.hub-notification-item.is-urgent { box-shadow: inset 4px 0 #dc3030; }
 .hub-notification-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: transparent; }
 .hub-notification-item.is-unread .hub-notification-dot { background: #e84b4b; box-shadow: 0 0 0 4px rgba(232,75,75,.12); }
 .hub-notification-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -96,9 +99,59 @@ body.tbrn-modern-hub .modern-update-button .hub-notification-count {
 body.tbrn-modern-hub .modern-update-button.has-notifications::after { display: none; }
 body.tbrn-modern-hub .modern-update-button:not(.has-notifications)::after { display: none; }
 
+.hub-notification-manager { position: fixed; inset: 0; z-index: 100040; display: none; place-items: center; padding: 22px; background: rgba(2,20,16,.72); backdrop-filter: blur(10px); }
+.hub-notification-manager.is-open { display: grid; }
+.hub-manager-shell { width: min(1040px, 96vw); max-height: min(820px, 94vh); display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(103,214,163,.26); border-radius: 24px; background: #f4f7f5; color: #18342b; box-shadow: 0 35px 110px rgba(0,0,0,.38); }
+.hub-manager-shell > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 22px 24px; background: linear-gradient(135deg,#063d31,#0a624c); color: #fff; }
+.hub-manager-shell > header h2 { margin: 3px 0 4px; font-size: 25px; }
+.hub-manager-shell > header p { margin: 0; color: #c8e2d8; font-size: 12px; }
+.hub-manager-shell > header button { width: 36px; height: 36px; border: 1px solid rgba(255,255,255,.2); border-radius: 11px; background: rgba(255,255,255,.1); color: #fff; font-size: 23px; cursor: pointer; }
+.hub-manager-kicker { color: #73e2ac; font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.hub-manager-toolbar { display: flex; align-items: center; gap: 9px; padding: 13px 20px; border-bottom: 1px solid #d7e2dd; background: #fff; }
+.hub-manager-toolbar button { border: 1px solid #b9cec5; border-radius: 10px; padding: 9px 13px; background: #fff; color: #205442; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+.hub-manager-toolbar button.primary { border-color: #0b7655; background: #0b7655; color: #fff; }
+.hub-manager-toolbar [data-manager-status] { margin-left: auto; color: #438169; font-size: 11px; }
+.hub-manager-toolbar [data-manager-status].is-error { color: #b73535; }
+.hub-manager-body { min-height: 0; display: grid; grid-template-columns: minmax(0,1.4fr) minmax(340px,.8fr); overflow: hidden; }
+.hub-manager-list { min-height: 350px; overflow: auto; padding: 18px; }
+.hub-manager-item { margin-bottom: 12px; padding: 16px; border: 1px solid #d5e0db; border-left: 4px solid #16845e; border-radius: 14px; background: #fff; box-shadow: 0 5px 18px rgba(15,58,44,.06); }
+.hub-manager-item.is-scheduled { border-left-color: #3478c8; }
+.hub-manager-item.is-expired,.hub-manager-item.is-archived { border-left-color: #9ca9a4; opacity: .72; }
+.hub-manager-item-top,.hub-manager-item-actions,.hub-manager-dates { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hub-manager-item-top { justify-content: space-between; }
+.hub-manager-state,.hub-manager-category,.hub-manager-audience { display: inline-flex; padding: 4px 7px; border-radius: 999px; background: #e9f4ef; color: #236c51; font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.hub-manager-category { margin-left: 5px; background: #eef2f0; color: #607169; }
+.hub-manager-audience { background: #fff1df; color: #9d591b; }
+.hub-manager-item h3 { margin: 11px 0 5px; font-size: 15px; }
+.hub-manager-item p { margin: 0 0 10px; color: #60736b; font-size: 12px; line-height: 1.45; }
+.hub-manager-dates { color: #788a82; font-size: 10px; }
+.hub-manager-item-actions { margin-top: 12px; }
+.hub-manager-item-actions button { border: 1px solid #c8d7d1; border-radius: 8px; padding: 6px 9px; background: #f8faf9; color: #315e4d; font-size: 10px; font-weight: 800; cursor: pointer; }
+.hub-manager-item-actions button.danger { margin-left: auto; border-color: #efc6c6; color: #b33131; }
+.hub-manager-empty { padding: 60px 20px; color: #70827a; text-align: center; }
+.hub-manager-form { overflow: auto; padding: 20px; border-left: 1px solid #d8e3de; background: #fff; }
+.hub-manager-form[hidden] { display: none; }
+.hub-manager-form-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.hub-manager-form-head h3 { margin: 0; font-size: 18px; }
+.hub-manager-form-head button { border: 0; background: none; color: #687c73; cursor: pointer; }
+.hub-manager-form label { display: grid; gap: 6px; margin-bottom: 13px; color: #315e4e; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.hub-manager-form input,.hub-manager-form textarea,.hub-manager-form select { width: 100%; border: 1px solid #c6d6d0; border-radius: 10px; padding: 10px 11px; background: #fbfcfc; color: #18382e; font: inherit; font-size: 12px; text-transform: none; letter-spacing: normal; outline: none; }
+.hub-manager-form input:focus,.hub-manager-form textarea:focus,.hub-manager-form select:focus { border-color: #1b8a64; box-shadow: 0 0 0 3px rgba(27,138,100,.11); }
+.hub-manager-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.hub-manager-help { margin: 0 0 15px; color: #778981; font-size: 10px; line-height: 1.45; }
+.hub-manager-save { width: 100%; border: 0; border-radius: 11px; padding: 12px; background: linear-gradient(135deg,#08744f,#16a16f); color: #fff; font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; }
+
 @media (max-width: 760px) {
   body.tbrn-modern-hub .modern-update-button { display: grid; margin-right: 9px; }
   .hub-notification-panel { top: 64px; right: 12px; }
   .hub-notification-head { padding: 14px; }
   .hub-notification-item { padding: 14px; }
+  .hub-notification-manager { padding: 8px; }
+  .hub-manager-shell { max-height: 97vh; }
+  .hub-manager-toolbar { flex-wrap: wrap; }
+  .hub-manager-toolbar [data-manager-status] { width: 100%; margin-left: 0; }
+  .hub-manager-body { display: block; overflow: auto; }
+  .hub-manager-list,.hub-manager-form { overflow: visible; }
+  .hub-manager-form { border-left: 0; border-top: 1px solid #d8e3de; }
+  .hub-manager-grid { grid-template-columns: 1fr; }
 }
