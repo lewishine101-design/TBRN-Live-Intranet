@@ -1,0 +1,69 @@
+name: Activate seamless Hub updates
+
+on:
+  push:
+    paths:
+      - '.github/workflows/activate-seamless-updates.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Activate seamless updates and remove workflow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          old_reload = """  function reloadForUpdate(version){
+    if(editingIsActive()){"""
+          new_reload = """  function reloadForUpdate(version){
+    if(typeof window.tbrnOfferHubUpdate==='function'){
+      window.tbrnOfferHubUpdate(version,'system');
+      return;
+    }
+    if(editingIsActive()){"""
+          if old_reload not in text and new_reload not in text:
+              raise SystemExit("Published update function not found")
+          text = text.replace(old_reload, new_reload, 1)
+
+          old_expiry = """    setTimeout(()=>location.reload(),Math.max(1000,nextExpiry-Date.now()+500));"""
+          new_expiry = """    setTimeout(()=>{
+      if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
+      else location.reload();
+    },Math.max(1000,nextExpiry-Date.now()+500));"""
+          if old_expiry not in text and new_expiry not in text:
+              raise SystemExit("Temporary-panel expiry trigger not found")
+          text = text.replace(old_expiry, new_expiry, 1)
+
+          old_changed = """      if(signature()!==initialSignature)location.reload();"""
+          new_changed = """      if(signature()!==initialSignature){
+        if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
+        else location.reload();
+      }"""
+          if old_changed not in text and new_changed not in text:
+              raise SystemExit("Temporary-panel change trigger not found")
+          text = text.replace(old_changed, new_changed, 1)
+
+          marker = '<script src="hub-notifications.js?v=6"></script>'
+          addition = marker + '\n<script src="hub-refresh-guard.js?v=1"></script>'
+          if addition not in text:
+              if marker not in text:
+                  raise SystemExit("Runtime insertion point not found")
+              text = text.replace(marker, addition, 1)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+          git rm .github/workflows/activate-seamless-updates.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Apply Hub updates without losing the current view"
+          git push
