@@ -120,6 +120,45 @@
     }).join('') : '<div class="hub-manager-empty">No notifications have been created.</div>';
   }
 
+  function auditDate(value, fallback = '—') {
+    const time = timestamp(value);
+    return time ? new Date(time).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : fallback;
+  }
+
+  function auditEffectiveDate(update) {
+    return update.publishAt || update.createdAt || update.updatedAt || update.date || '';
+  }
+
+  function generateAuditReport() {
+    if (!isAdmin()) return;
+    const generatedAt = new Date();
+    const ordered = [...updates].sort((a, b) => (timestamp(auditEffectiveDate(b)) || 0) - (timestamp(auditEffectiveDate(a)) || 0));
+    const totals = ordered.reduce((summary, update) => {
+      const state = notificationState(update);
+      summary[state] = (summary[state] || 0) + 1;
+      return summary;
+    }, { active: 0, scheduled: 0, expired: 0, archived: 0 });
+    const rows = ordered.map((update, index) => {
+      const state = notificationState(update);
+      const audience = normaliseAudience(update) === 'admin' ? 'Admins only' : 'All staff';
+      const effective = update.publishAt ? auditDate(update.publishAt) : (update.date || auditDate(update.createdAt || update.updatedAt, 'Immediately'));
+      return '<tr><td>' + (index + 1) + '</td><td><strong>' + escapeHtml(update.title) + '</strong><span>' + escapeHtml(update.message) + '</span></td><td>' + escapeHtml(update.type || 'Update') + '</td><td>' + audience + '</td><td>' + escapeHtml(effective) + '</td><td>' + escapeHtml(auditDate(update.expiresAt, 'No expiry')) + '</td><td><span class="status status-' + state + '">' + state + '</span></td><td>' + escapeHtml(auditDate(update.updatedAt, '—')) + '</td></tr>';
+    }).join('');
+    const report = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TBRN Notification Audit Report</title><style>' +
+      '@page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#17382d;font:12px/1.45 Arial,sans-serif}header{display:flex;justify-content:space-between;gap:24px;padding-bottom:16px;border-bottom:3px solid #0b7655}h1{margin:3px 0 2px;font-size:25px}.brand{color:#0b7655;font-size:14px;font-weight:900}.meta{text-align:right;color:#5f756c}.summary{display:flex;gap:8px;margin:16px 0}.summary span{padding:7px 10px;border-radius:8px;background:#eef5f2;font-weight:700}table{width:100%;border-collapse:collapse;table-layout:fixed}th{padding:8px;background:#0b5d47;color:white;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.04em}td{padding:8px;border:1px solid #d8e2de;vertical-align:top;overflow-wrap:anywhere}tbody tr:nth-child(even){background:#f6f8f7}td:nth-child(1){width:3%}td:nth-child(2){width:27%}td:nth-child(3){width:10%}td:nth-child(4){width:9%}td:nth-child(5),td:nth-child(6),td:nth-child(8){width:13%}td:nth-child(7){width:8%}td strong,td span{display:block}.status{display:inline-block;padding:3px 6px;border-radius:99px;background:#e5eee9;font-size:9px;font-weight:800;text-transform:uppercase}.status-active{background:#dff4e8;color:#087044}.status-scheduled{background:#e4effc;color:#235f9f}.status-expired,.status-archived{background:#ecefed;color:#64716b}footer{margin-top:14px;padding-top:9px;border-top:1px solid #cfdad5;color:#71837b;font-size:9px}@media print{.no-print{display:none}}</style></head><body>' +
+      '<header><div><div class="brand">TBRN LIVE</div><h1>Notification Audit Report</h1><div>Complete notification register</div></div><div class="meta"><strong>Generated</strong><br>' + escapeHtml(auditDate(generatedAt.toISOString())) + '<br><br><strong>Total records</strong><br>' + ordered.length + '</div></header>' +
+      '<div class="summary"><span>Active: ' + totals.active + '</span><span>Scheduled: ' + totals.scheduled + '</span><span>Expired: ' + totals.expired + '</span><span>Archived: ' + totals.archived + '</span></div>' +
+      '<table><thead><tr><th>#</th><th>Notification</th><th>Category</th><th>Audience</th><th>Effective from</th><th>Expiry</th><th>Status</th><th>Last amended</th></tr></thead><tbody>' + (rows || '<tr><td colspan="8">No notifications have been recorded.</td></tr>') + '</tbody></table>' +
+      '<footer>Generated from the TBRN Live Admin Notification Manager. This register includes active, scheduled, expired and archived notifications held by the Hub at the time of generation.</footer></body></html>';
+    const blob = new Blob([report], { type: 'text/html;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'TBRN_Notification_Audit_' + generatedAt.toISOString().slice(0, 10) + '.html';
+    document.body.appendChild(link); link.click(); link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    managerStatus('Audit report generated. Open it to print or save as PDF.');
+  }
+
   function resetForm(update = null) {
     editingId = update?.id || null;
     manager.querySelector('[data-manager-form-title]').textContent = update ? 'Edit notification' : 'Create notification';
@@ -142,12 +181,13 @@
     element.id = 'hubNotificationManager';
     element.className = 'hub-notification-manager';
     element.innerHTML = '<section class="hub-manager-shell" role="dialog" aria-modal="true" aria-labelledby="hubManagerHeading"><header><div><span class="hub-manager-kicker">Admin control</span><h2 id="hubManagerHeading">Notification Manager</h2><p>Create, schedule and control what staff can see.</p></div><button type="button" data-close-manager aria-label="Close Notification Manager">×</button></header>' +
-      '<div class="hub-manager-toolbar"><button type="button" class="primary" data-new-notification>+ New notification</button><button type="button" data-preview-staff>Preview general staff view</button><span data-manager-status></span></div>' +
+      '<div class="hub-manager-toolbar"><button type="button" class="primary" data-new-notification>+ New notification</button><button type="button" data-preview-staff>Preview general staff view</button><button type="button" data-generate-audit>Generate audit report</button><span data-manager-status></span></div>' +
       '<div class="hub-manager-body"><div class="hub-manager-list" data-notification-manager-list></div><form class="hub-manager-form" hidden><div class="hub-manager-form-head"><h3 data-manager-form-title>Create notification</h3><button type="button" data-cancel-form>Cancel</button></div>' +
       '<label>Title<input id="hubManagerTitle" maxlength="90" required></label><label>Message<textarea id="hubManagerMessage" maxlength="400" rows="5" required></textarea></label><div class="hub-manager-grid"><label>Category<select id="hubManagerType">' + TYPES.map(type => '<option>' + escapeHtml(type) + '</option>').join('') + '</select></label><label>Audience<select id="hubManagerAudience"><option value="all">All staff</option><option value="admin">Admins only</option></select></label><label>Publish date and time<input id="hubManagerPublish" type="datetime-local"></label><label>Expiry date and time<input id="hubManagerExpiry" type="datetime-local"></label></div><p class="hub-manager-help">Leave publish blank to show immediately. Leave expiry blank to keep it visible until archived.</p><button type="submit" class="hub-manager-save" data-save-notification>Publish notification</button></form></div></section>';
     document.body.appendChild(element);
     element.querySelector('[data-close-manager]').onclick = closeManager;
     element.querySelector('[data-new-notification]').onclick = () => resetForm();
+    element.querySelector('[data-generate-audit]').onclick = generateAuditReport;
     element.querySelector('[data-cancel-form]').onclick = () => { element.querySelector('.hub-manager-form').hidden = true; editingId = null; };
     element.querySelector('[data-preview-staff]').onclick = () => { previewAudience = 'staff'; closeManager(); panel.classList.add('is-open'); render(); };
     element.querySelector('.hub-manager-form').onsubmit = saveForm;
@@ -177,7 +217,9 @@
       audience: formValue('hubManagerAudience') === 'admin' ? 'admin' : 'all',
       publishAt, expiresAt,
       date: dateLabel({ publishAt }) || new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()),
-      archived: existing?.archived || false, updatedAt: new Date().toISOString()
+      archived: existing?.archived || false,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     const nextUpdates = existing ? updates.map(update => update.id === existing.id ? next : update) : [next, ...updates];
     managerStatus('Saving…');
