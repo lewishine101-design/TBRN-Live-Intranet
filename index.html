@@ -7666,12 +7666,18 @@ function renderEntryBadgeRows(badges){
 
   const nextExpiry=panels.reduce((minimum,panel)=>Math.min(minimum,Number(panel.expiresAt)),Infinity);
   if(Number.isFinite(nextExpiry)){
-    setTimeout(()=>location.reload(),Math.max(1000,nextExpiry-Date.now()+500));
+    setTimeout(()=>{
+      if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
+      else location.reload();
+    },Math.max(1000,nextExpiry-Date.now()+500));
   }
 
   function reloadIfChanged(){
     window.setTimeout(()=>{
-      if(signature()!==initialSignature)location.reload();
+      if(signature()!==initialSignature){
+        if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
+        else location.reload();
+      }
     },250);
   }
   window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY)reloadIfChanged()});
@@ -10389,6 +10395,10 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
   }
 
   function reloadForUpdate(version){
+    if(typeof window.tbrnOfferHubUpdate==='function'){
+      window.tbrnOfferHubUpdate(version,'system');
+      return;
+    }
     if(editingIsActive()){
       pendingVersion=version;
       notify('System update ready — refresh will happen when editing is finished');
@@ -10688,6 +10698,7 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
 </script>
 <script src="hub-modern.js?v=5"></script>
 <script src="hub-notifications.js?v=6"></script>
+<script src="hub-refresh-guard.js?v=1"></script>
 <script src="hub-november.js?v=9"></script>
 
 
