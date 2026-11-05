@@ -17,50 +17,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Activate seamless updates and remove workflow
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path("index.html")
-          text = path.read_text(encoding="utf-8")
-
-          old_reload = """  function reloadForUpdate(version){
-    if(editingIsActive()){"""
-          new_reload = """  function reloadForUpdate(version){
-    if(typeof window.tbrnOfferHubUpdate==='function'){
-      window.tbrnOfferHubUpdate(version,'system');
-      return;
-    }
-    if(editingIsActive()){"""
-          if old_reload not in text and new_reload not in text:
-              raise SystemExit("Published update function not found")
-          text = text.replace(old_reload, new_reload, 1)
-
-          old_expiry = """    setTimeout(()=>location.reload(),Math.max(1000,nextExpiry-Date.now()+500));"""
-          new_expiry = """    setTimeout(()=>{
-      if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
-      else location.reload();
-    },Math.max(1000,nextExpiry-Date.now()+500));"""
-          if old_expiry not in text and new_expiry not in text:
-              raise SystemExit("Temporary-panel expiry trigger not found")
-          text = text.replace(old_expiry, new_expiry, 1)
-
-          old_changed = """      if(signature()!==initialSignature)location.reload();"""
-          new_changed = """      if(signature()!==initialSignature){
-        if(typeof window.tbrnOfferHubUpdate==='function')window.tbrnOfferHubUpdate('','temporary-panels');
-        else location.reload();
-      }"""
-          if old_changed not in text and new_changed not in text:
-              raise SystemExit("Temporary-panel change trigger not found")
-          text = text.replace(old_changed, new_changed, 1)
-
-          marker = '<script src="hub-notifications.js?v=6"></script>'
-          addition = marker + '\n<script src="hub-refresh-guard.js?v=1"></script>'
-          if addition not in text:
-              if marker not in text:
-                  raise SystemExit("Runtime insertion point not found")
-              text = text.replace(marker, addition, 1)
-
-          path.write_text(text, encoding="utf-8")
-          PY
+          python3 -c "import base64;exec(base64.b64decode('ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnBhdGg9UGF0aCgiaW5kZXguaHRtbCIpCnRleHQ9cGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKb2xkPSIiIiAgZnVuY3Rpb24gcmVsb2FkRm9yVXBkYXRlKHZlcnNpb24pewogICAgaWYoZWRpdGluZ0lzQWN0aXZlKCkpeyIiIgpuZXc9IiIiICBmdW5jdGlvbiByZWxvYWRGb3JVcGRhdGUodmVyc2lvbil7CiAgICBpZih0eXBlb2Ygd2luZG93LnRicm5PZmZlckh1YlVwZGF0ZT09PSdmdW5jdGlvbicpewogICAgICB3aW5kb3cudGJybk9mZmVySHViVXBkYXRlKHZlcnNpb24sJ3N5c3RlbScpOwogICAgICByZXR1cm47CiAgICB9CiAgICBpZihlZGl0aW5nSXNBY3RpdmUoKSl7IiIiCmlmIG9sZCBub3QgaW4gdGV4dCBhbmQgbmV3IG5vdCBpbiB0ZXh0OiByYWlzZSBTeXN0ZW1FeGl0KCJQdWJsaXNoZWQgdXBkYXRlIGZ1bmN0aW9uIG5vdCBmb3VuZCIpCnRleHQ9dGV4dC5yZXBsYWNlKG9sZCxuZXcsMSkKb2xkPSIiIiAgICBzZXRUaW1lb3V0KCgpPT5sb2NhdGlvbi5yZWxvYWQoKSxNYXRoLm1heCgxMDAwLG5leHRFeHBpcnktRGF0ZS5ub3coKSs1MDApKTsiIiIKbmV3PSIiIiAgICBzZXRUaW1lb3V0KCgpPT57CiAgICAgIGlmKHR5cGVvZiB3aW5kb3cudGJybk9mZmVySHViVXBkYXRlPT09J2Z1bmN0aW9uJyl3aW5kb3cudGJybk9mZmVySHViVXBkYXRlKCcnLCd0ZW1wb3JhcnktcGFuZWxzJyk7CiAgICAgIGVsc2UgbG9jYXRpb24ucmVsb2FkKCk7CiAgICB9LE1hdGgubWF4KDEwMDAsbmV4dEV4cGlyeS1EYXRlLm5vdygpKzUwMCkpOyIiIgppZiBvbGQgbm90IGluIHRleHQgYW5kIG5ldyBub3QgaW4gdGV4dDogcmFpc2UgU3lzdGVtRXhpdCgiVGVtcG9yYXJ5LXBhbmVsIGV4cGlyeSB0cmlnZ2VyIG5vdCBmb3VuZCIpCnRleHQ9dGV4dC5yZXBsYWNlKG9sZCxuZXcsMSkKb2xkPSIiIiAgICAgIGlmKHNpZ25hdHVyZSgpIT09aW5pdGlhbFNpZ25hdHVyZSlsb2NhdGlvbi5yZWxvYWQoKTsiIiIKbmV3PSIiIiAgICAgIGlmKHNpZ25hdHVyZSgpIT09aW5pdGlhbFNpZ25hdHVyZSl7CiAgICAgICAgaWYodHlwZW9mIHdpbmRvdy50YnJuT2ZmZXJIdWJVcGRhdGU9PT0nZnVuY3Rpb24nKXdpbmRvdy50YnJuT2ZmZXJIdWJVcGRhdGUoJycsJ3RlbXBvcmFyeS1wYW5lbHMnKTsKICAgICAgICBlbHNlIGxvY2F0aW9uLnJlbG9hZCgpOwogICAgICB9IiIiCmlmIG9sZCBub3QgaW4gdGV4dCBhbmQgbmV3IG5vdCBpbiB0ZXh0OiByYWlzZSBTeXN0ZW1FeGl0KCJUZW1wb3JhcnktcGFuZWwgY2hhbmdlIHRyaWdnZXIgbm90IGZvdW5kIikKdGV4dD10ZXh0LnJlcGxhY2Uob2xkLG5ldywxKQptYXJrZXI9JzxzY3JpcHQgc3JjPSJodWItbm90aWZpY2F0aW9ucy5qcz92PTYiPjwvc2NyaXB0PicKYWRkaXRpb249bWFya2VyKydcbjxzY3JpcHQgc3JjPSJodWItcmVmcmVzaC1ndWFyZC5qcz92PTEiPjwvc2NyaXB0PicKaWYgYWRkaXRpb24gbm90IGluIHRleHQ6CiAgICBpZiBtYXJrZXIgbm90IGluIHRleHQ6IHJhaXNlIFN5c3RlbUV4aXQoIlJ1bnRpbWUgaW5zZXJ0aW9uIHBvaW50IG5vdCBmb3VuZCIpCiAgICB0ZXh0PXRleHQucmVwbGFjZShtYXJrZXIsYWRkaXRpb24sMSkKcGF0aC53cml0ZV90ZXh0KHRleHQsZW5jb2Rpbmc9InV0Zi04IikK'))"
           git rm .github/workflows/activate-seamless-updates.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
