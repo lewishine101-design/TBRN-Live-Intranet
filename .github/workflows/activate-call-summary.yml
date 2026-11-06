@@ -1,0 +1,36 @@
+name: Activate TBRN Call Summary
+on:
+  push:
+    paths:
+      - '.github/workflows/activate-call-summary.yml'
+permissions:
+  contents: write
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Call Summary loader
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text()
+          needle = '<script src="hub-notifications.js?v=7"></script>\n'
+          addition = needle + '<script src="hub-call-summary.js?v=1"></script>\n'
+          if 'hub-call-summary.js?v=1' not in text:
+              if needle not in text:
+                  raise SystemExit('Notification script marker not found')
+              text = text.replace(needle, addition, 1)
+              path.write_text(text)
+          PY
+      - name: Commit and remove temporary workflow
+        shell: bash
+        run: |
+          rm '.github/workflows/activate-call-summary.yml'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html '.github/workflows/activate-call-summary.yml'
+          git commit -m 'Add TBRN Call Summary to Processes'
+          git push
