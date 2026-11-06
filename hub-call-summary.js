@@ -1,5 +1,5 @@
 (function () {
-  'use strict';\n  // Cache marker: Process card release 1
+  'use strict';
 
   const TITLE = 'TBRN Call Summary';
   const CATEGORY = 'Processes';
