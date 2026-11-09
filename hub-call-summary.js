@@ -36,10 +36,29 @@
 
   function restoreDocumentControls() {
     document.getElementById('documentView')?.classList.remove('tbrn-call-summary-open');
+    document.getElementById('tbrnCallSummaryDownload')?.remove();
     const printButton = document.querySelector('#documentView .head-actions .primary');
     if (printButton) {
       printButton.textContent = 'Print';
       printButton.onclick = () => window.print();
+    }
+  }
+
+  function addDownloadControl() {
+    const actions = document.querySelector('#documentView .head-actions');
+    const printButton = actions?.querySelector('.primary');
+    if (!actions || !printButton) return;
+
+    let download = document.getElementById('tbrnCallSummaryDownload');
+    if (!download) {
+      download = document.createElement('a');
+      download.id = 'tbrnCallSummaryDownload';
+      download.className = 'action tbrn-call-summary-download';
+      download.href = 'tbrn-call-summary.html';
+      download.download = 'TBRN_Initial_Call_Summary.html';
+      download.textContent = 'Download pop-out';
+      download.title = 'Download the standalone Initial Call Summary';
+      actions.insertBefore(download, printButton);
     }
   }
 
@@ -68,6 +87,7 @@
       printButton.textContent = 'Print summary';
       printButton.onclick = () => document.getElementById('tbrnCallSummaryFrame')?.contentWindow?.print();
     }
+    addDownloadControl();
     if (typeof setNav === 'function') setNav(CATEGORY);
     window.scrollTo(0, 0);
     window.setTimeout(() => window.tbrnApplyInlineHeader?.(), 30);
@@ -89,6 +109,7 @@
     '#documentView.tbrn-call-summary-open #canvas{max-width:none;padding:0}' +
     '.tbrn-call-summary-shell{width:100%;min-height:760px;background:#f2f5f8}' +
     '.tbrn-call-summary-shell iframe{display:block;width:100%;height:max(760px,calc(100vh - 185px));border:0;background:#f2f5f8}' +
+    '.tbrn-call-summary-download{display:inline-flex;align-items:center;text-decoration:none;color:inherit}' +
     '@media(max-width:760px){.tbrn-call-summary-shell,.tbrn-call-summary-shell iframe{min-height:820px;height:calc(100vh - 150px)}}';
   document.head.appendChild(style);
 
