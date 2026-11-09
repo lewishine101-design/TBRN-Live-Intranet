@@ -1,0 +1,25 @@
+name: Publish Call Summary app
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-call-summary-app.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Refresh app loader and remove temporary workflow
+        run: |
+          sed -i 's/hub-call-summary.js?v=3/hub-call-summary.js?v=4/g' index.html
+          rm -f .github/workflows/publish-call-summary-app.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/publish-call-summary-app.yml
+          git commit -m "Publish Initial Call Summary app"
+          git push
