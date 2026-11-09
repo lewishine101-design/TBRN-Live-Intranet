@@ -3,7 +3,7 @@
 
   const TITLE = 'TBRN Call Summary';
   const CATEGORY = 'Processes';
-  const FILE = 'tbrn-call-summary.html?v=1';
+  const FILE = 'tbrn-call-summary.html?v=2';
   const data = typeof DATA !== 'undefined' ? DATA : window.DATA;
   if (!Array.isArray(data)) return;
 
@@ -36,7 +36,8 @@
 
   function restoreDocumentControls() {
     document.getElementById('documentView')?.classList.remove('tbrn-call-summary-open');
-    document.getElementById('tbrnCallSummaryDownload')?.remove();
+    document.getElementById('tbrnCallSummaryInstall')?.remove();
+    document.getElementById('tbrnCallSummaryPopout')?.remove();
     const printButton = document.querySelector('#documentView .head-actions .primary');
     if (printButton) {
       printButton.textContent = 'Print';
@@ -44,21 +45,38 @@
     }
   }
 
-  function addDownloadControl() {
+  function openCallSummaryApp(install) {
+    const width = Math.min(1450, Math.max(900, window.screen.availWidth - 100));
+    const height = Math.min(1000, Math.max(700, window.screen.availHeight - 100));
+    const left = Math.max(0, Math.round((window.screen.availWidth - width) / 2));
+    const top = Math.max(0, Math.round((window.screen.availHeight - height) / 2));
+    const url = 'tbrn-call-summary.html' + (install ? '?install=1' : '?standalone=1');
+    window.open(url, 'tbrnCallSummaryApp', `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+  }
+
+  function addAppControls() {
     const actions = document.querySelector('#documentView .head-actions');
     const printButton = actions?.querySelector('.primary');
     if (!actions || !printButton) return;
 
-    let download = document.getElementById('tbrnCallSummaryDownload');
-    if (!download) {
-      download = document.createElement('a');
-      download.id = 'tbrnCallSummaryDownload';
-      download.className = 'action tbrn-call-summary-download';
-      download.href = 'tbrn-call-summary.html';
-      download.download = 'TBRN_Initial_Call_Summary.html';
-      download.textContent = 'Download pop-out';
-      download.title = 'Download the standalone Initial Call Summary';
-      actions.insertBefore(download, printButton);
+    if (!document.getElementById('tbrnCallSummaryInstall')) {
+      const install = document.createElement('button');
+      install.id = 'tbrnCallSummaryInstall';
+      install.className = 'action tbrn-call-summary-install';
+      install.type = 'button';
+      install.textContent = 'Install app';
+      install.title = 'Install Initial Call Summary as an app';
+      install.onclick = () => openCallSummaryApp(true);
+      actions.insertBefore(install, printButton);
+
+      const popout = document.createElement('button');
+      popout.id = 'tbrnCallSummaryPopout';
+      popout.className = 'action';
+      popout.type = 'button';
+      popout.textContent = 'Open separately';
+      popout.title = 'Open Initial Call Summary in its own window';
+      popout.onclick = () => openCallSummaryApp(false);
+      actions.insertBefore(popout, printButton);
     }
   }
 
@@ -87,7 +105,7 @@
       printButton.textContent = 'Print summary';
       printButton.onclick = () => document.getElementById('tbrnCallSummaryFrame')?.contentWindow?.print();
     }
-    addDownloadControl();
+    addAppControls();
     if (typeof setNav === 'function') setNav(CATEGORY);
     window.scrollTo(0, 0);
     window.setTimeout(() => window.tbrnApplyInlineHeader?.(), 30);
@@ -109,7 +127,7 @@
     '#documentView.tbrn-call-summary-open #canvas{max-width:none;padding:0}' +
     '.tbrn-call-summary-shell{width:100%;min-height:760px;background:#f2f5f8}' +
     '.tbrn-call-summary-shell iframe{display:block;width:100%;height:max(760px,calc(100vh - 185px));border:0;background:#f2f5f8}' +
-    '.tbrn-call-summary-download{display:inline-flex;align-items:center;text-decoration:none;color:inherit}' +
+    '.tbrn-call-summary-install{background:#0b695d!important;border-color:#0b695d!important;color:#fff!important}' +
     '@media(max-width:760px){.tbrn-call-summary-shell,.tbrn-call-summary-shell iframe{min-height:820px;height:calc(100vh - 150px)}}';
   document.head.appendChild(style);
 
