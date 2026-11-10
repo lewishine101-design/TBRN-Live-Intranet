@@ -58,7 +58,7 @@ jobs:
           for filename in ('index.html','app.js'):
               path=Path(filename)
               text=path.read_text(encoding='utf-8')
-              text, first = re.subn(r"function tableRows\(raw\)\{.*?\}\nfunction renderEntryBadgeRows", lambda _: table_rows+"\nfunction renderEntryBadgeRows", text, count=1, flags=re.S)
+              text, first = re.subn(r"function tableRows\(raw\)\{.*?\}\nfunction mailLink", lambda _: table_rows+"\nfunction mailLink", text, count=1, flags=re.S)
               text, second = re.subn(r"function getEntries\(x\)\{.*?\}\nfunction saveEntries", lambda _: entries+"\nfunction saveEntries", text, count=1, flags=re.S)
               if first != 1 or second != 1:
                   raise SystemExit(f"Expected importer blocks not found in {filename}: {first}, {second}")
