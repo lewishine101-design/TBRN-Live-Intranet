@@ -18,7 +18,19 @@ function renderDocs(items,el){el.innerHTML='';items.forEach((x,i)=>{const global
 function cleanContent(raw){const box=document.createElement('div');box.innerHTML=raw;box.querySelectorAll('script,style,meta,link').forEach(n=>n.remove());box.querySelectorAll('[width]').forEach(n=>{if(n.tagName!=='IMG')n.removeAttribute('width')});box.querySelectorAll('[height]').forEach(n=>{if(n.tagName!=='IMG')n.removeAttribute('height')});box.querySelectorAll('td').forEach(td=>{const meaningful=td.textContent.trim()||td.querySelector('img,a');if(!meaningful)td.classList.add('emptycell');['bgcolor','align','valign','rowspan','colspan','style','data-sheets-value'].forEach(a=>td.removeAttribute(a))});box.querySelectorAll('tr').forEach(tr=>{if(!tr.textContent.trim()&&!tr.querySelector('img,a'))tr.remove()});box.querySelectorAll('table').forEach(t=>{['border','cellspacing','cellpadding','style','width'].forEach(a=>t.removeAttribute(a));const wrap=document.createElement('div');wrap.style.overflow='auto';t.parentNode.insertBefore(wrap,t);wrap.appendChild(t)});box.querySelectorAll('font').forEach(f=>{const span=document.createElement('span');span.innerHTML=f.innerHTML;f.replaceWith(span)});return box.innerHTML}
 function stripComment(v){v=String(v||'').replace(/\[Threaded comment\][\s\S]*?Comment:\s*/i,'').replace(/Learn more:[^\n]*/gi,'').replace(/Your version of Excel[^\n]*/gi,'').replace(/Reply:[\s\S]*/i,'').trim();return v}
 function shortName(v){const c=stripComment(v),lines=c.split(/\n+/).map(x=>x.trim()).filter(Boolean);return lines.length?lines[lines.length-1]:c}
-function tableRows(raw){const box=document.createElement('div');box.innerHTML=raw;return [...box.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll(':scope > td,:scope > th')].map(td=>td.innerText.replace(/\s+/g,' ').trim())).filter(r=>r.some(Boolean))}
+function tableRows(raw){
+ const box=document.createElement('div');box.innerHTML=raw;
+ const cellValue=td=>{
+  const sheetValue=td.getAttribute('data-sheets-value');
+  if(sheetValue){
+   try{const parsed=JSON.parse(sheetValue);if(parsed&&Object.prototype.hasOwnProperty.call(parsed,'2'))return String(parsed['2']??'').replace(/\s+/g,' ').trim()}catch(e){}
+  }
+  const clean=td.cloneNode(true);
+  clean.querySelectorAll('comment').forEach(node=>node.remove());
+  return clean.textContent.replace(/\s+/g,' ').trim();
+ };
+ return [...box.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll(':scope > td,:scope > th')].map(cellValue)).filter(r=>r.some(Boolean));
+}
 function mailLink(v){const e=stripComment(v).split(/[;,]/)[0].trim();return e&&e.includes('@')?`<a href="mailto:${esc(e)}">Email</a>`:''}
 function phoneLink(v){const p=stripComment(v).split('/')[0].replace(/[^0-9+]/g,'');return p?`<a href="tel:${esc(p)}">Call</a>`:''}
 function flagChip(label,v){const raw=stripComment(v),yes=raw.includes('✔'),no=raw.includes('❌');return `<span class="mini-chip ${yes?'yes':no?'no':''}">${esc(label)} ${yes?'✓':no?'×':raw||'—'}</span>`}
@@ -92,7 +104,30 @@ function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
  else{const hi=rows.findIndex(r=>r.includes('Company')&&r.some(v=>v.includes('Surveyor')));let region='';for(const r0 of rows.slice(hi+1)){let r=r0.filter((v,i)=>!(i===0&&!v));while(r.length&&!r[r.length-1])r.pop();if(r.length>=9){region=stripComment(r[0]);r=r.slice(1)}while(r.length<8)r.push('');const company=shortName(r[0]),person=shortName(r[1]);if(!company&&!person)continue;entries.push({id:uid(),kind:'surveyor',name:person||company,company,region,postcode:r[2],phone:r[3],email:r[4],primary:r[5],secondary:r[6],notes:r[7],hold:/not working|on hold|off allocation|cannot drive/i.test(stripComment(r[1])),badges:[]})}}
  return entries;
 }
-function getEntries(x){const key=directoryKey(x.title);try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))return saved}catch(e){}const seeded=parseDirectoryEntries(x);localStorage.setItem(key,JSON.stringify(seeded));return seeded}
+function corruptedDirectoryName(value){
+ const name=String(value||'').trim();
+ return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
+}
+function repairDirectoryEntries(x,saved){
+ if(!Array.isArray(saved))return saved;
+ const seeded=parseDirectoryEntries(x);
+ const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9@]+/g,'');
+ let changed=false;
+ const repaired=saved.map(entry=>{
+  if(!entry)return entry;
+  const postcode=normal(entry.postcode),phone=normal(entry.phone),email=normal(entry.email);
+  const match=seeded.find(candidate=>(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
+  if(!match)return entry;
+  const currentName=normal(entry.name),seedName=normal(match.name);
+  const commentPrefixedName=seedName&&currentName!==seedName&&currentName.includes(seedName);
+  if(!corruptedDirectoryName(entry.name)&&!commentPrefixedName)return entry;
+  changed=true;
+  return {...entry,name:match.name,notes:entry.notes||match.notes};
+ });
+ if(changed)localStorage.setItem(directoryKey(x.title),JSON.stringify(repaired));
+ return repaired;
+}
+function getEntries(x){const key=directoryKey(x.title);try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))return repairDirectoryEntries(x,saved)}catch(e){}const seeded=parseDirectoryEntries(x);localStorage.setItem(key,JSON.stringify(seeded));return seeded}
 function saveEntries(x,entries){localStorage.setItem(directoryKey(x.title),JSON.stringify(entries))}
 const adminView=document.createElement('section');adminView.id='adminView';adminView.className='hidden';adminView.innerHTML='<div class="pagehead"><div class="bigicon">⚙</div><div><h2>Administration</h2><p>Manage live contractor, specialist and surveyor directories.</p></div><div class="head-actions"><div id="adminState" class="admin-state off">Admin mode off</div><button id="adminToggle" class="action primary">Turn on</button></div></div><div id="adminContent"></div>';document.querySelector('.content').appendChild(adminView);
 const adminModal=document.createElement('div');adminModal.className='admin-modal';adminModal.id='adminModal';adminModal.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><h3 id="adminModalTitle">Administration</h3><button class="admin-modal-close" onclick="closeAdminModal()">×</button></div><div class="admin-modal-body" id="adminModalBody"></div><div class="admin-modal-foot" id="adminModalFoot"></div></div>';document.body.appendChild(adminModal);
