@@ -2921,7 +2921,7 @@ function directoryKey(title){return 'tbrn-directory-'+title.replace(/[^a-z0-9]+/
 function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
  if(x.title==='2. General'){const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const original=r[9],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'contractor',name,region,postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[11])),badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}}
  else if(x.title==='Emergency & Specialist'){const hi=rows.findIndex(r=>r.includes('Work Type')&&r.includes('Contractor'));for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<14)r.push('');const original=r[1],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'specialist',name,region:stripComment(r[0]),postcode:r[8],notes:r[9],primary:r[10],secondary:r[11],phone:r[12],email:r[13],vat:r[2],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[9])),badges:[['Portal',r[3]],['ACM',r[4]],['LBG',r[5]],['Ins',r[6]],['TP',r[7]]]})}}
- else{const hi=rows.findIndex(r=>r.includes('Company')&&r.some(v=>v.includes('Surveyor')));let region='';for(const r0 of rows.slice(hi+1)){let r=r0.filter((v,i)=>!(i===0&&!v));while(r.length&&!r[r.length-1])r.pop();if(r.length>=9){region=stripComment(r[0]);r=r.slice(1)}while(r.length<8)r.push('');const company=shortName(r[0]),person=shortName(r[1]);if(!company&&!person)continue;entries.push({id:uid(),kind:'surveyor',name:person||company,company,region,postcode:r[2],phone:r[3],email:r[4],primary:r[5],secondary:r[6],notes:r[7],hold:/not working|on hold|off allocation|cannot drive/i.test(stripComment(r[1])),badges:[]})}}
+ else{const hi=rows.findIndex(r=>r.includes('Company')&&r.some(v=>v.includes('Surveyor')));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length&&!r[r.length-1])r.pop();const emailIndex=r.findIndex(v=>/@/.test(String(v||'')));if(emailIndex<4)continue;const companyIndex=emailIndex-4,personIndex=emailIndex-3,postcodeIndex=emailIndex-2,phoneIndex=emailIndex-1;const rowRegion=r.slice(0,companyIndex).map(stripComment).find(Boolean);if(rowRegion)region=rowRegion;const company=shortName(r[companyIndex]),person=shortName(r[personIndex]);if(!company&&!person)continue;entries.push({id:uid(),kind:'surveyor',name:person||company,company,region,postcode:r[postcodeIndex]||'',phone:r[phoneIndex]||'',email:r[emailIndex]||'',primary:r[emailIndex+1]||'',secondary:r[emailIndex+2]||'',notes:r[emailIndex+3]||'',hold:/not working|on hold|off allocation|cannot drive/i.test(stripComment(r[personIndex])),badges:[]})}}
  return entries;
 }
 function corruptedDirectoryName(value){
@@ -2935,6 +2935,14 @@ function repairDirectoryEntries(x,saved){
  let changed=false;
  const repaired=saved.map(entry=>{
   if(!entry)return entry;
+  if(x.title==='3. Surveyors'){
+   const looksShifted=/@/.test(String(entry.primary||''))&&!/@/.test(String(entry.email||''))||/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(String(entry.phone||'').trim());
+   if(looksShifted){
+    const identity=[entry.name,entry.company,entry.postcode].map(normal).filter(Boolean);
+    const match=seeded.find(candidate=>identity.includes(normal(candidate.name))||identity.includes(normal(candidate.company)));
+    if(match){changed=true;return {...entry,name:match.name,company:match.company,region:match.region,postcode:match.postcode,phone:match.phone,email:match.email,primary:match.primary,secondary:match.secondary,notes:match.notes}}
+   }
+  }
   const postcode=normal(entry.postcode),phone=normal(entry.phone),email=normal(entry.email);
   const match=seeded.find(candidate=>(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
