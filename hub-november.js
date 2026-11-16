@@ -5,6 +5,15 @@
 
   document.body.classList.add('tbrn-november-theme');
 
+  const homeDashboardIsVisible = () => {
+    const home = document.getElementById('home');
+    return Boolean(
+      !document.getElementById('tbrnWelcome') &&
+      home && !home.classList.contains('hidden') &&
+      document.visibilityState === 'visible'
+    );
+  };
+
   const emberField = document.createElement('div');
   emberField.className = 'tbrn-november-embers';
   emberField.setAttribute('aria-hidden', 'true');
@@ -46,7 +55,7 @@
     const launchFirework = () => {
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
-      if (!width || !height || welcomeIsOpen() || document.hidden) return;
+      if (!width || !height || welcomeIsOpen() || !homeDashboardIsVisible()) return;
 
       const x = width * (.12 + Math.random() * .76);
       const y = height * (.08 + Math.random() * .45);
@@ -76,7 +85,11 @@
       lastFrame = now;
       context.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
-      if (now >= nextLaunch) {
+      const homeVisible = homeDashboardIsVisible();
+      canvas.hidden = !homeVisible;
+      if (!homeVisible) particles = [];
+
+      if (homeVisible && now >= nextLaunch) {
         launchFirework();
         if (Math.random() > .68) window.setTimeout(launchFirework, 260 + Math.random() * 420);
         nextLaunch = now + 2200 + Math.random() * 3600;
@@ -207,6 +220,10 @@
       const started = performance.now();
       let lastSmoke = 0;
       const fly = now => {
+        if (!homeDashboardIsVisible()) {
+          flyer.remove();
+          return;
+        }
         const raw = Math.min(1, (now - started) / duration);
         const eased = raw < .5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
         const position = pathPoint(eased);
@@ -240,14 +257,7 @@
       activeScene = null;
     };
 
-    const homeIsVisible = () => {
-      const home = document.getElementById('home');
-      return Boolean(
-        !document.getElementById('tbrnWelcome') &&
-        home && !home.classList.contains('hidden') &&
-        document.visibilityState === 'visible'
-      );
-    };
+    const homeIsVisible = homeDashboardIsVisible;
 
     const schedule = first => {
       window.clearTimeout(sceneTimer);
@@ -375,6 +385,12 @@
     reduceMotion.addEventListener?.('change', reset);
     document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' ? schedule(true) : clearScene());
     window.addEventListener('resize', reset, { passive: true });
+    const home = document.getElementById('home');
+    if (home) {
+      new MutationObserver(() => {
+        if (!homeIsVisible()) clearScene();
+      }).observe(home, { attributes: true, attributeFilter: ['class'] });
+    }
     schedule(true);
   };
 
