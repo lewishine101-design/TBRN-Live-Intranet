@@ -2928,10 +2928,15 @@ function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-';
+const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
+function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
  if(!Array.isArray(saved))return saved;
  const seeded=parseDirectoryEntries(x);
  const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9@]+/g,'');
+ const baselineRepairKey=CONTRACTOR_BASELINE_REPAIR_KEY+x.title.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+ const baselineRepairNeeded=(x.title==='2. General'||x.title==='Emergency & Specialist')&&localStorage.getItem(baselineRepairKey)!=='complete';
  let changed=false;
  const repaired=saved.map(entry=>{
   if(!entry)return entry;
@@ -2944,15 +2949,24 @@ function repairDirectoryEntries(x,saved){
    }
   }
   const postcode=normal(entry.postcode),phone=normal(entry.phone),email=normal(entry.email);
-  const match=seeded.find(candidate=>(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
+  const entryName=normal(entry.name);
+  const match=seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
+  if(baselineRepairNeeded){
+   const restored={...entry};
+   CONTRACTOR_BASELINE_FIELDS.forEach(field=>{restored[field]=match[field]??''});
+   if(CONTRACTOR_BASELINE_FIELDS.some(field=>!directoryValueEqual(entry[field],restored[field]))){changed=true;return restored}
+  }
   const currentName=normal(entry.name),seedName=normal(match.name);
   const commentPrefixedName=seedName&&currentName!==seedName&&currentName.includes(seedName);
   if(!corruptedDirectoryName(entry.name)&&!commentPrefixedName)return entry;
   changed=true;
   return {...entry,name:match.name,notes:entry.notes||match.notes};
  });
- if(changed)localStorage.setItem(directoryKey(x.title),JSON.stringify(repaired));
+ if(changed){
+  localStorage.setItem(directoryKey(x.title),JSON.stringify(repaired));
+  if(baselineRepairNeeded)localStorage.setItem(baselineRepairKey,'complete');
+ }
  return repaired;
 }
 function getEntries(x){const key=directoryKey(x.title);try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))return repairDirectoryEntries(x,saved)}catch(e){}const seeded=parseDirectoryEntries(x);localStorage.setItem(key,JSON.stringify(seeded));return seeded}
