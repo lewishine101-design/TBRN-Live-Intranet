@@ -2928,7 +2928,7 @@ function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
-const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-';
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-v2-';
 const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
 function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
