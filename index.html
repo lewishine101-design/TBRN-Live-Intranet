@@ -2837,6 +2837,22 @@ function phoneLink(v,name='contractor'){
  const payload=encodeURIComponent(JSON.stringify(phones));
  return `<button type="button" class="phone-choice-trigger" data-phone-name="${esc(name)}" data-phone-choices="${esc(payload)}" onclick="openPhoneChooser(this.dataset.phoneName,this.dataset.phoneChoices)" aria-haspopup="dialog">Call <span class="phone-count">${phones.length}</span></button>`;
 }
+function contractorRegionFromPostcode(postcode,primary='',fallback=''){
+ const raw=String(postcode||'').trim()||String(primary||'').split(/[,;/\n]+/).map(value=>value.trim()).find(Boolean)||'';
+ const compact=raw.toUpperCase().replace(/\s+/g,'');
+ const area=(compact.match(/^[A-Z]{1,2}/)||[])[0]||'';
+ const district=Number((compact.match(/^[A-Z]{1,2}(\d{1,2})/)||[])[1]);
+ if(area==='BT')return'Northern Ireland';
+ if(area==='PO'&&district>=30&&district<=41)return'Isle Of Wight';
+ if(['AB','DD','DG','EH','FK','G','HS','IV','KA','KW','KY','ML','PA','PH','TD','ZE'].includes(area))return'Scotland';
+ if(['DH','DL','HG','HU','LS','NE','S','SR','TS','WF','YO'].includes(area))return'North East';
+ if(['BB','BL','CA','CH','CW','FY','L','LA','LL','M','OL','PR','SK','WA','WN'].includes(area))return'North West & North Wales';
+ if(['B','CV','DE','DY','LE','LN','NG','NN','PE','ST','TF','WS','WV','WR'].includes(area))return'Midlands';
+ if(['CF','LD','NP','SA'].includes(area))return'South Wales';
+ if(['BA','BH','BS','DT','EX','GL','PL','PO','SN','SO','SP','TA','TQ','TR'].includes(area))return'South West & South Coast';
+ if(['AL','BR','CB','CM','CO','CR','DA','E','EC','EN','GU','HA','HP','IG','IP','KT','LU','ME','MK','N','NW','OX','RG','RH','RM','SE','SG','SL','SM','SS','SW','TN','TW','UB','W','WC','WD'].includes(area))return'London & South East';
+ return fallback||'Region not set';
+}
 function ensurePhoneChooser(){
  let modal=$('tbrnPhoneChoiceModal');if(modal)return modal;
  modal=document.createElement('div');modal.id='tbrnPhoneChoiceModal';modal.className='phone-choice-overlay';modal.hidden=true;
@@ -2858,7 +2874,7 @@ function cardDetail(label,value,link){value=stripComment(value);if(!value)return
 function renderDirectory(x){const rows=tableRows(x.html);let entries=[],regions=[];
  if(x.title==='2. General'){
   const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));
-  let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const originalContractor=r[9],name=shortName(originalContractor);if(!name)continue;const hold=/on hold|off allocation|on stop|not taking/i.test(stripComment(originalContractor)+' '+stripComment(r[11]));entries.push({kind:'contractor',name,region,postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold,badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}
+  let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const originalContractor=r[9],name=shortName(originalContractor);if(!name)continue;const hold=/on hold|off allocation|on stop|not taking/i.test(stripComment(originalContractor)+' '+stripComment(r[11]));entries.push({kind:'contractor',name,region:contractorRegionFromPostcode(r[10],r[12],region),postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold,badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}
  }else if(x.title==='Emergency & Specialist'){
   const hi=rows.findIndex(r=>r.includes('Work Type')&&r.includes('Contractor'));
   for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<14)r.push('');const original=r[1],name=shortName(original);if(!name)continue;const hold=/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[9]));entries.push({kind:'specialist',name,region:stripComment(r[0]),postcode:r[8],notes:r[9],primary:r[10],secondary:r[11],phone:r[12],email:r[13],vat:r[2],hold,badges:[['Portal',r[3]],['ACM',r[4]],['LBG',r[5]],['Ins',r[6]],['TP',r[7]]]})}
@@ -2919,7 +2935,7 @@ const managedTitles=['2. General','Emergency & Specialist','3. Surveyors'];
 function uid(){return (crypto&&crypto.randomUUID)?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(16).slice(2)}
 function directoryKey(title){return 'tbrn-directory-'+title.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}
 function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
- if(x.title==='2. General'){const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const original=r[9],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'contractor',name,region,postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[11])),badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}}
+ if(x.title==='2. General'){const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const original=r[9],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'contractor',name,region:contractorRegionFromPostcode(r[10],r[12],region),postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[11])),badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}}
  else if(x.title==='Emergency & Specialist'){const hi=rows.findIndex(r=>r.includes('Work Type')&&r.includes('Contractor'));for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<14)r.push('');const original=r[1],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'specialist',name,region:stripComment(r[0]),postcode:r[8],notes:r[9],primary:r[10],secondary:r[11],phone:r[12],email:r[13],vat:r[2],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[9])),badges:[['Portal',r[3]],['ACM',r[4]],['LBG',r[5]],['Ins',r[6]],['TP',r[7]]]})}}
  else{const hi=rows.findIndex(r=>r.includes('Company')&&r.some(v=>v.includes('Surveyor')));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length&&!r[r.length-1])r.pop();const emailIndex=r.findIndex(v=>/@/.test(String(v||'')));if(emailIndex<4)continue;const companyIndex=emailIndex-4,personIndex=emailIndex-3,postcodeIndex=emailIndex-2,phoneIndex=emailIndex-1;const rowRegion=r.slice(0,companyIndex).map(stripComment).find(Boolean);if(rowRegion)region=rowRegion;const company=shortName(r[companyIndex]),person=shortName(r[personIndex]);if(!company&&!person)continue;entries.push({id:uid(),kind:'surveyor',name:person||company,company,region,postcode:r[postcodeIndex]||'',phone:r[phoneIndex]||'',email:r[emailIndex]||'',primary:r[emailIndex+1]||'',secondary:r[emailIndex+2]||'',notes:r[emailIndex+3]||'',hold:/not working|on hold|off allocation|cannot drive/i.test(stripComment(r[personIndex])),badges:[]})}}
  return entries;
@@ -2928,7 +2944,7 @@ function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
-const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-v2-';
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-v3-';
 const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
 function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
