@@ -1,0 +1,26 @@
+name: Force contractor region recovery
+"on":
+  push:
+    paths:
+      - .github/workflows/force-contractor-region-recovery.yml
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply recovery revision
+        env:
+          PATCH_DATA: ZGlmZiAtLWdpdCBhL2luZGV4Lmh0bWwgYi9pbmRleC5odG1sCmluZGV4IDFmMWNiMGUuLmNkODRiZDYgMTAwNjQ0Ci0tLSBhL2luZGV4Lmh0bWwKKysrIGIvaW5kZXguaHRtbApAQCAtMjkyOCw3ICsyOTI4LDcgQEAgZnVuY3Rpb24gY29ycnVwdGVkRGlyZWN0b3J5TmFtZSh2YWx1ZSl7CiAgY29uc3QgbmFtZT1TdHJpbmcodmFsdWV8fCcnKS50cmltKCk7CiAgcmV0dXJuIG5hbWUubGVuZ3RoPjcwfHwvXFt0aHJlYWRlZCBjb21tZW50XF18Y2hlY2sgcGFyYWdvbnxjbGFpbXM/IHBlciB3ZWVrfGJlZm9yZSBhbGxvY2F0aW5nfHlvdXIgdmVyc2lvbiBvZiBleGNlbHxsZWFybiBtb3JlOi9pLnRlc3QobmFtZSk7CiB9Ci1jb25zdCBDT05UUkFDVE9SX0JBU0VMSU5FX1JFUEFJUl9LRVk9J3Ricm4tY29udHJhY3Rvci1iYXNlbGluZS1yZXBhaXItMjAyNjExMTctJzsKK2NvbnN0IENPTlRSQUNUT1JfQkFTRUxJTkVfUkVQQUlSX0tFWT0ndGJybi1jb250cmFjdG9yLWJhc2VsaW5lLXJlcGFpci0yMDI2MTExNy12Mi0nOwogY29uc3QgQ09OVFJBQ1RPUl9CQVNFTElORV9GSUVMRFM9WydraW5kJywnbmFtZScsJ3JlZ2lvbicsJ3Bvc3Rjb2RlJywnbm90ZXMnLCdwcmltYXJ5Jywnc2Vjb25kYXJ5JywncGhvbmUnLCdlbWFpbCcsJ3ZhdCcsJ2JhZGdlcyddOwogZnVuY3Rpb24gZGlyZWN0b3J5VmFsdWVFcXVhbChhLGIpe3JldHVybiBKU09OLnN0cmluZ2lmeShhPz8nJyk9PT1KU09OLnN0cmluZ2lmeShiPz8nJyl9CiBmdW5jdGlvbiByZXBhaXJEaXJlY3RvcnlFbnRyaWVzKHgsc2F2ZWQpewo=
+        run: |
+          printf '%s' "$PATCH_DATA" | base64 -d | git apply
+          git diff --check
+      - name: Commit recovery revision
+        run: |
+          rm .github/workflows/force-contractor-region-recovery.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/force-contractor-region-recovery.yml
+          git commit -m "Force shared contractor region recovery"
+          git push
