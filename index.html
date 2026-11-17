@@ -2971,6 +2971,40 @@ function repairDirectoryEntries(x,saved){
 }
 function getEntries(x){const key=directoryKey(x.title);try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))return repairDirectoryEntries(x,saved)}catch(e){}const seeded=parseDirectoryEntries(x);localStorage.setItem(key,JSON.stringify(seeded));return seeded}
 function saveEntries(x,entries){localStorage.setItem(directoryKey(x.title),JSON.stringify(entries))}
+let contractorBaselineCloudRepairRunning=false;
+let contractorBaselineCloudRepairComplete=false;
+async function repairSharedContractorBaseline(){
+ if(contractorBaselineCloudRepairRunning||contractorBaselineCloudRepairComplete||!window.firebase?.firestore)return;
+ contractorBaselineCloudRepairRunning=true;
+ try{
+  const updates={};
+  ['2. General','Emergency & Specialist'].forEach(title=>{
+   const record=DATA.find(item=>item.title===title);if(!record)return;
+   const key=directoryKey(title),before=localStorage.getItem(key);
+   getEntries(record);
+   const after=localStorage.getItem(key);
+   if(after!==before)updates[key]=after;
+   const marker=CONTRACTOR_BASELINE_REPAIR_KEY+title.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+   if(localStorage.getItem(marker)==='complete')updates[marker]='complete';
+  });
+  if(!Object.keys(updates).some(key=>key.startsWith('tbrn-directory-')))return;
+  if(!firebase.apps.length)return;
+  if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();
+  const ref=firebase.firestore().collection('tbrnSharedState').doc('state');
+  await firebase.firestore().runTransaction(async transaction=>{
+   const snapshot=await transaction.get(ref);
+   const values=snapshot.exists&&snapshot.data()?.values&&typeof snapshot.data().values==='object'?{...snapshot.data().values}:{};
+   Object.assign(values,updates);
+   transaction.set(ref,{values,contractorBaselineRestoredAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  });
+  contractorBaselineCloudRepairComplete=true;
+  window.dispatchEvent(new CustomEvent('tbrn:contractor-baseline-restored'));
+ }catch(error){console.warn('Contractor baseline cloud recovery pending',error)}
+ finally{contractorBaselineCloudRepairRunning=false}
+}
+window.addEventListener('tbrn:cloud-data-updated',repairSharedContractorBaseline);
+window.setTimeout(repairSharedContractorBaseline,2500);
+window.setTimeout(repairSharedContractorBaseline,6000);
 const adminView=document.createElement('section');adminView.id='adminView';adminView.className='hidden';adminView.innerHTML='<div class="pagehead"><div class="bigicon">⚙</div><div><h2>Administration</h2><p>Manage live contractor, specialist and surveyor directories.</p></div><div class="head-actions"><div id="adminState" class="admin-state off">Admin mode off</div><button id="adminToggle" class="action primary">Turn on</button></div></div><div id="adminContent"></div>';document.querySelector('.content').appendChild(adminView);
 const adminModal=document.createElement('div');adminModal.className='admin-modal';adminModal.id='adminModal';adminModal.innerHTML='<div class="admin-modal-card"><div class="admin-modal-head"><h3 id="adminModalTitle">Administration</h3><button class="admin-modal-close" onclick="closeAdminModal()">×</button></div><div class="admin-modal-body" id="adminModalBody"></div><div class="admin-modal-foot" id="adminModalFoot"></div></div>';document.body.appendChild(adminModal);
 const oldHideAll=hideAll;hideAll=function(){oldHideAll();$('adminView').classList.add('hidden')};
