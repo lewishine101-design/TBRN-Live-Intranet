@@ -3009,7 +3009,8 @@ function repairDirectoryEntries(x,saved){
   const nameOverDuplicated=entryName&&(savedNameCounts.get(entryName)||0)>(seededNameCounts.get(entryName)||0);
   const match=nameOverDuplicated?positionalSeedCandidate(entryIndex):sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
-  if(baselineRepairNeeded){
+  const duplicatedIdentityMismatch=nameOverDuplicated&&normal(match.name)!==entryName;
+  if(baselineRepairNeeded||duplicatedIdentityMismatch){
    const restored={...entry};
    CONTRACTOR_BASELINE_FIELDS.forEach(field=>{restored[field]=match[field]??''});
    if(CONTRACTOR_BASELINE_FIELDS.some(field=>!directoryValueEqual(entry[field],restored[field]))){changed=true;return restored}
