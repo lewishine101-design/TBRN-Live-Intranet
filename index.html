@@ -10847,6 +10847,149 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
   scheduleWander(true);
 })();
 </script>
+<style id="tbrn-contractor-change-log-styles">
+.contractor-log-shell{display:grid;gap:16px}.contractor-log-lock,.contractor-log-panel{border:1px solid #d7e3de;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(15,50,40,.08)}
+.contractor-log-lock{max-width:520px;padding:24px}.contractor-log-lock h3,.contractor-log-panel h3{margin:0 0 7px;color:#173b31}.contractor-log-lock p,.contractor-log-panel p{margin:0;color:#667a73;line-height:1.5}
+.contractor-log-code-row{display:flex;gap:9px;margin-top:18px}.contractor-log-code-row input{min-width:0;flex:1;border:1px solid #cbdad4;border-radius:11px;padding:11px 12px;letter-spacing:.12em}.contractor-log-code-row button,.contractor-log-action{border:0;border-radius:11px;background:#155f4a;color:#fff;padding:11px 15px;font-weight:800;cursor:pointer}
+.contractor-log-error{min-height:18px;margin-top:9px!important;color:#a93636!important;font-size:12px}.contractor-log-panel{overflow:hidden}.contractor-log-head{display:flex;align-items:center;gap:14px;padding:20px 22px;border-bottom:1px solid #e3ece8}.contractor-log-head>div{flex:1}.contractor-log-head button{border:1px solid #cbdad4;border-radius:10px;background:#f5faf8;color:#315c4a;padding:9px 12px;font-weight:750;cursor:pointer}
+.contractor-log-list{display:grid;gap:10px;padding:16px;background:#f5f8f7}.contractor-log-entry{padding:16px;border:1px solid #dbe6e1;border-radius:14px;background:#fff}.contractor-log-entry-top{display:flex;align-items:flex-start;gap:12px}.contractor-log-entry-top>div{flex:1}.contractor-log-entry h4{margin:0;color:#173b31}.contractor-log-entry time{display:block;margin-top:4px;color:#71837c;font-size:11px}.contractor-log-version{border-radius:999px;background:#e4f3ec;color:#176746;padding:5px 8px;font-size:10px;font-weight:850}.contractor-log-diff{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}.contractor-log-state{padding:11px;border-radius:11px;background:#f5f8f7;color:#425a51;font-size:12px;line-height:1.45}.contractor-log-state b{display:block;margin-bottom:4px;color:#173b31}.contractor-log-entry-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.contractor-log-entry-actions button{border:1px solid #bdd3ca;border-radius:9px;background:#fff;color:#235847;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer}.contractor-log-empty{padding:28px;text-align:center;color:#71837c}.contractor-log-note{padding:11px 13px;border-radius:12px;background:#fff7df;color:#7a5b0b;font-size:12px;font-weight:700}
+@media(max-width:650px){.contractor-log-code-row,.contractor-log-head{align-items:stretch;flex-direction:column}.contractor-log-diff{grid-template-columns:1fr}}
+</style>
+<script id="tbrn-contractor-change-log-script">
+(function(){
+  'use strict';
+  const LOG_COLLECTION='tbrnContractorChangeLog';
+  const ACCESS_HASH='c94d5dc685997df5d24b7c867ff8c37f4eeb741381af68f4edb1019c09280137';
+  const UNLOCK_KEY='tbrnContractorLogUnlocked';
+  const TRACKED_TITLES=new Set(['2. General','Emergency & Specialist']);
+  let logRefPromise=null;
+
+  function statusOf(entry){
+    if(entry?.status==='ins_lbg')return'ins_lbg';
+    if(entry?.status==='limited'||entry?.status==='taking')return'limited';
+    if(entry?.status==='hold'||entry?.hold===true||entry?.hold==='true')return'hold';
+    return'active';
+  }
+  function stateOf(entry){return{status:statusOf(entry),onHoldNotes:String(entry?.onHoldNotes||'').trim()}}
+  function sameState(a,b){return a.status===b.status&&a.onHoldNotes===b.onHoldNotes}
+  function identity(entry){return String(entry?.id||'')||[entry?.name,entry?.postcode].map(v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'')).join('|')}
+  function escLog(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+  function statusLabel(value){return({active:'Available',hold:'On hold',limited:'On hold (limited services)',ins_lbg:'On hold (INS & LBG)'})[value]||value||'Not recorded'}
+
+  async function collectionRef(){
+    if(logRefPromise)return logRefPromise;
+    logRefPromise=(async()=>{
+      if(!window.firebase)throw new Error('Firebase is unavailable');
+      if(!firebase.apps.length)throw new Error('Live data has not initialised');
+      if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();
+      return firebase.firestore().collection(LOG_COLLECTION);
+    })();
+    try{return await logRefPromise}catch(error){logRefPromise=null;throw error}
+  }
+
+  async function recordChanges(record,before,after){
+    if(!TRACKED_TITLES.has(record?.title))return;
+    const previous=new Map((Array.isArray(before)?before:[]).map(entry=>[identity(entry),entry]));
+    const changes=[];
+    (Array.isArray(after)?after:[]).forEach(entry=>{
+      const oldEntry=previous.get(identity(entry));
+      if(!oldEntry)return;
+      const from=stateOf(oldEntry),to=stateOf(entry);
+      if(sameState(from,to))return;
+      changes.push({
+        versionId:'v-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),
+        directoryTitle:record.title,
+        contractorId:String(entry.id||''),
+        contractorName:String(entry.name||'Unnamed contractor'),
+        contractorPostcode:String(entry.postcode||''),
+        before:from,
+        after:to,
+        changedAtClient:new Date().toISOString(),
+        changeType:'status-notes',
+        source:'TBRN Hub Admin'
+      });
+    });
+    if(!changes.length)return;
+    const ref=await collectionRef(),batch=firebase.firestore().batch();
+    changes.forEach(change=>{
+      const doc=ref.doc();
+      batch.set(doc,{...change,changedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    await batch.commit();
+  }
+
+  const originalSaveEntries=window.saveEntries;
+  if(typeof originalSaveEntries==='function'){
+    window.saveEntries=function(record,entries){
+      let before=[];
+      try{before=JSON.parse(localStorage.getItem(directoryKey(record.title))||'[]')}catch(error){}
+      const result=originalSaveEntries.apply(this,arguments);
+      recordChanges(record,before,entries).catch(error=>console.error('Contractor change log write failed',error));
+      return result;
+    };
+  }
+
+  async function hash(value){
+    const bytes=new TextEncoder().encode(value),digest=await crypto.subtle.digest('SHA-256',bytes);
+    return Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+  }
+  function unlocked(){return sessionStorage.getItem(UNLOCK_KEY)==='true'}
+  function renderLocked(){
+    const root=document.getElementById('categoryDocs');if(!root)return;
+    root.innerHTML=`<div class="contractor-log-shell"><section class="contractor-log-lock"><h3>Contractor Change Log</h3><p>This audit record is restricted to the authorised administrator. Enter the access code to view or restore contractor status and On Hold Notes versions.</p><div class="contractor-log-code-row"><input id="contractorLogCode" type="password" autocomplete="off" aria-label="Change log access code"><button id="contractorLogUnlock" type="button">Unlock log</button></div><p class="contractor-log-error" id="contractorLogError"></p></section></div>`;
+    const input=document.getElementById('contractorLogCode'),button=document.getElementById('contractorLogUnlock');
+    const submit=async()=>{
+      button.disabled=true;
+      if(await hash(input.value)===ACCESS_HASH){sessionStorage.setItem(UNLOCK_KEY,'true');renderLog()}else{document.getElementById('contractorLogError').textContent='Access code not recognised.';input.value='';input.focus()}
+      button.disabled=false;
+    };
+    button.onclick=submit;input.addEventListener('keydown',event=>{if(event.key==='Enter')submit()});input.focus();
+  }
+  function stateMarkup(label,state){return`<div class="contractor-log-state"><b>${label}</b>Status: ${escLog(statusLabel(state?.status))}<br>On Hold Notes: ${escLog(state?.onHoldNotes||'None recorded')}</div>`}
+  function formatDate(value){const date=value?new Date(value):null;return date&&!Number.isNaN(date.getTime())?date.toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'Date unavailable'}
+
+  async function restoreVersion(item,side){
+    const state=item[side];if(!state)return;
+    if(!confirm(`Restore ${item.contractorName} to the selected status and On Hold Notes version?`))return;
+    const record=DATA.find(entry=>entry.title===item.directoryTitle);if(!record)return alert('The contractor directory could not be found.');
+    const entries=getEntries(record),target=entries.find(entry=>String(entry.id||'')===String(item.contractorId||''))||entries.find(entry=>entry.name===item.contractorName&&String(entry.postcode||'')===String(item.contractorPostcode||''));
+    if(!target)return alert('The contractor record could not be matched. No changes were made.');
+    target.status=state.status||'active';target.hold=target.status==='hold';target.onHoldNotes=state.onHoldNotes||'';
+    saveEntries(record,entries);
+    if(typeof window.tbrnFlushContractorChanges==='function')window.tbrnFlushContractorChanges();
+    alert(`${item.contractorName} was restored. The restoration has been recorded as a new version.`);
+    setTimeout(renderLog,350);
+  }
+
+  async function renderLog(){
+    const root=document.getElementById('categoryDocs');if(!root)return;
+    if(!unlocked()){renderLocked();return}
+    root.innerHTML='<div class="contractor-log-shell"><section class="contractor-log-panel"><div class="contractor-log-head"><div><h3>Contractor Change Log</h3><p>Version history for contractor statuses and On Hold Notes.</p></div><button id="contractorLogLock" type="button">Lock</button></div><div class="contractor-log-list" id="contractorLogList"><div class="contractor-log-empty">Loading version history…</div></div></section><div class="contractor-log-note">Every future status or On Hold Notes amendment is recorded automatically. Restoring a version creates a new audit entry and never deletes the earlier history.</div></div>';
+    document.getElementById('contractorLogLock').onclick=()=>{sessionStorage.removeItem(UNLOCK_KEY);renderLocked()};
+    try{
+      const ref=await collectionRef(),snapshot=await ref.orderBy('changedAtClient','desc').limit(250).get();
+      const items=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+      const list=document.getElementById('contractorLogList');
+      if(!items.length){list.innerHTML='<div class="contractor-log-empty">No contractor status or On Hold Notes changes have been recorded yet.</div>';return}
+      list.innerHTML=items.map((item,index)=>`<article class="contractor-log-entry"><div class="contractor-log-entry-top"><div><h4>${escLog(item.contractorName)}</h4><time>${escLog(formatDate(item.changedAtClient))}${item.contractorPostcode?' · '+escLog(item.contractorPostcode):''}</time></div><span class="contractor-log-version">Version ${items.length-index}</span></div><div class="contractor-log-diff">${stateMarkup('Previous version',item.before)}${stateMarkup('Saved version',item.after)}</div><div class="contractor-log-entry-actions"><button type="button" data-log-id="${escLog(item.id)}" data-log-side="before">Restore previous version</button><button type="button" data-log-id="${escLog(item.id)}" data-log-side="after">Restore saved version</button></div></article>`).join('');
+      list.onclick=event=>{const button=event.target.closest('[data-log-id]');if(!button)return;const item=items.find(value=>value.id===button.dataset.logId);if(item)restoreVersion(item,button.dataset.logSide)};
+    }catch(error){
+      console.error('Contractor change log read failed',error);
+      document.getElementById('contractorLogList').innerHTML='<div class="contractor-log-empty">The change log could not be loaded. No contractor records were changed.</div>';
+    }
+  }
+
+  const originalShowCategory=window.showCategory;
+  window.showCategory=function(category){
+    const result=originalShowCategory.apply(this,arguments);
+    if(category!=='Admin')return result;
+    const title=document.getElementById('catTitle'),description=document.getElementById('catDesc'),icon=document.getElementById('catIcon');
+    if(title)title.textContent='Admin';if(description)description.textContent='Restricted administration and audit tools.';if(icon)icon.textContent='⚙';
+    if(unlocked())renderLog();else renderLocked();
+    return result;
+  };
+})();
+</script>
 <script src="hub-modern.js?v=5"></script>
 <script src="hub-notifications.js?v=7"></script>
 <script src="hub-call-summary.js?v=4"></script>
