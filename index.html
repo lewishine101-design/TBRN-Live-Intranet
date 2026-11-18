@@ -10934,8 +10934,9 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
     return Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
   }
   function unlocked(){return sessionStorage.getItem(UNLOCK_KEY)==='true'}
+  function logRoot(){return document.getElementById('contractorChangeLogMount')}
   function renderLocked(){
-    const root=document.getElementById('categoryDocs');if(!root)return;
+    const root=logRoot();if(!root)return;
     root.innerHTML=`<div class="contractor-log-shell"><section class="contractor-log-lock"><h3>Contractor Change Log</h3><p>This audit record is restricted to the authorised administrator. Enter the access code to view or restore contractor status and On Hold Notes versions.</p><div class="contractor-log-code-row"><input id="contractorLogCode" type="password" autocomplete="off" aria-label="Change log access code"><button id="contractorLogUnlock" type="button">Unlock log</button></div><p class="contractor-log-error" id="contractorLogError"></p></section></div>`;
     const input=document.getElementById('contractorLogCode'),button=document.getElementById('contractorLogUnlock');
     const submit=async()=>{
@@ -10962,7 +10963,7 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
   }
 
   async function renderLog(){
-    const root=document.getElementById('categoryDocs');if(!root)return;
+    const root=logRoot();if(!root)return;
     if(!unlocked()){renderLocked();return}
     root.innerHTML='<div class="contractor-log-shell"><section class="contractor-log-panel"><div class="contractor-log-head"><div><h3>Contractor Change Log</h3><p>Version history for contractor statuses and On Hold Notes.</p></div><button id="contractorLogLock" type="button">Lock</button></div><div class="contractor-log-list" id="contractorLogList"><div class="contractor-log-empty">Loading version history…</div></div></section><div class="contractor-log-note">Every future status or On Hold Notes amendment is recorded automatically. Restoring a version creates a new audit entry and never deletes the earlier history.</div></div>';
     document.getElementById('contractorLogLock').onclick=()=>{sessionStorage.removeItem(UNLOCK_KEY);renderLocked()};
@@ -10979,13 +10980,19 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
     }
   }
 
-  const originalShowCategory=window.showCategory;
-  window.showCategory=function(category){
-    const result=originalShowCategory.apply(this,arguments);
-    if(category!=='Admin')return result;
-    const title=document.getElementById('catTitle'),description=document.getElementById('catDesc'),icon=document.getElementById('catIcon');
-    if(title)title.textContent='Admin';if(description)description.textContent='Restricted administration and audit tools.';if(icon)icon.textContent='⚙';
+  window.openContractorChangeLog=function(){
+    const content=document.getElementById('adminContent');if(!content)return;
+    content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
+    document.getElementById('contractorLogBack').onclick=()=>renderAdminDashboard();
     if(unlocked())renderLog();else renderLocked();
+  };
+
+  const originalRenderAdminDashboard=window.renderAdminDashboard;
+  window.renderAdminDashboard=function(){
+    const result=originalRenderAdminDashboard.apply(this,arguments);
+    if(!adminMode)return result;
+    const grid=document.querySelector('#adminContent .admin-grid');
+    if(grid&&!document.getElementById('contractorChangeLogCard'))grid.insertAdjacentHTML('beforeend','<div class="admin-card" id="contractorChangeLogCard"><div class="resource-type">Restricted audit</div><div class="cat-icon">↺</div><h3>Contractor Change Log</h3><p>View and restore versioned contractor statuses and On Hold Notes.</p><button class="action primary" type="button" onclick="openContractorChangeLog()">Open change log</button></div>');
     return result;
   };
 })();
