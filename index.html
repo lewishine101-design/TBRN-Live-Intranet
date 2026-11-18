@@ -2938,13 +2938,21 @@ function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
  if(x.title==='2. General'){const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const original=r[9],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'contractor',name,region:contractorRegionFromPostcode(r[10],r[12],region),postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[11])),badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}}
  else if(x.title==='Emergency & Specialist'){const hi=rows.findIndex(r=>r.includes('Work Type')&&r.includes('Contractor'));for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<14)r.push('');const original=r[1],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'specialist',name,region:stripComment(r[0]),postcode:r[8],notes:r[9],primary:r[10],secondary:r[11],phone:r[12],email:r[13],vat:r[2],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[9])),badges:[['Portal',r[3]],['ACM',r[4]],['LBG',r[5]],['Ins',r[6]],['TP',r[7]]]})}}
  else{const hi=rows.findIndex(r=>r.includes('Company')&&r.some(v=>v.includes('Surveyor')));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length&&!r[r.length-1])r.pop();const emailIndex=r.findIndex(v=>/@/.test(String(v||'')));if(emailIndex<4)continue;const companyIndex=emailIndex-4,personIndex=emailIndex-3,postcodeIndex=emailIndex-2,phoneIndex=emailIndex-1;const rowRegion=r.slice(0,companyIndex).map(stripComment).find(Boolean);if(rowRegion)region=rowRegion;const company=shortName(r[companyIndex]),person=shortName(r[personIndex]);if(!company&&!person)continue;entries.push({id:uid(),kind:'surveyor',name:person||company,company,region,postcode:r[postcodeIndex]||'',phone:r[phoneIndex]||'',email:r[emailIndex]||'',primary:r[emailIndex+1]||'',secondary:r[emailIndex+2]||'',notes:r[emailIndex+3]||'',hold:/not working|on hold|off allocation|cannot drive/i.test(stripComment(r[personIndex])),badges:[]})}}
+ if(x.title==='2. General'){
+  const normalName=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  entries=entries.map(entry=>{
+   if(entry.phone&&entry.email)return entry;
+   const sibling=entries.find(candidate=>candidate!==entry&&normalName(candidate.name)===normalName(entry.name)&&(candidate.phone||candidate.email));
+   return sibling?{...entry,phone:entry.phone||sibling.phone,email:entry.email||sibling.email}:entry;
+  });
+ }
  return entries;
 }
 function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
-const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261117-v3-';
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261118-v4-';
 const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
 function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
@@ -2954,6 +2962,7 @@ function repairDirectoryEntries(x,saved){
  const baselineRepairKey=CONTRACTOR_BASELINE_REPAIR_KEY+x.title.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
  const baselineRepairNeeded=(x.title==='2. General'||x.title==='Emergency & Specialist')&&localStorage.getItem(baselineRepairKey)!=='complete';
  let changed=false;
+ const nameOccurrences=new Map();
  const repaired=saved.map(entry=>{
   if(!entry)return entry;
   if(x.title==='3. Surveyors'){
@@ -2966,7 +2975,10 @@ function repairDirectoryEntries(x,saved){
   }
   const postcode=normal(entry.postcode),phone=normal(entry.phone),email=normal(entry.email);
   const entryName=normal(entry.name);
-  const match=seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
+  const occurrence=nameOccurrences.get(entryName)||0;
+  nameOccurrences.set(entryName,occurrence+1);
+  const sameName=entryName?seeded.filter(candidate=>normal(candidate.name)===entryName):[];
+  const match=sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
   if(baselineRepairNeeded){
    const restored={...entry};
