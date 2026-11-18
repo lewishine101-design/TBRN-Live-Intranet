@@ -2952,7 +2952,7 @@ function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
-const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261118-v4-';
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261118-v5-';
 const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
 function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
@@ -2963,7 +2963,10 @@ function repairDirectoryEntries(x,saved){
  const baselineRepairNeeded=(x.title==='2. General'||x.title==='Emergency & Specialist')&&localStorage.getItem(baselineRepairKey)!=='complete';
  let changed=false;
  const nameOccurrences=new Map();
- const repaired=saved.map(entry=>{
+ const countNames=list=>list.reduce((counts,item)=>{const key=normal(item?.name);if(key)counts.set(key,(counts.get(key)||0)+1);return counts},new Map());
+ const savedNameCounts=countNames(saved),seededNameCounts=countNames(seeded);
+ const repairByPosition=saved.length===seeded.length;
+ const repaired=saved.map((entry,entryIndex)=>{
   if(!entry)return entry;
   if(x.title==='3. Surveyors'){
    const looksShifted=/@/.test(String(entry.primary||''))&&!/@/.test(String(entry.email||''))||/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(String(entry.phone||'').trim());
@@ -2978,7 +2981,8 @@ function repairDirectoryEntries(x,saved){
   const occurrence=nameOccurrences.get(entryName)||0;
   nameOccurrences.set(entryName,occurrence+1);
   const sameName=entryName?seeded.filter(candidate=>normal(candidate.name)===entryName):[];
-  const match=sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
+  const nameOverDuplicated=entryName&&(savedNameCounts.get(entryName)||0)>(seededNameCounts.get(entryName)||0);
+  const match=nameOverDuplicated&&repairByPosition?seeded[entryIndex]:sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
   if(baselineRepairNeeded){
    const restored={...entry};
