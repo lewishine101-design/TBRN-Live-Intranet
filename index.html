@@ -2934,6 +2934,12 @@ let ADMIN_PIN=localStorage.getItem('tbrnAdminPin')||'2788';
 const managedTitles=['2. General','Emergency & Specialist','3. Surveyors'];
 function uid(){return (crypto&&crypto.randomUUID)?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(16).slice(2)}
 function directoryKey(title){return 'tbrn-directory-'+title.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}
+const RETIRED_SPECIALIST_NAMES=new Set(['icab','sdclaims','polygon']);
+function retiredDirectoryEntry(title,entry){
+ if(title!=='Emergency & Specialist')return false;
+ const key=String(entry?.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+ return RETIRED_SPECIALIST_NAMES.has(key);
+}
 function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
  if(x.title==='2. General'){const hi=rows.findIndex(r=>r.includes('Contractor')&&r.includes('Base Post Code'));let region='';for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<16)r.push('');if(r[0])region=stripComment(r[0]);const original=r[9],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'contractor',name,region:contractorRegionFromPostcode(r[10],r[12],region),postcode:r[10],notes:r[11],primary:r[12],secondary:r[13],phone:r[14],email:r[15],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[11])),badges:[['Map',r[1]],['Verisk',r[2]],['Portal',r[3]],['Drying',r[4]],['ACM',r[5]],['LBG',r[6]],['Ins',r[7]],['TP',r[8]]]})}}
  else if(x.title==='Emergency & Specialist'){const hi=rows.findIndex(r=>r.includes('Work Type')&&r.includes('Contractor'));for(const r0 of rows.slice(hi+1)){const r=[...r0];while(r.length<14)r.push('');const original=r[1],name=shortName(original);if(!name)continue;entries.push({id:uid(),kind:'specialist',name,region:stripComment(r[0]),postcode:r[8],notes:r[9],primary:r[10],secondary:r[11],phone:r[12],email:r[13],vat:r[2],hold:/on hold|off allocation|on stop|not taking/i.test(stripComment(original)+' '+stripComment(r[9])),badges:[['Portal',r[3]],['ACM',r[4]],['LBG',r[5]],['Ins',r[6]],['TP',r[7]]]})}}
@@ -2946,27 +2952,46 @@ function parseDirectoryEntries(x){const rows=tableRows(x.html);let entries=[];
    return sibling?{...entry,phone:entry.phone||sibling.phone,email:entry.email||sibling.email}:entry;
   });
  }
+ if(x.title==='Emergency & Specialist')entries=entries.filter(entry=>!retiredDirectoryEntry(x.title,entry));
  return entries;
 }
 function corruptedDirectoryName(value){
  const name=String(value||'').trim();
  return name.length>70||/\[threaded comment\]|check paragon|claims? per week|before allocating|your version of excel|learn more:/i.test(name);
 }
-const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261118-v5-';
+const CONTRACTOR_BASELINE_REPAIR_KEY='tbrn-contractor-baseline-repair-20261118-v6-';
 const CONTRACTOR_BASELINE_FIELDS=['kind','name','region','postcode','notes','primary','secondary','phone','email','vat','badges'];
 function directoryValueEqual(a,b){return JSON.stringify(a??'')===JSON.stringify(b??'')}
 function repairDirectoryEntries(x,saved){
  if(!Array.isArray(saved))return saved;
+ const retainedSaved=saved.filter(entry=>!retiredDirectoryEntry(x.title,entry));
  const seeded=parseDirectoryEntries(x);
  const normal=value=>String(value||'').toLowerCase().replace(/[^a-z0-9@]+/g,'');
  const baselineRepairKey=CONTRACTOR_BASELINE_REPAIR_KEY+x.title.replace(/[^a-z0-9]+/gi,'-').toLowerCase();
  const baselineRepairNeeded=(x.title==='2. General'||x.title==='Emergency & Specialist')&&localStorage.getItem(baselineRepairKey)!=='complete';
- let changed=false;
+ let changed=retainedSaved.length!==saved.length;
  const nameOccurrences=new Map();
  const countNames=list=>list.reduce((counts,item)=>{const key=normal(item?.name);if(key)counts.set(key,(counts.get(key)||0)+1);return counts},new Map());
- const savedNameCounts=countNames(saved),seededNameCounts=countNames(seeded);
- const repairByPosition=saved.length===seeded.length;
- const repaired=saved.map((entry,entryIndex)=>{
+ const savedNameCounts=countNames(retainedSaved),seededNameCounts=countNames(seeded);
+ const repairByPosition=retainedSaved.length===seeded.length;
+ const positionalSeedCandidate=entryIndex=>{
+  if(repairByPosition)return seeded[entryIndex];
+  const anchor=direction=>{
+   for(let savedIndex=entryIndex+direction;savedIndex>=0&&savedIndex<retainedSaved.length;savedIndex+=direction){
+    const key=normal(retainedSaved[savedIndex]?.name);
+    if(!key||(savedNameCounts.get(key)||0)!==1||(seededNameCounts.get(key)||0)!==1)continue;
+    const seedIndex=seeded.findIndex(candidate=>normal(candidate.name)===key);
+    if(seedIndex>=0)return{savedIndex,seedIndex};
+   }
+   return null;
+  };
+  const previous=anchor(-1),next=anchor(1);
+  const fromPrevious=previous?previous.seedIndex+(entryIndex-previous.savedIndex):null;
+  const fromNext=next?next.seedIndex-(next.savedIndex-entryIndex):null;
+  const seedIndex=fromPrevious!==null&&fromPrevious===fromNext?fromPrevious:fromPrevious??fromNext;
+  return Number.isInteger(seedIndex)&&seedIndex>=0&&seedIndex<seeded.length?seeded[seedIndex]:null;
+ };
+ const repaired=retainedSaved.map((entry,entryIndex)=>{
   if(!entry)return entry;
   if(x.title==='3. Surveyors'){
    const looksShifted=/@/.test(String(entry.primary||''))&&!/@/.test(String(entry.email||''))||/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(String(entry.phone||'').trim());
@@ -2982,7 +3007,7 @@ function repairDirectoryEntries(x,saved){
   nameOccurrences.set(entryName,occurrence+1);
   const sameName=entryName?seeded.filter(candidate=>normal(candidate.name)===entryName):[];
   const nameOverDuplicated=entryName&&(savedNameCounts.get(entryName)||0)>(seededNameCounts.get(entryName)||0);
-  const match=nameOverDuplicated&&repairByPosition?seeded[entryIndex]:sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
+  const match=nameOverDuplicated?positionalSeedCandidate(entryIndex):sameName.length>1?sameName[Math.min(occurrence,sameName.length-1)]:seeded.find(candidate=>(entryName&&normal(candidate.name)===entryName)||(postcode&&normal(candidate.postcode)===postcode)||(phone&&normal(candidate.phone)===phone)||(email&&normal(candidate.email)===email));
   if(!match)return entry;
   if(baselineRepairNeeded){
    const restored={...entry};
@@ -4071,10 +4096,12 @@ renderResponsibilities=function(){
         .addTo(dmSearch)
         .bindPopup(`<strong>Searched postcode</strong><br>${dmEsc(origin.postcode)}`)
         .openPopup();
-      const candidates=filteredContractors().filter(c=>c.status!=='hold'&&Number.isFinite(c.lat)&&Number.isFinite(c.lng));
-      if(!candidates.length)throw new Error('No eligible mapped contractors are available.');
       const pRank={primary:0,secondary:1,none:2};
-      const shortlist=candidates.map(c=>({...c,prio:priority(c,origin.postcode),straight:Math.hypot(c.lat-origin.lat,c.lng-origin.lng)}))
+      const candidates=filteredContractors().filter(c=>c.status!=='hold'&&Number.isFinite(c.lat)&&Number.isFinite(c.lng))
+        .map(c=>({...c,prio:priority(c,origin.postcode),straight:Math.hypot(c.lat-origin.lat,c.lng-origin.lng)}))
+        .filter(c=>c.prio!=='none');
+      if(!candidates.length)throw new Error('No eligible mapped contractors cover this postcode.');
+      const shortlist=candidates
         .sort((a,b)=>pRank[a.prio]-pRank[b.prio]||a.straight-b.straight).slice(0,12);
       const routed=[];
       for(const c of shortlist){
@@ -4105,7 +4132,7 @@ renderResponsibilities=function(){
         bounds.push([c.lat,c.lng]);
       });
       dmMap.fitBounds(bounds,{padding:[35,35]});
-      dmStatus('Nearest three contractors calculated by coverage priority and driving route, including restricted availability where eligible.','success');
+      dmStatus(`${top.length} eligible contractor${top.length===1?'':'s'} calculated by coverage priority and driving route.`,'success');
     }catch(e){dmStatus(e.message||'Search failed.','error')}finally{btn.disabled=false}
   }
 
