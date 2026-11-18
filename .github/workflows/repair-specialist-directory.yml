@@ -1,0 +1,39 @@
+name: Repair specialist directory
+on:
+  push:
+    paths:
+      - .github/workflows/repair-specialist-directory.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply and validate directory repair
+        shell: bash
+        run: |
+          printf '%s' 'ZGlmZiAtLWdpdCBhL2luZGV4Lmh0bWwgYi9pbmRleC5odG1sCmluZGV4IDBkNjRmOWYuLjRjMGFmNjUgMTAwNjQ0Ci0tLSBhL2luZGV4Lmh0bWwKKysrIGIvaW5kZXguaHRtbApAQCAtMjk1Miw3ICsyOTUyLDcgQEAgZnVuY3Rpb24gY29ycnVwdGVkRGlyZWN0b3J5TmFtZSh2YWx1ZSl7CiAgY29uc3QgbmFtZT1TdHJpbmcodmFsdWV8fCcnKS50cmltKCk7CiAgcmV0dXJuIG5hbWUubGVuZ3RoPjcwfHwvXFt0aHJlYWRlZCBjb21tZW50XF18Y2hlY2sgcGFyYWdvbnxjbGFpbXM/IHBlciB3ZWVrfGJlZm9yZSBhbGxvY2F0aW5nfHlvdXIgdmVyc2lvbiBvZiBleGNlbHxsZWFybiBtb3JlOi9pLnRlc3QobmFtZSk7CiB9Ci1jb25zdCBDT05UUkFDVE9SX0JBU0VMSU5FX1JFUEFJUl9LRVk9J3Ricm4tY29udHJhY3Rvci1iYXNlbGluZS1yZXBhaXItMjAyNjExMTgtdjQtJzsKK2NvbnN0IENPTlRSQUNUT1JfQkFTRUxJTkVfUkVQQUlSX0tFWT0ndGJybi1jb250cmFjdG9yLWJhc2VsaW5lLXJlcGFpci0yMDI2MTExOC12NS0nOwogY29uc3QgQ09OVFJBQ1RPUl9CQVNFTElORV9GSUVMRFM9WydraW5kJywnbmFtZScsJ3JlZ2lvbicsJ3Bvc3Rjb2RlJywnbm90ZXMnLCdwcmltYXJ5Jywnc2Vjb25kYXJ5JywncGhvbmUnLCdlbWFpbCcsJ3ZhdCcsJ2JhZGdlcyddOwogZnVuY3Rpb24gZGlyZWN0b3J5VmFsdWVFcXVhbChhLGIpe3JldHVybiBKU09OLnN0cmluZ2lmeShhPz8nJyk9PT1KU09OLnN0cmluZ2lmeShiPz8nJyl9CiBmdW5jdGlvbiByZXBhaXJEaXJlY3RvcnlFbnRyaWVzKHgsc2F2ZWQpewpAQCAtMjk2Myw3ICsyOTYzLDEwIEBAIGZ1bmN0aW9uIHJlcGFpckRpcmVjdG9yeUVudHJpZXMoeCxzYXZlZCl7CiAgY29uc3QgYmFzZWxpbmVSZXBhaXJOZWVkZWQ9KHgudGl0bGU9PT0nMi4gR2VuZXJhbCd8fHgudGl0bGU9PT0nRW1lcmdlbmN5ICYgU3BlY2lhbGlzdCcpJiZsb2NhbFN0b3JhZ2UuZ2V0SXRlbShiYXNlbGluZVJlcGFpcktleSkhPT0nY29tcGxldGUnOwogIGxldCBjaGFuZ2VkPWZhbHNlOwogIGNvbnN0IG5hbWVPY2N1cnJlbmNlcz1uZXcgTWFwKCk7Ci0gY29uc3QgcmVwYWlyZWQ9c2F2ZWQubWFwKGVudHJ5PT57CisgY29uc3QgY291bnROYW1lcz1saXN0PT5saXN0LnJlZHVjZSgoY291bnRzLGl0ZW0pPT57Y29uc3Qga2V5PW5vcm1hbChpdGVtPy5uYW1lKTtpZihrZXkpY291bnRzLnNldChrZXksKGNvdW50cy5nZXQoa2V5KXx8MCkrMSk7cmV0dXJuIGNvdW50c30sbmV3IE1hcCgpKTsKKyBjb25zdCBzYXZlZE5hbWVDb3VudHM9Y291bnROYW1lcyhzYXZlZCksc2VlZGVkTmFtZUNvdW50cz1jb3VudE5hbWVzKHNlZWRlZCk7CisgY29uc3QgcmVwYWlyQnlQb3NpdGlvbj1zYXZlZC5sZW5ndGg9PT1zZWVkZWQubGVuZ3RoOworIGNvbnN0IHJlcGFpcmVkPXNhdmVkLm1hcCgoZW50cnksZW50cnlJbmRleCk9PnsKICAgaWYoIWVudHJ5KXJldHVybiBlbnRyeTsKICAgaWYoeC50aXRsZT09PSczLiBTdXJ2ZXlvcnMnKXsKICAgIGNvbnN0IGxvb2tzU2hpZnRlZD0vQC8udGVzdChTdHJpbmcoZW50cnkucHJpbWFyeXx8JycpKSYmIS9ALy50ZXN0KFN0cmluZyhlbnRyeS5lbWFpbHx8JycpKXx8L15bQS1aXXsxLDJ9XGRbQS1aXGRdP1xzKlxkW0EtWl17Mn0kL2kudGVzdChTdHJpbmcoZW50cnkucGhvbmV8fCcnKS50cmltKCkpOwpAQCAtMjk3OCw3ICsyOTgxLDggQEAgZnVuY3Rpb24gcmVwYWlyRGlyZWN0b3J5RW50cmllcyh4LHNhdmVkKXsKICAgY29uc3Qgb2NjdXJyZW5jZT1uYW1lT2NjdXJyZW5jZXMuZ2V0KGVudHJ5TmFtZSl8fDA7CiAgIG5hbWVPY2N1cnJlbmNlcy5zZXQoZW50cnlOYW1lLG9jY3VycmVuY2UrMSk7CiAgIGNvbnN0IHNhbWVOYW1lPWVudHJ5TmFtZT9zZWVkZWQuZmlsdGVyKGNhbmRpZGF0ZT0+bm9ybWFsKGNhbmRpZGF0ZS5uYW1lKT09PWVudHJ5TmFtZSk6W107Ci0gIGNvbnN0IG1hdGNoPXNhbWVOYW1lLmxlbmd0aD4xP3NhbWVOYW1lW01hdGgubWluKG9jY3VycmVuY2Usc2FtZU5hbWUubGVuZ3RoLTEpXTpzZWVkZWQuZmluZChjYW5kaWRhdGU9PihlbnRyeU5hbWUmJm5vcm1hbChjYW5kaWRhdGUubmFtZSk9PT1lbnRyeU5hbWUpfHwocG9zdGNvZGUmJm5vcm1hbChjYW5kaWRhdGUucG9zdGNvZGUpPT09cG9zdGNvZGUpfHwocGhvbmUmJm5vcm1hbChjYW5kaWRhdGUucGhvbmUpPT09cGhvbmUpfHwoZW1haWwmJm5vcm1hbChjYW5kaWRhdGUuZW1haWwpPT09ZW1haWwpKTsKKyAgY29uc3QgbmFtZU92ZXJEdXBsaWNhdGVkPWVudHJ5TmFtZSYmKHNhdmVkTmFtZUNvdW50cy5nZXQoZW50cnlOYW1lKXx8MCk+KHNlZWRlZE5hbWVDb3VudHMuZ2V0KGVudHJ5TmFtZSl8fDApOworICBjb25zdCBtYXRjaD1uYW1lT3ZlckR1cGxpY2F0ZWQmJnJlcGFpckJ5UG9zaXRpb24/c2VlZGVkW2VudHJ5SW5kZXhdOnNhbWVOYW1lLmxlbmd0aD4xP3NhbWVOYW1lW01hdGgubWluKG9jY3VycmVuY2Usc2FtZU5hbWUubGVuZ3RoLTEpXTpzZWVkZWQuZmluZChjYW5kaWRhdGU9PihlbnRyeU5hbWUmJm5vcm1hbChjYW5kaWRhdGUubmFtZSk9PT1lbnRyeU5hbWUpfHwocG9zdGNvZGUmJm5vcm1hbChjYW5kaWRhdGUucG9zdGNvZGUpPT09cG9zdGNvZGUpfHwocGhvbmUmJm5vcm1hbChjYW5kaWRhdGUucGhvbmUpPT09cGhvbmUpfHwoZW1haWwmJm5vcm1hbChjYW5kaWRhdGUuZW1haWwpPT09ZW1haWwpKTsKICAgaWYoIW1hdGNoKXJldHVybiBlbnRyeTsKICAgaWYoYmFzZWxpbmVSZXBhaXJOZWVkZWQpewogICAgY29uc3QgcmVzdG9yZWQ9ey4uLmVudHJ5fTsK' | base64 -d > /tmp/specialists.patch
+          git apply --check /tmp/specialists.patch
+          git apply /tmp/specialists.patch
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const h=fs.readFileSync('index.html','utf8');
+          let n=0;
+          for(const m of h.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)){
+            if(m[1].trim())new vm.Script(m[1],{filename:`inline-${++n}.js`});
+          }
+          console.log(`${n} scripts valid`);
+          NODE
+          git diff --check
+      - name: Commit repair and remove workflow
+        shell: bash
+        run: |
+          rm .github/workflows/repair-specialist-directory.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/repair-specialist-directory.yml
+          git commit -m "Repair duplicated specialist directory records"
+          git push
