@@ -1,0 +1,57 @@
+name: Keep contractor log open
+on:
+  push:
+    paths:
+      - .github/workflows/keep-contractor-log-open.yml
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply change-log view guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          old = """  window.openContractorChangeLog=function(){
+            const content=document.getElementById('adminContent');if(!content)return;
+            content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
+            document.getElementById('contractorLogBack').onclick=()=>renderAdminDashboard();
+            if(unlocked())renderLog();else renderLocked();
+           };
+
+           const originalRenderAdminDashboard=window.renderAdminDashboard;
+           window.renderAdminDashboard=function(){
+            const result=originalRenderAdminDashboard.apply(this,arguments);
+          """
+          new = """  let contractorChangeLogOpen=false;
+           window.openContractorChangeLog=function(){
+            const content=document.getElementById('adminContent');if(!content)return;
+            contractorChangeLogOpen=true;
+            content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
+            document.getElementById('contractorLogBack').onclick=()=>{contractorChangeLogOpen=false;renderAdminDashboard()};
+            if(unlocked())renderLog();else renderLocked();
+           };
+
+           const originalRenderAdminDashboard=window.renderAdminDashboard;
+           window.renderAdminDashboard=function(){
+            if(contractorChangeLogOpen&&document.getElementById('contractorChangeLogMount'))return;
+            const result=originalRenderAdminDashboard.apply(this,arguments);
+          """
+          if old not in text:
+              raise SystemExit("Change-log mounting block not found")
+          path.write_text(text.replace(old,new,1),encoding="utf-8")
+          PY
+      - name: Commit update and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/keep-contractor-log-open.yml
+          git add index.html
+          git commit -m "Keep contractor change log open"
+          git push origin main
