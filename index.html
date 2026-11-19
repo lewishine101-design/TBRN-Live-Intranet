@@ -2974,6 +2974,19 @@ function repairDirectoryEntries(x,saved){
  const countNames=list=>list.reduce((counts,item)=>{const key=normal(item?.name);if(key)counts.set(key,(counts.get(key)||0)+1);return counts},new Map());
  const savedNameCounts=countNames(retainedSaved),seededNameCounts=countNames(seeded);
  const repairByPosition=retainedSaved.length===seeded.length;
+ if(x.title==='Emergency & Specialist'){
+  const penta=retainedSaved.find(entry=>['rskraw','pentaenvironmentalrskraw'].includes(normal(entry?.name)));
+  if(penta&&penta._pentaDetailsVersion!=='2026-11-19'){
+   Object.assign(penta,{
+    name:'Penta Environmental (RSK Raw)',
+    phone:'03451668491 / 03300026044',
+    email:'newinstructions@pentaenvironmental.co.uk; info@pentaenvironmental.co.uk',
+    notes:'Emergency contact / instructions to proceed: 0345 166 8491 - newinstructions@pentaenvironmental.co.uk. Non-emergency communications: 0330 002 6044 - info@pentaenvironmental.co.uk.',
+    _pentaDetailsVersion:'2026-11-19'
+   });
+   changed=true;
+  }
+ }
  const positionalSeedCandidate=entryIndex=>{
   if(repairByPosition)return seeded[entryIndex];
   const anchor=direction=>{
@@ -3177,6 +3190,7 @@ function saveEntryFromForm(x){
 
   let entries=getEntries(x),idx=entries.findIndex(v=>v.id===entry.id);
   const existing=idx>=0?entries[idx]:null;
+  if(existing?._pentaDetailsVersion)entry._pentaDetailsVersion=existing._pentaDetailsVersion;
   const existingMap=existing&&Array.isArray(existing.badges)
     ?existing.badges.find(b=>b[0]==='Map')
     :null;
