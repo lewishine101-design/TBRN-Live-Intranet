@@ -10994,15 +10994,18 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
     }
   }
 
+  let contractorChangeLogOpen=false;
   window.openContractorChangeLog=function(){
     const content=document.getElementById('adminContent');if(!content)return;
+    contractorChangeLogOpen=true;
     content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
-    document.getElementById('contractorLogBack').onclick=()=>renderAdminDashboard();
+    document.getElementById('contractorLogBack').onclick=()=>{contractorChangeLogOpen=false;renderAdminDashboard()};
     if(unlocked())renderLog();else renderLocked();
   };
 
   const originalRenderAdminDashboard=window.renderAdminDashboard;
   window.renderAdminDashboard=function(){
+    if(contractorChangeLogOpen&&document.getElementById('contractorChangeLogMount'))return;
     const result=originalRenderAdminDashboard.apply(this,arguments);
     if(!adminMode)return result;
     const grid=document.querySelector('#adminContent .admin-grid');
