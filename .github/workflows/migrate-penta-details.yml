@@ -1,0 +1,55 @@
+name: Migrate Penta details
+on:
+  push:
+    paths:
+      - .github/workflows/migrate-penta-details.yml
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add one-time Penta migration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          anchor = " const repairByPosition=retainedSaved.length===seeded.length;\n"
+          insert = """ if(x.title==='Emergency & Specialist'){
+            const penta=retainedSaved.find(entry=>['rskraw','pentaenvironmentalrskraw'].includes(normal(entry?.name)));
+            if(penta&&penta._pentaDetailsVersion!=='2026-11-19'){
+             Object.assign(penta,{
+              name:'Penta Environmental (RSK Raw)',
+              phone:'03451668491 / 03300026044',
+              email:'newinstructions@pentaenvironmental.co.uk; info@pentaenvironmental.co.uk',
+              notes:'Emergency contact / instructions to proceed: 0345 166 8491 - newinstructions@pentaenvironmental.co.uk. Non-emergency communications: 0330 002 6044 - info@pentaenvironmental.co.uk.',
+              _pentaDetailsVersion:'2026-11-19'
+             });
+             changed=true;
+            }
+           }
+          """
+          if "_pentaDetailsVersion!=='2026-11-19'" not in text:
+              if anchor not in text:
+                  raise SystemExit("Repair anchor not found")
+              text = text.replace(anchor, anchor + insert, 1)
+          save_anchor = "  const existing=idx>=0?entries[idx]:null;\n"
+          preserve = "  if(existing?._pentaDetailsVersion)entry._pentaDetailsVersion=existing._pentaDetailsVersion;\n"
+          if preserve not in text:
+              if save_anchor not in text:
+                  raise SystemExit("Save anchor not found")
+              text = text.replace(save_anchor, save_anchor + preserve, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+      - name: Commit update and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/migrate-penta-details.yml
+          git add index.html
+          git commit -m "Migrate Penta contact details once"
+          git push origin main
