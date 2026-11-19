@@ -18,34 +18,28 @@ jobs:
           from pathlib import Path
           path = Path("index.html")
           text = path.read_text(encoding="utf-8")
-          old = """  window.openContractorChangeLog=function(){
-            const content=document.getElementById('adminContent');if(!content)return;
-            content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
-            document.getElementById('contractorLogBack').onclick=()=>renderAdminDashboard();
-            if(unlocked())renderLog();else renderLocked();
-           };
-
-           const originalRenderAdminDashboard=window.renderAdminDashboard;
-           window.renderAdminDashboard=function(){
-            const result=originalRenderAdminDashboard.apply(this,arguments);
-          """
-          new = """  let contractorChangeLogOpen=false;
-           window.openContractorChangeLog=function(){
-            const content=document.getElementById('adminContent');if(!content)return;
-            contractorChangeLogOpen=true;
-            content.innerHTML='<div style="margin-bottom:14px"><button class="action" id="contractorLogBack" type="button">← Back to Admin</button></div><div id="contractorChangeLogMount"></div>';
-            document.getElementById('contractorLogBack').onclick=()=>{contractorChangeLogOpen=false;renderAdminDashboard()};
-            if(unlocked())renderLog();else renderLocked();
-           };
-
-           const originalRenderAdminDashboard=window.renderAdminDashboard;
-           window.renderAdminDashboard=function(){
-            if(contractorChangeLogOpen&&document.getElementById('contractorChangeLogMount'))return;
-            const result=originalRenderAdminDashboard.apply(this,arguments);
-          """
-          if old not in text:
-              raise SystemExit("Change-log mounting block not found")
-          path.write_text(text.replace(old,new,1),encoding="utf-8")
+          anchor = "  window.openContractorChangeLog=function(){\n"
+          if "let contractorChangeLogOpen=false;" not in text:
+              if anchor not in text:
+                  raise SystemExit("Open-log anchor not found")
+              text = text.replace(anchor, "  let contractorChangeLogOpen=false;\n" + anchor, 1)
+          old = "    const content=document.getElementById('adminContent');if(!content)return;\n    content.innerHTML="
+          new = "    const content=document.getElementById('adminContent');if(!content)return;\n    contractorChangeLogOpen=true;\n    content.innerHTML="
+          if "contractorChangeLogOpen=true;" not in text:
+              if old not in text:
+                  raise SystemExit("Open-log content anchor not found")
+              text = text.replace(old,new,1)
+          old_back = "    document.getElementById('contractorLogBack').onclick=()=>renderAdminDashboard();"
+          new_back = "    document.getElementById('contractorLogBack').onclick=()=>{contractorChangeLogOpen=false;renderAdminDashboard()};"
+          if old_back in text:
+              text = text.replace(old_back,new_back,1)
+          render_anchor = "  window.renderAdminDashboard=function(){\n    const result=originalRenderAdminDashboard.apply(this,arguments);"
+          render_new = "  window.renderAdminDashboard=function(){\n    if(contractorChangeLogOpen&&document.getElementById('contractorChangeLogMount'))return;\n    const result=originalRenderAdminDashboard.apply(this,arguments);"
+          if "contractorChangeLogOpen&&document.getElementById('contractorChangeLogMount')" not in text:
+              if render_anchor not in text:
+                  raise SystemExit("Admin render anchor not found")
+              text = text.replace(render_anchor,render_new,1)
+          path.write_text(text,encoding="utf-8")
           PY
       - name: Commit update and remove workflow
         run: |
