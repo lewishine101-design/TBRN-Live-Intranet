@@ -3174,9 +3174,12 @@ function entryForm(x,e){
   </form>`;
 }
 function openEntryEditor(x,id){if(!adminMode){openAdminPin();return}const entries=getEntries(x),e=id?entries.find(v=>v.id===id):null;$('adminModalTitle').textContent=e?'Edit entry':'Add new entry';$('adminModalBody').innerHTML=entryForm(x,e);$('adminModalFoot').innerHTML='<button class="action" onclick="closeAdminModal()">Cancel</button><button class="action primary" id="saveEntryBtn">Save entry</button>';$('saveEntryBtn').onclick=()=>saveEntryFromForm(x);$('adminModal').classList.add('open')}
-function saveEntryFromForm(x){
+async function saveEntryFromForm(x){
   const form=$('entryForm');
   if(!form.reportValidity())return;
+  const saveButton=$('saveEntryBtn');
+  if(saveButton?.disabled)return;
+  if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving…'}
   const fd=new FormData(form),entry={};
   for(const [k,v] of fd.entries())if(!k.startsWith('flag_'))entry[k]=v;
   entry.status=entry.status||'active';
@@ -3202,8 +3205,16 @@ function saveEntryFromForm(x){
   if(idx>=0)entries[idx]=entry;
   else entries.unshift(entry);
   saveEntries(x,entries);
-  closeAdminModal();
-  renderDirectory(x);
+  try{
+    if(typeof window.tbrnFlushAdminChanges==='function')await window.tbrnFlushAdminChanges();
+    closeAdminModal();
+    renderDirectory(x);
+    if(typeof holdToast==='function')holdToast(idx>=0?'Contractor updated':'Contractor added and saved live');
+  }catch(error){
+    console.error('Contractor save failed',error);
+    if(saveButton){saveButton.disabled=false;saveButton.textContent='Try save again'}
+    if(typeof holdToast==='function')holdToast('Could not save contractor — please try again');
+  }
 }
 function removeEntry(x,id){if(!adminMode)return;if(!confirm('Remove this entry from the live directory?'))return;saveEntries(x,getEntries(x).filter(e=>e.id!==id));renderDirectory(x)}
 renderDirectory=function(x){let entries=getEntries(x);const regions=[...new Set(entries.map(e=>e.region).filter(Boolean))].sort();$('canvas').innerHTML=`<div class="directory-shell"><div class="directory-tools"><input id="entrySearch" placeholder="Search by name, postcode, region or coverage..."><select id="regionFilter"><option value="">All regions / work types</option>${regions.map(r=>`<option>${esc(r)}</option>`).join('')}</select><div class="directory-count" id="entryCount"></div>${adminMode?`<button class="admin-add" id="addEntryBtn">+ Add ${x.title==='3. Surveyors'?'surveyor':x.title==='2. General'?'contractor':'specialist'}</button>`:''}</div><div class="entry-grid" id="entryGrid"></div></div>`;
@@ -8116,7 +8127,7 @@ function renderEntryBadgeRows(badges){
   }
 
   function scheduleSave(){
-    if(!ready||applyingRemote||!adminIsActive()||!stateRef)return;
+    if(window.tbrnAdminPersistenceActive||!ready||applyingRemote||!adminIsActive()||!stateRef)return;
     clearTimeout(saveTimer);
     status('Saving live changes…','busy');
     saveTimer=setTimeout(async()=>{
@@ -8197,6 +8208,13 @@ function renderEntryBadgeRows(badges){
       // Do not remove unknown/local keys. Apply only explicitly shared remote values.
       remoteKeys.forEach(key=>{
         const value=values[key];
+        const protectedKeys=window.__tbrnPendingAdminKeys;
+        if(protectedKeys?.has(key)){
+          const localValue=localStorage.getItem(key);
+          const remoteValue=value===null||typeof value==='undefined'?null:String(value);
+          if(localValue===remoteValue)protectedKeys.delete(key);
+          else return;
+        }
         if(value===null||typeof value==='undefined'){
           if(localStorage.getItem(key)!==null){
             nativeRemoveItem.call(localStorage,key);
@@ -9662,6 +9680,11 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
 (function(){
   'use strict';
 
+  window.tbrnAdminPersistenceActive=true;
+  const protectedKeys=window.__tbrnPendingAdminKeys instanceof Set
+    ?window.__tbrnPendingAdminKeys
+    :(window.__tbrnPendingAdminKeys=new Set());
+
   const PERSONAL_KEYS=new Set([
     'tbrnDailyBiscuit','tbrnHiddenSearches','tbrnKbOpens','tbrnPrintCount',
     'tbrnFeePersistentClicks','tbrnEngineResourceCount','tbrnEngineMapSearchCount'
@@ -9727,6 +9750,7 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
 
   function queue(key,value){
     if(!adminActive()||!sharedKey(key))return;
+    protectedKeys.add(String(key));
     pending.set(String(key),value===null?null:String(value));
     status('Saving live changes…','busy',true);
     flush();
