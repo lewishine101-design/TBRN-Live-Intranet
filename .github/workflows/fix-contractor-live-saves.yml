@@ -55,9 +55,9 @@ jobs:
           s = s.replace(old, new)
 
           old = """  function scheduleSave(){
-            if(!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
+              if(!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
           new = """  function scheduleSave(){
-            if(window.tbrnAdminPersistenceActive||!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
+              if(window.tbrnAdminPersistenceActive||!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
           assert s.count(old) == 1, "legacy scheduler not found"
           s = s.replace(old, new)
 
