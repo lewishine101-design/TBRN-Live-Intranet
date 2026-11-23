@@ -62,18 +62,18 @@ jobs:
           s = s.replace(old, new)
 
           old = """      remoteKeys.forEach(key=>{
-                const value=values[key];
-                if(value===null||typeof value==='undefined'){"""
+                  const value=values[key];
+                  if(value===null||typeof value==='undefined'){"""
           new = """      remoteKeys.forEach(key=>{
-                const value=values[key];
-                const protectedKeys=window.__tbrnPendingAdminKeys;
-                if(protectedKeys?.has(key)){
-                  const localValue=localStorage.getItem(key);
-                  const remoteValue=value===null||typeof value==='undefined'?null:String(value);
-                  if(localValue===remoteValue)protectedKeys.delete(key);
-                  else return;
-                }
-                if(value===null||typeof value==='undefined'){"""
+                  const value=values[key];
+                  const protectedKeys=window.__tbrnPendingAdminKeys;
+                  if(protectedKeys?.has(key)){
+                    const localValue=localStorage.getItem(key);
+                    const remoteValue=value===null||typeof value==='undefined'?null:String(value);
+                    if(localValue===remoteValue)protectedKeys.delete(key);
+                    else return;
+                  }
+                  if(value===null||typeof value==='undefined'){"""
           assert s.count(old) == 1, "remote apply block not found"
           s = s.replace(old, new)
 
