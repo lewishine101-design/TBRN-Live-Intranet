@@ -1,0 +1,125 @@
+name: Fix contractor live saves
+on:
+  push:
+    paths:
+      - .github/workflows/fix-contractor-live-saves.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply tested save fix
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+
+          old = """function saveEntryFromForm(x){
+            const form=$('entryForm');
+            if(!form.reportValidity())return;
+            const fd=new FormData(form),entry={};"""
+          new = """async function saveEntryFromForm(x){
+            const form=$('entryForm');
+            if(!form.reportValidity())return;
+            const saveButton=$('saveEntryBtn');
+            if(saveButton?.disabled)return;
+            if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving…'}
+            const fd=new FormData(form),entry={};"""
+          assert s.count(old) == 1, "save function start not found"
+          s = s.replace(old, new)
+
+          old = """  saveEntries(x,entries);
+            closeAdminModal();
+            renderDirectory(x);
+          }
+          function removeEntry"""
+          new = """  saveEntries(x,entries);
+            try{
+              if(typeof window.tbrnFlushAdminChanges==='function')await window.tbrnFlushAdminChanges();
+              closeAdminModal();
+              renderDirectory(x);
+              if(typeof holdToast==='function')holdToast(idx>=0?'Contractor updated':'Contractor added and saved live');
+            }catch(error){
+              console.error('Contractor save failed',error);
+              if(saveButton){saveButton.disabled=false;saveButton.textContent='Try save again'}
+              if(typeof holdToast==='function')holdToast('Could not save contractor — please try again');
+            }
+          }
+          function removeEntry"""
+          assert s.count(old) == 1, "save function end not found"
+          s = s.replace(old, new)
+
+          old = """  function scheduleSave(){
+            if(!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
+          new = """  function scheduleSave(){
+            if(window.tbrnAdminPersistenceActive||!ready||applyingRemote||!adminIsActive()||!stateRef)return;"""
+          assert s.count(old) == 1, "legacy scheduler not found"
+          s = s.replace(old, new)
+
+          old = """      remoteKeys.forEach(key=>{
+                const value=values[key];
+                if(value===null||typeof value==='undefined'){"""
+          new = """      remoteKeys.forEach(key=>{
+                const value=values[key];
+                const protectedKeys=window.__tbrnPendingAdminKeys;
+                if(protectedKeys?.has(key)){
+                  const localValue=localStorage.getItem(key);
+                  const remoteValue=value===null||typeof value==='undefined'?null:String(value);
+                  if(localValue===remoteValue)protectedKeys.delete(key);
+                  else return;
+                }
+                if(value===null||typeof value==='undefined'){"""
+          assert s.count(old) == 1, "remote apply block not found"
+          s = s.replace(old, new)
+
+          old = """<script id="tbrn-admin-persistence-fix">
+          (function(){
+            'use strict';
+
+            const PERSONAL_KEYS"""
+          new = """<script id="tbrn-admin-persistence-fix">
+          (function(){
+            'use strict';
+
+            window.tbrnAdminPersistenceActive=true;
+            const protectedKeys=window.__tbrnPendingAdminKeys instanceof Set
+              ?window.__tbrnPendingAdminKeys
+              :(window.__tbrnPendingAdminKeys=new Set());
+
+            const PERSONAL_KEYS"""
+          assert s.count(old) == 1, "admin persistence header not found"
+          s = s.replace(old, new)
+
+          old = """  function queue(key,value){
+              if(!adminActive()||!sharedKey(key))return;
+              pending.set(String(key),value===null?null:String(value));"""
+          new = """  function queue(key,value){
+              if(!adminActive()||!sharedKey(key))return;
+              protectedKeys.add(String(key));
+              pending.set(String(key),value===null?null:String(value));"""
+          assert s.count(old) == 1, "admin queue not found"
+          s = s.replace(old, new)
+
+          p.write_text(s, encoding="utf-8")
+      - name: Validate scripts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+          scripts.forEach((code,i)=>new vm.Script(code,{filename:`inline-${i+1}.js`}));
+          console.log(`Validated ${scripts.length} inline scripts`);
+          NODE
+      - name: Commit and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-contractor-live-saves.yml
+          git add index.html
+          git commit -m "Fix new contractor live saves"
+          git push origin main
