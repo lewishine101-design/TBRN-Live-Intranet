@@ -11045,4 +11045,44 @@ body.tbrn-dev-reordering .resource-admin-actions,body.tbrn-dev-reordering .resou
 <script src="hub-november.js?v=9"></script>
 
 
+<script id="tbrn-contractor-status-identity-guard">
+(function(){
+  'use strict';
+  const TRACKED_TITLES=new Set(['2. General','Emergency & Specialist']);
+  const clean=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  const identity=entry=>[clean(entry?.name),clean(entry?.postcode)].join('|');
+  const operationalState=entry=>({
+    status:entry?.status||((entry?.hold===true||entry?.hold==='true')?'hold':'active'),
+    hold:entry?.hold===true||entry?.hold==='true'||entry?.status==='hold',
+    onHoldNotes:String(entry?.onHoldNotes||'')
+  });
+
+  /* Baseline repairs may rebuild card details by row position. Preserve status
+     separately and put it back only when the contractor identity matches. */
+  const originalRepair=window.repairDirectoryEntries;
+  if(typeof originalRepair==='function'){
+    window.repairDirectoryEntries=function(record,saved){
+      if(!TRACKED_TITLES.has(record?.title)||!Array.isArray(saved))return originalRepair.apply(this,arguments);
+      const states=new Map(saved.map(entry=>[identity(entry),operationalState(entry)]).filter(([key])=>key!=='|'));
+      const repaired=originalRepair.apply(this,arguments);
+      if(!Array.isArray(repaired))return repaired;
+      repaired.forEach(entry=>{
+        const key=identity(entry),state=states.get(key);
+        if(state)Object.assign(entry,state,{contractorKey:key});
+      });
+      return repaired;
+    };
+    repairDirectoryEntries=window.repairDirectoryEntries;
+  }
+
+  const originalSave=window.saveEntries;
+  if(typeof originalSave==='function'){
+    window.saveEntries=function(record,entries){
+      if(TRACKED_TITLES.has(record?.title)&&Array.isArray(entries))entries.forEach(entry=>entry.contractorKey=identity(entry));
+      return originalSave.apply(this,arguments);
+    };
+    saveEntries=window.saveEntries;
+  }
+})();
+</script>
 </body></html>
