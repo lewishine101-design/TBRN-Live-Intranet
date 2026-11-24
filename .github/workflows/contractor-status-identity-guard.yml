@@ -1,0 +1,51 @@
+name: Apply contractor status identity guard
+on:
+  push:
+    paths:
+      - .github/workflows/contractor-status-identity-guard.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add identity guard
+        env:
+          GUARD_B64: PHNjcmlwdCBpZD0idGJybi1jb250cmFjdG9yLXN0YXR1cy1pZGVudGl0eS1ndWFyZCI+CihmdW5jdGlvbigpewogICd1c2Ugc3RyaWN0JzsKICBjb25zdCBUUkFDS0VEX1RJVExFUz1uZXcgU2V0KFsnMi4gR2VuZXJhbCcsJ0VtZXJnZW5jeSAmIFNwZWNpYWxpc3QnXSk7CiAgY29uc3QgY2xlYW49dmFsdWU9PlN0cmluZyh2YWx1ZXx8JycpLnRvTG93ZXJDYXNlKCkucmVwbGFjZSgvW15hLXowLTldKy9nLCcnKTsKICBjb25zdCBpZGVudGl0eT1lbnRyeT0+W2NsZWFuKGVudHJ5Py5uYW1lKSxjbGVhbihlbnRyeT8ucG9zdGNvZGUpXS5qb2luKCd8Jyk7CiAgY29uc3Qgb3BlcmF0aW9uYWxTdGF0ZT1lbnRyeT0+KHsKICAgIHN0YXR1czplbnRyeT8uc3RhdHVzfHwoKGVudHJ5Py5ob2xkPT09dHJ1ZXx8ZW50cnk/LmhvbGQ9PT0ndHJ1ZScpPydob2xkJzonYWN0aXZlJyksCiAgICBob2xkOmVudHJ5Py5ob2xkPT09dHJ1ZXx8ZW50cnk/LmhvbGQ9PT0ndHJ1ZSd8fGVudHJ5Py5zdGF0dXM9PT0naG9sZCcsCiAgICBvbkhvbGROb3RlczpTdHJpbmcoZW50cnk/Lm9uSG9sZE5vdGVzfHwnJykKICB9KTsKCiAgLyogQmFzZWxpbmUgcmVwYWlycyBtYXkgcmVidWlsZCBjYXJkIGRldGFpbHMgYnkgcm93IHBvc2l0aW9uLiBQcmVzZXJ2ZSBzdGF0dXMKICAgICBzZXBhcmF0ZWx5IGFuZCBwdXQgaXQgYmFjayBvbmx5IHdoZW4gdGhlIGNvbnRyYWN0b3IgaWRlbnRpdHkgbWF0Y2hlcy4gKi8KICBjb25zdCBvcmlnaW5hbFJlcGFpcj13aW5kb3cucmVwYWlyRGlyZWN0b3J5RW50cmllczsKICBpZih0eXBlb2Ygb3JpZ2luYWxSZXBhaXI9PT0nZnVuY3Rpb24nKXsKICAgIHdpbmRvdy5yZXBhaXJEaXJlY3RvcnlFbnRyaWVzPWZ1bmN0aW9uKHJlY29yZCxzYXZlZCl7CiAgICAgIGlmKCFUUkFDS0VEX1RJVExFUy5oYXMocmVjb3JkPy50aXRsZSl8fCFBcnJheS5pc0FycmF5KHNhdmVkKSlyZXR1cm4gb3JpZ2luYWxSZXBhaXIuYXBwbHkodGhpcyxhcmd1bWVudHMpOwogICAgICBjb25zdCBzdGF0ZXM9bmV3IE1hcChzYXZlZC5tYXAoZW50cnk9PltpZGVudGl0eShlbnRyeSksb3BlcmF0aW9uYWxTdGF0ZShlbnRyeSldKS5maWx0ZXIoKFtrZXldKT0+a2V5IT09J3wnKSk7CiAgICAgIGNvbnN0IHJlcGFpcmVkPW9yaWdpbmFsUmVwYWlyLmFwcGx5KHRoaXMsYXJndW1lbnRzKTsKICAgICAgaWYoIUFycmF5LmlzQXJyYXkocmVwYWlyZWQpKXJldHVybiByZXBhaXJlZDsKICAgICAgcmVwYWlyZWQuZm9yRWFjaChlbnRyeT0+ewogICAgICAgIGNvbnN0IGtleT1pZGVudGl0eShlbnRyeSksc3RhdGU9c3RhdGVzLmdldChrZXkpOwogICAgICAgIGlmKHN0YXRlKU9iamVjdC5hc3NpZ24oZW50cnksc3RhdGUse2NvbnRyYWN0b3JLZXk6a2V5fSk7CiAgICAgIH0pOwogICAgICByZXR1cm4gcmVwYWlyZWQ7CiAgICB9OwogICAgcmVwYWlyRGlyZWN0b3J5RW50cmllcz13aW5kb3cucmVwYWlyRGlyZWN0b3J5RW50cmllczsKICB9CgogIGNvbnN0IG9yaWdpbmFsU2F2ZT13aW5kb3cuc2F2ZUVudHJpZXM7CiAgaWYodHlwZW9mIG9yaWdpbmFsU2F2ZT09PSdmdW5jdGlvbicpewogICAgd2luZG93LnNhdmVFbnRyaWVzPWZ1bmN0aW9uKHJlY29yZCxlbnRyaWVzKXsKICAgICAgaWYoVFJBQ0tFRF9USVRMRVMuaGFzKHJlY29yZD8udGl0bGUpJiZBcnJheS5pc0FycmF5KGVudHJpZXMpKWVudHJpZXMuZm9yRWFjaChlbnRyeT0+ZW50cnkuY29udHJhY3RvcktleT1pZGVudGl0eShlbnRyeSkpOwogICAgICByZXR1cm4gb3JpZ2luYWxTYXZlLmFwcGx5KHRoaXMsYXJndW1lbnRzKTsKICAgIH07CiAgICBzYXZlRW50cmllcz13aW5kb3cuc2F2ZUVudHJpZXM7CiAgfQp9KSgpOwo8L3NjcmlwdD4=
+        run: |
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          marker = 'id="tbrn-contractor-status-identity-guard"'
+          if marker not in text:
+              guard = base64.b64decode(__import__("os").environ["GUARD_B64"]).decode("utf-8")
+              closing = "</body></html>"
+              if closing not in text:
+                  raise SystemExit("Hub closing tag not found")
+              text = text.replace(closing, guard + "\n" + closing, 1)
+              path.write_text(text, encoding="utf-8")
+          PY
+      - name: Validate scripts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+          const failures=[];
+          scripts.forEach((m,i)=>{if(!m[1].trim())return;try{new vm.Script(m[1],{filename:'inline-'+i})}catch(e){failures.push(i+': '+e.message)}});
+          if(failures.length)throw new Error(failures.join('\n'));
+          if(!html.includes('tbrn-contractor-status-identity-guard'))throw new Error('Identity guard missing');
+          NODE
+      - name: Commit safeguard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/contractor-status-identity-guard.yml
+          git add index.html .github/workflows/contractor-status-identity-guard.yml
+          git commit -m "Keep contractor statuses with contractor identities"
+          git push
